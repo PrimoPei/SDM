@@ -1,11 +1,45 @@
 <script lang="ts">
+	import { onMount } from 'svelte';
 	import { isLoading, loadingState } from '$lib/store';
 	import { PUBLIC_WS_ENDPOINT, PUBLIC_DEV_MODE } from '$env/static/public';
+	import type { Client, Room } from '@liveblocks/client';
+	import { createClient } from '@liveblocks/client';
+	import { currentUser } from '$lib/store';
+
+	import Canvas from '$lib/Canvas.svelte';
+	import type { Presence, Storage } from '$lib/types';
 
 	const apiUrl =
 		PUBLIC_DEV_MODE === 'DEV'
 			? 'http://localhost:7860'
 			: '/embed/huggingface-projects/color-palette-generator-sd';
+
+	let client: Client;
+	let room: Room;
+	let roomId = 'sveltekit-live-cursors';
+
+	$: {
+		console.log('whoami', $currentUser);
+	}
+
+	onMount(() => {
+		client = createClient({
+			publicApiKey: 'pk_live_6o9jIg1m7lFJp5kc7HgYgE3S'
+		});
+
+		room = client.enter<Presence, Storage /* UserMeta, RoomEvent */>(roomId, {
+			initialPresence: {
+				cursor: null
+			},
+			initialStorage: {}
+		});
+		console.log('room', room);
+		return () => {
+			if (client && room) {
+				client.leave(roomId);
+			}
+		};
+	});
 </script>
 
 <div class="max-w-screen-md mx-auto px-3 py-8 relative z-0">
@@ -25,6 +59,11 @@
 				Create Palette
 			</button>
 		</form>
+	</div>
+	<div class="relative">
+		{#if room}
+			<Canvas {room} />
+		{/if}
 	</div>
 </div>
 

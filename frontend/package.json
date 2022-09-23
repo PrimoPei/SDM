@@ -36,6 +36,7 @@
 	},
 	"type": "module",
 	"dependencies": {
-		"@fontsource/fira-mono": "^4.5.0"
+		"@fontsource/fira-mono": "^4.5.0",
+		"@liveblocks/client": "^0.18.2"
 	}
 }
