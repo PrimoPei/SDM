@@ -1,6 +1,7 @@
 // See https://kit.svelte.dev/docs/types#app
 // for information about these interfaces
 // and what to do when importing types
+import type { ZoomTransform } from 'd3-zoom';
 
 declare global {
 	namespace App {
@@ -11,5 +12,8 @@ declare global {
 		interface Window {
 			parentIFrame: unknown;
 		}
+	}
+	interface Event {
+		transform: ZoomTransform;
 	}
 }

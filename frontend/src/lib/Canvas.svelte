@@ -1,103 +1,51 @@
 <script lang="ts">
-	import Cursor from '$lib/Cursor.svelte';
-	import type { Room } from '@liveblocks/client';
-	import { onDestroy } from 'svelte';
-	/**
-	 * The main Liveblocks code for the example.
-	 * Check in src/routes/index.svelte to see the setup code.
-	 */
+	import { zoom, zoomIdentity } from 'd3-zoom';
+	import { select, type Selection } from 'd3-selection';
+	import { onMount, tick } from 'svelte';
 
-	export let room: Room;
+	const width = 512 * 2;
+	const height = 512 * 2;
 
-	// Get initial values for presence and others
-	let myPresence = room.getPresence();
-	let others = room.getOthers();
+	let canvasEl: HTMLCanvasElement;
+	let canvasCtx: CanvasRenderingContext2D;
 
-	// Subscribe to further changes
-	const unsubscribeMyPresence = room.subscribe('my-presence', (presence) => {
-		myPresence = presence;
+	const margin = { top: 50, right: 50, bottom: 50, left: 50 };
+	const extent = [
+		[margin.left, margin.top],
+		[width - margin.right, height - margin.top]
+	] as [[number, number], [number, number]];
+
+	const zoomHandler = zoom()
+		.scaleExtent([0.5, 2])
+		// .translateExtent(extent)
+		.extent(extent)
+		.on('zoom', zoomed);
+
+	onMount(() => {
+		select(canvasEl.parentElement)
+			.call(zoomHandler as any)
+			.call(zoomHandler.transform as any, zoomIdentity);
+		canvasCtx = canvasEl.getContext('2d') as CanvasRenderingContext2D;
+		canvasCtx.fillStyle = 'red';
+		canvasCtx.rect(100, 100, 500, 500);
+		canvasCtx.fill();
 	});
 
-	const unsubscribeOthers = room.subscribe('others', (otherUsers) => {
-		others = otherUsers;
-	});
-
-	// Unsubscribe when unmounting
-	onDestroy(() => {
-		unsubscribeMyPresence();
-		unsubscribeOthers();
-	});
-
-	// Update cursor presence to current pointer location
-	function handlePointerMove(event: PointerEvent) {
-		event.preventDefault();
-		room.updatePresence({
-			cursor: {
-				x: Math.round(event.clientX),
-				y: Math.round(event.clientY)
-			}
+	function zoomed(e: Event) {
+		const transform = e.transform;
+		console.log(canvasEl.style.transform, transform);
+		tick().then(() => {
+			canvasEl.style.transform = `translate(${transform.x}px, ${transform.y}px) scale(${transform.k})`;
 		});
 	}
-
-	// When the pointer leaves the page, set cursor presence to null
-	function handlePointerLeave() {
-		room.updatePresence({
-			cursor: null
-		});
-	}
-
-	const COLORS = [
-		'#E57373',
-		'#9575CD',
-		'#4FC3F7',
-		'#81C784',
-		'#FFF176',
-		'#FF8A65',
-		'#F06292',
-		'#7986CB'
-	];
 </script>
 
-<main on:pointerleave={handlePointerLeave} on:pointermove={handlePointerMove}>
-	<!-- Show the current user's cursor location -->
-	<div class="text">
-		{myPresence?.cursor
-			? `${myPresence.cursor.x} × ${myPresence.cursor.y}`
-			: 'Move your cursor to broadcast its position to other people in the room.'}
-	</div>
-
-	<!-- When others connected, iterate through others and show their cursors -->
-	{#if others}
-		{#each [...others] as { connectionId, presence } (connectionId)}
-			{#if presence?.cursor}
-				<Cursor
-					color={COLORS[connectionId % COLORS.length]}
-					x={presence.cursor.x}
-					y={presence.cursor.y}
-				/>
-			{/if}
-		{/each}
-	{/if}
-</main>
+<div class="fixed w-screen h-screen top-0 left-0 overflow-hidden border-4 border-black">
+	<canvas bind:this={canvasEl} {width} {height} />
+</div>
 
 <style lang="postcss" scoped>
-	main {
-		@apply fixed top-0 left-0 w-screen h-screen flex flex-col items-center justify-center touch-none bg-white;
-		/* position: absolute;
-		top: 0;
-		left: 0;
-		width: 100vw;
-		height: 100vh;
-		display: flex;
-		place-content: center;
-		place-items: center;
-		touch-action: none;
-        background-color: white; */
-	}
-
-	.text {
-		max-width: 380px;
-		margin: 0 16px;
-		text-align: center;
+	canvas {
+		transform-origin: 0 0;
 	}
 </style>

@@ -6,14 +6,14 @@
 	import { createClient } from '@liveblocks/client';
 	import { currentUser } from '$lib/store';
 
-	import Canvas from '$lib/Canvas.svelte';
+	import App from '$lib/App.svelte';
 	import type { Presence, Storage } from '$lib/types';
-
+	console.log('PUBLIC_DEV_MODE', PUBLIC_DEV_MODE);
 	const apiUrl =
 		PUBLIC_DEV_MODE === 'DEV'
 			? 'http://localhost:7860'
 			: '/embed/huggingface-projects/color-palette-generator-sd';
-
+	console.log(apiUrl);
 	let client: Client;
 	let room: Room;
 	let roomId = 'sveltekit-live-cursors';
@@ -42,27 +42,29 @@
 	});
 </script>
 
-<div class="max-w-screen-md mx-auto px-3 py-8 relative z-0">
-	<h1 class="text-3xl font-bold leading-normal">Stable Diffussion Outpainting Multiplayer</h1>
-	<p class="text-sm" />
-	<div class="relative top-0 z-50 bg-white dark:bg-black py-3">
-		<form class="grid grid-cols-6">
-			<input
-				class="input"
-				placeholder="A photo of a beautiful sunset in San Francisco"
-				title="Input prompt to generate image and obtain palette"
-				type="text"
-				name="prompt"
-				disabled={$isLoading}
-			/>
-			<button class="button" disabled={$isLoading} title="Generate Palette">
-				Create Palette
-			</button>
-		</form>
+<div class="max-w-screen-md mx-auto px-3 py-8 relative">
+	<div class="relative z-10">
+		<h1 class="text-3xl font-bold leading-normal">Stable Diffussion Outpainting Multiplayer</h1>
+		<p class="text-sm" />
+		<div class="relative bg-white dark:bg-black py-3">
+			<form class="grid grid-cols-6">
+				<input
+					class="input"
+					placeholder="A photo of a beautiful sunset in San Francisco"
+					title="Input prompt to generate image and obtain palette"
+					type="text"
+					name="prompt"
+					disabled={$isLoading}
+				/>
+				<button class="button" disabled={$isLoading} title="Generate Palette">
+					Create Palette
+				</button>
+			</form>
+		</div>
 	</div>
-	<div class="relative">
+	<div class="relative z-0">
 		{#if room}
-			<Canvas {room} />
+			<App {room} />
 		{/if}
 	</div>
 </div>
