@@ -1,6 +1,6 @@
 ---
-title: Sd Color Palette Generator
-emoji: 📖🎨⚙️
+title: Stable Diffusion Multiplayer Outpainting 
+emoji: 👥⚙️🎨
 colorFrom: yellow
 colorTo: gray
 sdk: gradio
