@@ -40,7 +40,7 @@
 	}
 </script>
 
-<div class="fixed w-screen h-screen top-0 left-0 overflow-hidden border-4 border-black">
+<div class="fixed w-screen h-screen max-h-[1024px] top-0 left-0 overflow-hidden border-4 border-black">
 	<canvas bind:this={canvasEl} {width} {height} />
 </div>
 
