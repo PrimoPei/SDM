@@ -4,7 +4,6 @@
 	import { PUBLIC_WS_ENDPOINT, PUBLIC_DEV_MODE } from '$env/static/public';
 	import type { Client, Room } from '@liveblocks/client';
 	import { createClient } from '@liveblocks/client';
-	import { currentUser } from '$lib/store';
 
 	import App from '$lib/App.svelte';
 	import type { Presence, Storage } from '$lib/types';
@@ -14,17 +13,14 @@
 			? 'http://localhost:7860'
 			: '/embed/huggingface-projects/color-palette-generator-sd';
 	console.log(apiUrl);
+
 	let client: Client;
 	let room: Room;
 	let roomId = 'sveltekit-live-cursors';
 
-	$: {
-		console.log('whoami', $currentUser);
-	}
-
 	onMount(() => {
 		client = createClient({
-			publicApiKey: 'pk_live_6o9jIg1m7lFJp5kc7HgYgE3S'
+			publicApiKey: 'pk_test_JlUZGH3kQmhmZQiqU2l8eIi5'
 		});
 
 		room = client.enter<Presence, Storage /* UserMeta, RoomEvent */>(roomId, {
@@ -33,7 +29,6 @@
 			},
 			initialStorage: {}
 		});
-		console.log('room', room);
 		return () => {
 			if (client && room) {
 				client.leave(roomId);
