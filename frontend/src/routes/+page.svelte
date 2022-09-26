@@ -12,6 +12,7 @@
 		PUBLIC_DEV_MODE === 'DEV'
 			? 'http://localhost:7860'
 			: '/embed/huggingface-projects/color-palette-generator-sd';
+
 	console.log(apiUrl);
 
 	let client: Client;

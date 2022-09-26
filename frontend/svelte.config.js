@@ -12,7 +12,7 @@ const config = {
 	],
 	kit: {
 		paths: {
-			base: dev ? '/static' : '/embed/huggingface-projects/stable-diffusion-multiplayer/static'
+			base: dev ? '' : '/embed/huggingface-projects/stable-diffusion-multiplayer/static'
 		},
 		adapter: adapter({
 			pages: 'build',

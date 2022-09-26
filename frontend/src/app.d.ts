@@ -7,7 +7,7 @@ declare global {
 	namespace App {
 		// interface Locals {}
 		// interface PageData {}
-		// interface PageError {}
+		// interface Error {}
 		// interface Platform {}
 		interface Window {
 			parentIFrame: unknown;
