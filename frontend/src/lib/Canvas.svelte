@@ -21,7 +21,7 @@
 	onMount(() => {
 		const scale = width / containerEl.clientWidth;
 		const zoomHandler = zoom()
-			.scaleExtent([1 / scale / 2, 2])
+			.scaleExtent([1  / scale, 2])
 			.translateExtent([
 				[0, 0],
 				[width, height]
@@ -41,7 +41,7 @@
 		canvasCtx.rect(10, 10, 160, 90);
 		canvasCtx.fill();
 		canvasCtx.strokeStyle = 'blue';
-		canvasCtx.lineWidth = 5;
+		canvasCtx.lineWidth = 10;
 		canvasCtx.strokeRect(0, 0, width, height);
 	});
 
@@ -60,7 +60,7 @@
 
 <div
 	bind:this={containerEl}
-	class="fixed w-screen h-screen top-0 left-0 overflow-hidden border-4 border-black"
+	class="absolute top-0 left-0 right-0 bottom-0 overflow-hidden border-4 border-black z-0"
 >
 	<canvas bind:this={canvasEl} {width} {height} class="absolute top-0 left-0" />
 </div>

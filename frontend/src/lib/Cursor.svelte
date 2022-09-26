@@ -1,5 +1,8 @@
 <script lang="ts">
 	import { spring } from 'svelte/motion';
+	import type { ZoomTransform } from 'd3-zoom';
+
+	export let transform: ZoomTransform;
 
 	export let color = '';
 	export let x = 0;
@@ -13,16 +16,15 @@
 			damping: 0.35
 		}
 	);
-
 	// Update spring when x and y change
 	$: coords.set({ x, y });
 </script>
 
 <svg
-	class="cursor"
+	class="block cursor z-0"
 	fill="none"
 	height="36"
-	style={`transform: translateX(${$coords.x}px) translateY(${$coords.y}px)`}
+	style={`transform: translateX(${$coords.x}px) translateY(${$coords.y}px) scale(${transform.k})`}
 	viewBox="0 0 24 36"
 	width="24"
 	xmlns="http://www.w3.org/2000/svg"
@@ -36,5 +38,6 @@
 <style lang="postcss" scoped>
 	.cursor {
 		@apply absolute top-0 left-0;
+		/* transform-origin: 0 0; */
 	}
 </style>

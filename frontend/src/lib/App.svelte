@@ -5,50 +5,64 @@
 	import Menu from '$lib/Menu.svelte';
 	import type { Room } from '@liveblocks/client';
 	import { onDestroy } from 'svelte';
-	import { currZoomTransform } from '$lib/store';
+	import { currZoomTransform, myPresence, others } from '$lib/store';
 
 	/**
 	 * The main Liveblocks code for the example.
 	 * Check in src/routes/index.svelte to see the setup code.
 	 */
 
-	export let room: Room;
+	// export let room: Room;
 
-	// Get initial values for presence and others
-	let myPresence = room.getPresence();
-	let others = room.getOthers();
+	// // Get initial values for presence and others
+	// let myPresence = room.getPresence();
+	// let others = room.getOthers();
 
-	// Subscribe to further changes
-	const unsubscribeMyPresence = room.subscribe('my-presence', (presence) => {
-		myPresence = presence;
-	});
+	// // Subscribe to further changes
+	// const unsubscribeMyPresence = room.subscribe('my-presence', (presence) => {
+	// 	myPresence = presence;
+	// });
 
-	const unsubscribeOthers = room.subscribe('others', (otherUsers) => {
-		others = otherUsers;
-	});
+	// const unsubscribeOthers = room.subscribe('others', (otherUsers) => {
+	// 	others = otherUsers;
+	// });
 
-	// Unsubscribe when unmounting
-	onDestroy(() => {
-		unsubscribeMyPresence();
-		unsubscribeOthers();
-	});
+	// // Unsubscribe when unmounting
+	// onDestroy(() => {
+	// 	unsubscribeMyPresence();
+	// 	unsubscribeOthers();
+	// });
+	$: {
+		console.log('myPresence', $myPresence.cursor);
+		// console.log('others', $others);
+	}
+	const r = 10;
+	function round(p, n) {
+		return p % n < n / 2 ? p - (p % n) : p + n - (p % n);
+	}
+	const grid = 10;
 
 	// Update cursor presence to current pointer location
 	function handlePointerMove(event: PointerEvent) {
 		event.preventDefault();
-		room.updatePresence({
+		const x = Math.round(event.layerX / grid) * grid; //round(Math.max(r, Math.min(512 * 5 - r, event.clientX)), 100);
+		const y = Math.round(event.layerY / grid) * grid; //round(Math.max(r, Math.min(512 * 5 - r, event.clientY)), 100);
+		// const x = round(Math.max(r, Math.min(512 * 5 - r, event.clientX)), grid);
+		// const y = round(Math.max(r, Math.min(512 * 5 - r, event.clientY)), grid);
+
+		$myPresence = {
 			cursor: {
-				x: Math.round(event.layerX),
-				y: Math.round(event.layerY)
+				x,
+				y
 			}
-		});
+		};
 	}
 
 	// When the pointer leaves the page, set cursor presence to null
 	function handlePointerLeave() {
-		room.updatePresence({
+		$myPresence = {
 			cursor: null
-		});
+		};
 	}
 
 	const COLORS = [
@@ -63,35 +77,39 @@
 	];
 </script>
 
-<div class="relative">
-	<div class="z-0">
-		<h3 class="text-xl">TESTS</h3>
-	</div>
+<!-- Show the current user's cursor location -->
+<div class="text">
+	{$myPresence?.cursor
+		? `${$myPresence.cursor.x} × ${$myPresence.cursor.y}`
+		: 'Move your cursor to broadcast its position to other people in the room.'}
+</div>
+<div
+	class="relative z-0 w-screen h-screen"
+	on:pointerleave={handlePointerLeave}
+	on:pointermove={handlePointerMove}
+>
+	<Canvas />
+
 	<main class="z-10 relative">
-		<!-- Show the current user's cursor location -->
-		<div class="text">
-			{myPresence?.cursor
-				? `${myPresence.cursor.x} × ${myPresence.cursor.y}`
-				: 'Move your cursor to broadcast its position to other people in the room.'}
-		</div>
-		{#if myPresence?.cursor}
-			<Frame x={myPresence.cursor.x} y={myPresence.cursor.y} transform={$currZoomTransform} />
+		{#if $myPresence?.cursor}
+			<Frame x={$myPresence.cursor.x} y={$myPresence.cursor.y} transform={$currZoomTransform} />
 		{/if}
 
 		<!-- When others connected, iterate through others and show their cursors -->
 		{#if others}
-			{#each [...others] as { connectionId, presence } (connectionId)}
+			{#each [...$others] as { connectionId, presence } (connectionId)}
 				{#if presence?.cursor}
+					<Frame x={presence.cursor.x} y={presence.cursor.y} transform={$currZoomTransform} />
+
 					<Cursor
 						color={COLORS[connectionId % COLORS.length]}
 						x={presence.cursor.x}
 						y={presence.cursor.y}
+						transform={$currZoomTransform}
 					/>
-					<Frame x={presence.cursor.x} y={presence.cursor.y} transform={$currZoomTransform} />
 				{/if}
 			{/each}
 		{/if}
-		<Canvas />
 	</main>
 </div>
 <div class="fixed bottom-0 left-0 right-0 z-50 my-2">

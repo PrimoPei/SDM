@@ -20,13 +20,13 @@
 </script>
 
 <div
-	class="frame"
+	class="frame z-0"
 	style={`transform: translateX(${$coords.x}px) translateY(${$coords.y}px) scale(${transform.k})`}
 />
 
 <style lang="postcss" scoped>
 	.frame {
-		@apply absolute top-0 left-0 border-2 border-sky-500 bg-gradient-to-b from-sky-200 w-[512px] h-[512px];
+		@apply pointer-events-none touch-none absolute top-0 left-0 border-2 border-sky-500 bg-gradient-to-b from-sky-200 w-[512px] h-[512px];
 		transform-origin: 0 0;
 	}
 </style>

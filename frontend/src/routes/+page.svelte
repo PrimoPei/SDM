@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
-	import { isLoading, loadingState } from '$lib/store';
+	import { isLoading, loadingState, createPresenceStore } from '$lib/store';
 	import { PUBLIC_WS_ENDPOINT, PUBLIC_DEV_MODE } from '$env/static/public';
 	import type { Client, Room } from '@liveblocks/client';
 	import { createClient } from '@liveblocks/client';
@@ -17,7 +17,7 @@
 
 	let client: Client;
 	let room: Room;
-	let roomId = 'sveltekit-live-cursors';
+	let roomId = 'multiplayer-SD';
 
 	onMount(() => {
 		client = createClient({
@@ -30,9 +30,11 @@
 			},
 			initialStorage: {}
 		});
+		const unsubscribePresence = createPresenceStore(room);
 		return () => {
 			if (client && room) {
 				client.leave(roomId);
+				unsubscribePresence();
 			}
 		};
 	});

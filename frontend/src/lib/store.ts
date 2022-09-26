@@ -1,7 +1,37 @@
-import { writable } from 'svelte/store';
+import { writable, get } from 'svelte/store';
+import { onDestroy } from 'svelte';
+import type { Room } from '@liveblocks/client';
+
 import { type ZoomTransform, zoomIdentity } from 'd3-zoom';
 
 export const loadingState = writable<string>('');
 export const isLoading = writable<boolean>(false);
 
 export const currZoomTransform = writable<ZoomTransform>(zoomIdentity);
+
+export const myPresence = writable(null);
+export const others = writable(null);
+
+export function createPresenceStore(room: Room) {
+	// Get initial values for presence and others
+	myPresence.set(room.getPresence());
+	others.set(room.getOthers());
+
+	const unsubscribeMyPresence = room.subscribe('my-presence', (presence) => {
+		myPresence.update((_) => presence);
+	});
+
+	const unsubscribeOthers = room.subscribe('others', (otherUsers) => {
+		others.update((_) => otherUsers);
+	});
+
+	myPresence.set = (presence) => {
+		room.updatePresence(presence);
+		return presence;
+	};
+
+	return () => {
+		unsubscribeMyPresence();
+		unsubscribeOthers();
+	};
+}
