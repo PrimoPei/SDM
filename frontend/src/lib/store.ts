@@ -1,5 +1,4 @@
 import { writable, get } from 'svelte/store';
-import { onDestroy } from 'svelte';
 import type { Room } from '@liveblocks/client';
 
 import { type ZoomTransform, zoomIdentity } from 'd3-zoom';

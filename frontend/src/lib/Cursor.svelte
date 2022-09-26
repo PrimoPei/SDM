@@ -1,10 +1,8 @@
 <script lang="ts">
 	import { spring } from 'svelte/motion';
-	import type { ZoomTransform } from 'd3-zoom';
-
-	export let transform: ZoomTransform;
 
 	export let color = '';
+	export let emoji = '';
 	export let x = 0;
 	export let y = 0;
 
@@ -20,24 +18,29 @@
 	$: coords.set({ x, y });
 </script>
 
-<svg
-	class="block cursor z-0"
-	fill="none"
-	height="36"
-	style={`transform: translateX(${$coords.x}px) translateY(${$coords.y}px) scale(${transform.k})`}
-	viewBox="0 0 24 36"
-	width="24"
-	xmlns="http://www.w3.org/2000/svg"
+<div
+	class="absolute top-0 left-0 grid grid-cols-3"
+	style={`transform: translateX(${$coords.x}px) translateY(${$coords.y}px);`}
 >
-	<path
-		d="M5.65376 12.3673H5.46026L5.31717 12.4976L0.500002 16.8829L0.500002 1.19841L11.7841 12.3673H5.65376Z"
-		fill={color}
-	/>
-</svg>
+	<svg
+		class="block z-0 col-span-2 row-span-2"
+		width="40"
+		viewBox="0 0 15 15"
+		fill="currentColor"
+		xmlns="http://www.w3.org/2000/svg"
+	>
+		<path
+			d="M0.91603 0.916054L7.09131 14.9234L8.89871 8.89873L14.9234 7.09133L0.91603 0.916054Z"
+			fill="#FFB800"
+		/>
+	</svg>
+	<div
+		class="absolute right-0 text-4xl col-start-2 row-start-2"
+		style={`text-shadow: 0px 5px 5px ${color}`}
+	>
+		{emoji}
+	</div>
+</div>
 
 <style lang="postcss" scoped>
-	.cursor {
-		@apply absolute top-0 left-0;
-		/* transform-origin: 0 0; */
-	}
 </style>

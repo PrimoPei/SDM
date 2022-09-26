@@ -5,6 +5,7 @@
 	import Menu from '$lib/Menu.svelte';
 	import type { Room } from '@liveblocks/client';
 	import { onDestroy } from 'svelte';
+	import { COLORS, EMOJIS } from '$lib/constants';
 	import { currZoomTransform, myPresence, others } from '$lib/store';
 
 	/**
@@ -12,7 +13,7 @@
 	 * Check in src/routes/index.svelte to see the setup code.
 	 */
 
-	// export let room: Room;
+	export let room: Room;
 
 	// // Get initial values for presence and others
 	// let myPresence = room.getPresence();
@@ -32,15 +33,19 @@
 	// 	unsubscribeMyPresence();
 	// 	unsubscribeOthers();
 	// });
+
+	// $: {
+	// 	console.log('myPresence', $myPresence);
+	// 	console.log('others', $others);
+	// }
 	$: {
-		console.log('myPresence', $myPresence.cursor);
-		// console.log('others', $others);
+		console.log('Sefl', room.getSelf());
 	}
-	const r = 10;
+	const r = 8;
 	function round(p, n) {
 		return p % n < n / 2 ? p - (p % n) : p + n - (p % n);
 	}
-	const grid = 10;
+	const grid = 8;
 
 	// Update cursor presence to current pointer location
 	function handlePointerMove(event: PointerEvent) {
@@ -64,17 +69,6 @@
 			cursor: null
 		};
 	}
-
-	const COLORS = [
-		'#E57373',
-		'#9575CD',
-		'#4FC3F7',
-		'#81C784',
-		'#FFF176',
-		'#FF8A65',
-		'#F06292',
-		'#7986CB'
-	];
 </script>
 
 <!-- Show the current user's cursor location -->
@@ -84,28 +78,45 @@
 		: 'Move your cursor to broadcast its position to other people in the room.'}
 </div>
 <div
-	class="relative z-0 w-screen h-screen"
+	class="relative z-0 w-screen h-screen cursor-none"
 	on:pointerleave={handlePointerLeave}
 	on:pointermove={handlePointerMove}
 >
 	<Canvas />
 
 	<main class="z-10 relative">
+
 		{#if $myPresence?.cursor}
-			<Frame x={$myPresence.cursor.x} y={$myPresence.cursor.y} transform={$currZoomTransform} />
+			<!-- <Frame
+				color={COLORS[0]}
+				x={$myPresence.cursor.x}
+				y={$myPresence.cursor.y}
+				transform={$currZoomTransform}
+			/> -->
+			<Cursor
+				emoji={EMOJIS[0]}
+				color={COLORS[0]}
+				x={$myPresence.cursor.x}
+				y={$myPresence.cursor.y}
+			/>
 		{/if}
 
 		<!-- When others connected, iterate through others and show their cursors -->
 		{#if others}
 			{#each [...$others] as { connectionId, presence } (connectionId)}
 				{#if presence?.cursor}
-					<Frame x={presence.cursor.x} y={presence.cursor.y} transform={$currZoomTransform} />
-
-					<Cursor
-						color={COLORS[connectionId % COLORS.length]}
+					<!-- <Frame
+						color={COLORS[1 + (connectionId % (COLORS.length - 1))]}
 						x={presence.cursor.x}
 						y={presence.cursor.y}
 						transform={$currZoomTransform}
+					/> -->
+
+					<Cursor
+						emoji={EMOJIS[1 + (connectionId % (EMOJIS.length - 1))]}
+						color={COLORS[1 + (connectionId % (COLORS.length - 1))]}
+						x={presence.cursor.x}
+						y={presence.cursor.y}
 					/>
 				{/if}
 			{/each}

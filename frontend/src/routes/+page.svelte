@@ -30,11 +30,16 @@
 			},
 			initialStorage: {}
 		});
+		const unsubscribe = room.subscribe('history', (e) => {
+			// Do something
+			console.log('history', e);
+		});
 		const unsubscribePresence = createPresenceStore(room);
 		return () => {
 			if (client && room) {
 				client.leave(roomId);
 				unsubscribePresence();
+				unsubscribe();
 			}
 		};
 	});

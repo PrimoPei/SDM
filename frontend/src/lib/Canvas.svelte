@@ -10,9 +10,6 @@
 	let containerEl: HTMLDivElement;
 	let canvasCtx: CanvasRenderingContext2D;
 
-	$:{
-		console.log($currZoomTransform)
-	}
 	const margin = { top: 100, right: 100, bottom: 100, left: 100 };
 	const extent = [
 		[-margin.left, -margin.top],
@@ -21,7 +18,7 @@
 	onMount(() => {
 		const scale = width / containerEl.clientWidth;
 		const zoomHandler = zoom()
-			.scaleExtent([1  / scale, 2])
+			.scaleExtent([1 / scale, 2])
 			.translateExtent([
 				[0, 0],
 				[width, height]
@@ -32,7 +29,7 @@
 
 		select(canvasEl.parentElement)
 			.call(zoomHandler as any)
-			.call(zoomHandler.scaleTo as any, 1 / scale)
+			// .call(zoomHandler.scaleTo as any, 1 / scale)
 			.on('pointermove', handlePointerMove)
 			.on('pointerleave', handlePointerLeave);
 
@@ -47,7 +44,6 @@
 
 	function zoomed(e: Event) {
 		const transform = ($currZoomTransform = e.transform);
-		console.log(canvasEl.style.transform, transform);
 		canvasEl.style.transform = `translate(${transform.x}px, ${transform.y}px) scale(${transform.k})`;
 	}
 	function handlePointerMove(e: PointerEvent) {
