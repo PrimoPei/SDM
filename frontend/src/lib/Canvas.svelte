@@ -26,7 +26,7 @@
 
 		const scale = width / containerEl.clientWidth;
 		const zoomHandler = zoom()
-			.scaleExtent([1 / scale, 1])
+			.scaleExtent([1 / scale / 1.5, 1])
 			// .translateExtent([
 			// 	[0, 0],
 			// 	[width, height]

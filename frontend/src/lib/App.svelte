@@ -121,7 +121,7 @@
 {#if $isPrompting}
 	<PromptModal on:prompt={onPrompt} on:close={onClose} />
 {/if}
-<div class="fixed left-0 z-0 w-screen h-screen cursor-none">
+<div class="fixed top-0 left-0 z-0 w-screen h-screen cursor-none">
 	<Canvas />
 
 	<main class="z-10 relative">

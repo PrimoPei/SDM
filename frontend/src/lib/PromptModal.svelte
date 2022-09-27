@@ -17,7 +17,7 @@
 </script>
 
 <form
-	class="fixed w-screen h-screen top-0 left-0 z-50 flex items-center justify-center bg-black bg-opacity-80 px-3"
+	class="fixed w-screen top-0 left-0 bottom-0 right-0 max-h-screen z-50 flex items-center justify-center bg-black bg-opacity-80 px-3"
 	on:submit|preventDefault={() => dispatch('prompt', { prompt })}
 	on:click={() => dispatch('close')}
 >

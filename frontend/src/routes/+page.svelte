@@ -42,13 +42,11 @@
 	});
 </script>
 
-<div class="max-w-screen-md mx-auto px-3 py-8 relative">
-	<div class="relative">
-		<h1 class="text-3xl font-bold leading-normal">Stable Diffussion Outpainting Multiplayer</h1>
-	</div>
-	<div class="relative">
-		{#if room}
-			<App {room} />
-		{/if}
-	</div>
+<div class="max-w-screen-md mx-auto p-5 relative  cursor-none touch-none z-10">
+	<h1 class="text-lg md:text-3xl font-bold leading-normal">
+		Stable Diffussion Outpainting Multiplayer
+	</h1>
 </div>
+{#if room}
+	<App {room} />
+{/if}
