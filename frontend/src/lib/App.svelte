@@ -7,6 +7,7 @@
 	import type { Room } from '@liveblocks/client';
 	import { COLORS, EMOJIS } from '$lib/constants';
 	import { PUBLIC_WS_ENDPOINT } from '$env/static/public';
+	import { onMount } from 'svelte';
 	import {
 		isLoading,
 		loadingState,
@@ -14,7 +15,8 @@
 		myPresence,
 		others,
 		isPrompting,
-		clickedPosition
+		clickedPosition,
+		imagesList
 	} from '$lib/store';
 	import { base64ToBlob, uploadImage } from '$lib/utils';
 	/**
@@ -23,6 +25,7 @@
 	 */
 
 	export let room: Room;
+	onMount(() => {});
 
 	async function onClose(e: CustomEvent) {
 		$isPrompting = false;
@@ -80,6 +83,11 @@
 							const imgsBase64 = data.output.data[0] as string[];
 							const imgBlobs = await Promise.all(imgsBase64.map((base64) => base64ToBlob(base64)));
 							const imgURLs = await Promise.all(imgBlobs.map((blob) => uploadImage(blob, _prompt)));
+							$imagesList.push({
+								prompt: _prompt,
+								images: imgURLs,
+								position: $clickedPosition
+							});
 							console.log(imgURLs);
 							$loadingState = data.success ? 'Complete' : 'Error';
 						} catch (e) {
@@ -117,6 +125,16 @@
 	<Canvas />
 
 	<main class="z-10 relative">
+		{#if $imagesList}
+			{#each $imagesList as image, i}
+				<Frame
+					color={COLORS[0]}
+					position={$imagesList.get(i).position}
+					images={$imagesList.get(i).images}
+					transform={$currZoomTransform}
+				/>
+			{/each}
+		{/if}
 		{#if $clickedPosition}
 			<Frame color={COLORS[0]} position={$clickedPosition} transform={$currZoomTransform} />
 		{/if}

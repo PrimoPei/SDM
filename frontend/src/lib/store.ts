@@ -12,6 +12,7 @@ export const currZoomTransform = writable<ZoomTransform>(zoomIdentity);
 
 export const myPresence = writable(null);
 export const others = writable(null);
+export const imagesList = writable(null);
 
 export function createPresenceStore(room: Room) {
 	// Get initial values for presence and others
@@ -35,4 +36,16 @@ export function createPresenceStore(room: Room) {
 		unsubscribeMyPresence();
 		unsubscribeOthers();
 	};
+}
+
+export async function createStorageStore(room: Room) {
+	const { root } = await room.getStorage();
+
+	const _imagesList = root.get('imagesList');
+
+	imagesList.set(_imagesList);
+
+	room.subscribe(_imagesList, () => {
+		imagesList.update((_) => _imagesList);
+	});
 }

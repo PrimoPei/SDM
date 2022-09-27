@@ -1,9 +1,9 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
-	import { isLoading, loadingState, createPresenceStore } from '$lib/store';
+	import { isLoading, loadingState, createPresenceStore, createStorageStore } from '$lib/store';
 	import { PUBLIC_WS_ENDPOINT, PUBLIC_DEV_MODE } from '$env/static/public';
 	import type { Client, Room } from '@liveblocks/client';
-	import { createClient } from '@liveblocks/client';
+	import { createClient, LiveList } from '@liveblocks/client';
 
 	import App from '$lib/App.svelte';
 	import type { Presence, Storage } from '$lib/types';
@@ -28,18 +28,15 @@
 			initialPresence: {
 				cursor: null
 			},
-			initialStorage: {}
+			initialStorage: { imagesList: new LiveList() }
 		});
-		const unsubscribe = room.subscribe('history', (e) => {
-			// Do something
-			console.log('history', e);
-		});
+
 		const unsubscribePresence = createPresenceStore(room);
+		createStorageStore(room);
 		return () => {
 			if (client && room) {
 				client.leave(roomId);
 				unsubscribePresence();
-				unsubscribe();
 			}
 		};
 	});
