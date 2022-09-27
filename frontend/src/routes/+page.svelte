@@ -42,7 +42,7 @@
 	});
 </script>
 
-<div class="max-w-screen-md mx-auto p-5 relative  cursor-none touch-none z-10">
+<div class="max-w-screen-md mx-auto p-5 relative pointer-events-none touch-none z-10">
 	<h1 class="text-lg md:text-3xl font-bold leading-normal">
 		Stable Diffussion Outpainting Multiplayer
 	</h1>

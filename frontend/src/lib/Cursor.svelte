@@ -14,12 +14,15 @@
 		damping: 0.35
 	});
 	// Update spring when x and y change
-	$: coords.set(position);
+	$: coords.set({
+		x: transform.applyX(position.x),
+		y: transform.applyY(position.y)
+	});
 </script>
 
 <div
-	class="absolute top-0 left-0 grid grid-cols-3 touch-none pointer-events-none"
-	style={`transform: translateX(${$coords.x}px) translateY(${$coords.y}px);`}
+	class="cursor"
+	style={`transform: translateX(${$coords.x}px) translateY(${$coords.y}px) scale(${transform.k});`}
 >
 	<svg
 		class="block z-0 col-span-2 row-span-2"
@@ -42,4 +45,8 @@
 </div>
 
 <style lang="postcss" scoped>
+	.cursor {
+		@apply absolute top-0 left-0 grid grid-cols-3 touch-none pointer-events-none;
+		transform-origin: 0 0;
+	}
 </style>

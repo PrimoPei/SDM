@@ -111,7 +111,7 @@
 </script>
 
 <!-- Show the current user's cursor location -->
-<div class="text">
+<div class="text touch-none pointer-events-none">
 	{$myPresence?.cursor
 		? `${$myPresence.cursor.x} × ${$myPresence.cursor.y}`
 		: 'Move your cursor to broadcast its position to other people in the room.'}
@@ -121,7 +121,7 @@
 {#if $isPrompting}
 	<PromptModal on:prompt={onPrompt} on:close={onClose} />
 {/if}
-<div class="fixed top-0 left-0 z-0 w-screen h-screen cursor-none">
+<div class="fixed top-0 left-0 z-0 w-screen h-screen">
 	<Canvas />
 
 	<main class="z-10 relative">
@@ -132,6 +132,7 @@
 					position={$imagesList.get(i).position}
 					images={$imagesList.get(i).images}
 					transform={$currZoomTransform}
+					dumped={false}
 				/>
 			{/each}
 		{/if}

@@ -14,12 +14,6 @@
 	let xScale: (x: number) => number;
 	let yScale: (y: number) => number;
 
-	const margin = { top: 100, right: 100, bottom: 100, left: 100 };
-	const extent = [
-		[-margin.left, -margin.top],
-		[width + margin.right, height + margin.bottom]
-	] as [[number, number], [number, number]];
-
 	onMount(() => {
 		xScale = scaleLinear().domain([0, width]).range([0, width]);
 		yScale = scaleLinear().domain([0, height]).range([0, height]);
@@ -27,12 +21,14 @@
 		const scale = width / containerEl.clientWidth;
 		const zoomHandler = zoom()
 			.scaleExtent([1 / scale / 1.5, 1])
-			// .translateExtent([
+			// .extent([
 			// 	[0, 0],
 			// 	[width, height]
 			// ])
-			// .translateExtent(extent)
-			.clickDistance(2)
+			.translateExtent([
+				[-width * 0.1, -height * 0.1],
+				[width * 1.1, height * 1.1]
+			])
 			.on('zoom', zoomed);
 
 		select(canvasEl.parentElement)
@@ -65,15 +61,19 @@
 	function round(p, n) {
 		return p % n < n / 2 ? p - (p % n) : p + n - (p % n);
 	}
-	const grid = 8;
+	const grid = 10;
 
 	// Update cursor presence to current pointer location
 	function handlePointerMove(event: PointerEvent) {
 		event.preventDefault();
-		const x = Math.round(event.layerX / grid) * grid; //round(Math.max(r, Math.min(512 * 5 - r, event.clientX)), 100);
-		const y = Math.round(event.layerY / grid) * grid; //round(Math.max(r, Math.min(512 * 5 - r, event.clientY)), 100);
+		const x = Math.round($currZoomTransform.invertX(event.layerX) / grid) * grid;
+		const y = Math.round($currZoomTransform.invertY(event.layerY) / grid) * grid;
+		// const x = Math.round(event.layerX / grid) * grid; //round(Math.max(r, Math.min(512 * 5 - r, event.clientX)), 100);
+		// const y = Math.round(event.layerY / grid) * grid; //round(Math.max(r, Math.min(512 * 5 - r, event.clientY)), 100);
 		// const x = round(Math.max(r, Math.min(512 * 5 - r, event.clientX)), grid);
 		// const y = round(Math.max(r, Math.min(512 * 5 - r, event.clientY)), grid);
+
+		console.log(x, y);
 
 		$myPresence = {
 			cursor: {
@@ -91,10 +91,7 @@
 	}
 </script>
 
-<div
-	bind:this={containerEl}
-	class="absolute top-0 left-0 right-0 bottom-0 overflow-hidden border-4 border-black z-0"
->
+<div bind:this={containerEl} class="absolute top-0 left-0 right-0 bottom-0 overflow-hidden z-0">
 	<canvas bind:this={canvasEl} {width} {height} class="absolute top-0 left-0" />
 </div>
 
