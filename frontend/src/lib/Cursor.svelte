@@ -1,6 +1,4 @@
 <script lang="ts">
-	import { spring } from 'svelte/motion';
-
 	import type { ZoomTransform } from 'd3-zoom';
 
 	export let transform: ZoomTransform;
@@ -8,21 +6,15 @@
 	export let emoji = '';
 	export let position = { x: 0, y: 0 };
 
-	// Spring animation for cursor
-	const coords = spring(position, {
-		stiffness: 0.07,
-		damping: 0.35
-	});
-	// Update spring when x and y change
-	$: coords.set({
+	$: coord = {
 		x: transform.applyX(position.x),
 		y: transform.applyY(position.y)
-	});
+	};
 </script>
 
 <div
 	class="cursor"
-	style={`transform: translateX(${$coords.x}px) translateY(${$coords.y}px) scale(${transform.k});`}
+	style={`transform: translateX(${coord.x}px) translateY(${coord.y}px) scale(${transform.k});`}
 >
 	<svg
 		class="block z-0 col-span-2 row-span-2"

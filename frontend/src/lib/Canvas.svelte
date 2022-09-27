@@ -40,13 +40,9 @@
 			.on('click', () => {
 				$isPrompting = true;
 				$clickedPosition = $myPresence.cursor;
-				console.log($clickedPosition);
 			});
 
 		canvasCtx = canvasEl.getContext('2d') as CanvasRenderingContext2D;
-		canvasCtx.fillStyle = 'red';
-		canvasCtx.rect(10, 10, 160, 90);
-		canvasCtx.fill();
 		canvasCtx.strokeStyle = 'blue';
 		canvasCtx.lineWidth = 10;
 		canvasCtx.strokeRect(0, 0, width, height);
@@ -72,9 +68,6 @@
 		// const y = Math.round(event.layerY / grid) * grid; //round(Math.max(r, Math.min(512 * 5 - r, event.clientY)), 100);
 		// const x = round(Math.max(r, Math.min(512 * 5 - r, event.clientX)), grid);
 		// const y = round(Math.max(r, Math.min(512 * 5 - r, event.clientY)), grid);
-
-		console.log(x, y);
-
 		$myPresence = {
 			cursor: {
 				x,

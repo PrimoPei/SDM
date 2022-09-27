@@ -132,7 +132,6 @@
 					position={$imagesList.get(i).position}
 					images={$imagesList.get(i).images}
 					transform={$currZoomTransform}
-					dumped={false}
 				/>
 			{/each}
 		{/if}

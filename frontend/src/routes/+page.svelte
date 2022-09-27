@@ -30,6 +30,9 @@
 			},
 			initialStorage: { imagesList: new LiveList() }
 		});
+		const unsubscribe = room.subscribe('error', (error) => {
+			console.error('error', error);
+		});
 
 		const unsubscribePresence = createPresenceStore(room);
 		createStorageStore(room);

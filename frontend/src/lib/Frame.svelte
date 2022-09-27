@@ -1,5 +1,4 @@
 <script lang="ts">
-	import { spring } from 'svelte/motion';
 	import LoadingIcon from '$lib/LoadingIcon.svelte';
 
 	import type { ZoomTransform } from 'd3-zoom';
@@ -8,30 +7,16 @@
 	export let color = '';
 	export let position = { x: 0, y: 0 };
 	export let images: string[];
-	export let dumped: boolean = true;
 
-	// Spring animation for cursor
-	const coords = spring(position, {
-		stiffness: 0.07,
-		damping: 0.35
-	});
-	// Update spring when x and y change
-	$: coords.set({
+	$: coord = {
 		x: transform.applyX(position.x),
 		y: transform.applyY(position.y)
-	});
-
-	$: ncoord = dumped
-		? $coords
-		: {
-				x: transform.applyX(position.x),
-				y: transform.applyY(position.y)
-		  };
+	};
 </script>
 
 <div
 	class="frame z-0 flex relative"
-	style={`transform: translateX(${ncoord.x}px) translateY(${ncoord.y}px) scale(${transform.k});
+	style={`transform: translateX(${coord.x}px) translateY(${coord.y}px) scale(${transform.k});
 			background-image: linear-gradient(${color}, rgba(255,255,255,0));
 			color: ${color};
 	`}

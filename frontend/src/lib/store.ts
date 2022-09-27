@@ -39,13 +39,16 @@ export function createPresenceStore(room: Room) {
 }
 
 export async function createStorageStore(room: Room) {
-	const { root } = await room.getStorage();
+	try {
+		const { root } = await room.getStorage();
 
-	const _imagesList = root.get('imagesList');
+		const _imagesList = root.get('imagesList');
 
-	imagesList.set(_imagesList);
-
-	room.subscribe(_imagesList, () => {
-		imagesList.update((_) => _imagesList);
-	});
+		imagesList.set(_imagesList);
+		room.subscribe(_imagesList, () => {
+			imagesList.update((_) => _imagesList);
+		});
+	} catch (e) {
+		console.log(e);
+	}
 }
