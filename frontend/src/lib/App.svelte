@@ -4,7 +4,6 @@
 	import Canvas from '$lib/Canvas.svelte';
 	import Menu from '$lib/Menu.svelte';
 	import type { Room } from '@liveblocks/client';
-	import { onDestroy } from 'svelte';
 	import { COLORS, EMOJIS } from '$lib/constants';
 	import { currZoomTransform, myPresence, others } from '$lib/store';
 
@@ -14,61 +13,6 @@
 	 */
 
 	export let room: Room;
-
-	// // Get initial values for presence and others
-	// let myPresence = room.getPresence();
-	// let others = room.getOthers();
-
-	// // Subscribe to further changes
-	// const unsubscribeMyPresence = room.subscribe('my-presence', (presence) => {
-	// 	myPresence = presence;
-	// });
-
-	// const unsubscribeOthers = room.subscribe('others', (otherUsers) => {
-	// 	others = otherUsers;
-	// });
-
-	// // Unsubscribe when unmounting
-	// onDestroy(() => {
-	// 	unsubscribeMyPresence();
-	// 	unsubscribeOthers();
-	// });
-
-	// $: {
-	// 	console.log('myPresence', $myPresence);
-	// 	console.log('others', $others);
-	// }
-	$: {
-		console.log('Sefl', room.getSelf());
-	}
-	const r = 8;
-	function round(p, n) {
-		return p % n < n / 2 ? p - (p % n) : p + n - (p % n);
-	}
-	const grid = 8;
-
-	// Update cursor presence to current pointer location
-	function handlePointerMove(event: PointerEvent) {
-		event.preventDefault();
-		const x = Math.round(event.layerX / grid) * grid; //round(Math.max(r, Math.min(512 * 5 - r, event.clientX)), 100);
-		const y = Math.round(event.layerY / grid) * grid; //round(Math.max(r, Math.min(512 * 5 - r, event.clientY)), 100);
-		// const x = round(Math.max(r, Math.min(512 * 5 - r, event.clientX)), grid);
-		// const y = round(Math.max(r, Math.min(512 * 5 - r, event.clientY)), grid);
-
-		$myPresence = {
-			cursor: {
-				x,
-				y
-			}
-		};
-	}
-
-	// When the pointer leaves the page, set cursor presence to null
-	function handlePointerLeave() {
-		$myPresence = {
-			cursor: null
-		};
-	}
 </script>
 
 <!-- Show the current user's cursor location -->
@@ -77,27 +21,17 @@
 		? `${$myPresence.cursor.x} × ${$myPresence.cursor.y}`
 		: 'Move your cursor to broadcast its position to other people in the room.'}
 </div>
-<div
-	class="relative z-0 w-screen h-screen cursor-none"
-	on:pointerleave={handlePointerLeave}
-	on:pointermove={handlePointerMove}
->
+<div class="fixed left-0 z-0 w-screen h-screen cursor-none">
 	<Canvas />
 
 	<main class="z-10 relative">
-
 		{#if $myPresence?.cursor}
-			<!-- <Frame
-				color={COLORS[0]}
-				x={$myPresence.cursor.x}
-				y={$myPresence.cursor.y}
-				transform={$currZoomTransform}
-			/> -->
+			<Frame color={COLORS[0]} position={$myPresence.cursor} transform={$currZoomTransform} />
 			<Cursor
 				emoji={EMOJIS[0]}
 				color={COLORS[0]}
-				x={$myPresence.cursor.x}
-				y={$myPresence.cursor.y}
+				position={$myPresence.cursor}
+				transform={$currZoomTransform}
 			/>
 		{/if}
 
@@ -105,18 +39,17 @@
 		{#if others}
 			{#each [...$others] as { connectionId, presence } (connectionId)}
 				{#if presence?.cursor}
-					<!-- <Frame
+					<Frame
 						color={COLORS[1 + (connectionId % (COLORS.length - 1))]}
-						x={presence.cursor.x}
-						y={presence.cursor.y}
+						position={presence.cursor}
 						transform={$currZoomTransform}
-					/> -->
+					/>
 
 					<Cursor
 						emoji={EMOJIS[1 + (connectionId % (EMOJIS.length - 1))]}
 						color={COLORS[1 + (connectionId % (COLORS.length - 1))]}
-						x={presence.cursor.x}
-						y={presence.cursor.y}
+						position={presence.cursor}
+						transform={$currZoomTransform}
 					/>
 				{/if}
 			{/each}
@@ -128,23 +61,4 @@
 </div>
 
 <style lang="postcss" scoped>
-	main {
-		/* @apply fixed top-0 left-0 w-screen h-screen flex flex-col items-center justify-center touch-none bg-white; */
-		/* position: absolute;
-		top: 0;
-		left: 0;
-		width: 100vw;
-		height: 100vh;
-		display: flex;
-		place-content: center;
-		place-items: center;
-		touch-action: none;
-        background-color: white; */
-	}
-
-	.text {
-		max-width: 380px;
-		margin: 0 16px;
-		text-align: center;
-	}
 </style>

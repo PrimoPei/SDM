@@ -6,19 +6,15 @@
 
 	export let transform: ZoomTransform;
 	export let color = '';
-	export let x = 0;
-	export let y = 0;
+	export let position = { x: 0, y: 0 };
 
 	// Spring animation for cursor
-	const coords = spring(
-		{ x, y },
-		{
-			stiffness: 0.07,
-			damping: 0.35
-		}
-	);
+	const coords = spring(position, {
+		stiffness: 0.07,
+		damping: 0.35
+	});
 	// Update spring when x and y change
-	$: coords.set({ x, y });
+	$: coords.set(position);
 </script>
 
 <div
