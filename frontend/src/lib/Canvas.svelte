@@ -3,7 +3,7 @@
 	import { select } from 'd3-selection';
 	import { scaleLinear } from 'd3-scale';
 	import { onMount } from 'svelte';
-	import { currZoomTransform, myPresence, others } from '$lib/store';
+	import { currZoomTransform, myPresence, isPrompting, clickedPosition } from '$lib/store';
 
 	const height = 512 * 5;
 	const width = 512 * 5;
@@ -26,7 +26,7 @@
 
 		const scale = width / containerEl.clientWidth;
 		const zoomHandler = zoom()
-			.scaleExtent([1/scale,1])
+			.scaleExtent([1 / scale, 1])
 			// .translateExtent([
 			// 	[0, 0],
 			// 	[width, height]
@@ -39,7 +39,13 @@
 			.call(zoomHandler as any)
 			// .call(zoomHandler.scaleTo as any, 1 / scale)
 			.on('pointermove', handlePointerMove)
-			.on('pointerleave', handlePointerLeave);
+			.on('pointerleave', handlePointerLeave)
+			.on('dblclick.zoom', null)
+			.on('click', () => {
+				$isPrompting = true;
+				$clickedPosition = $myPresence.cursor;
+				console.log($clickedPosition);
+			});
 
 		canvasCtx = canvasEl.getContext('2d') as CanvasRenderingContext2D;
 		canvasCtx.fillStyle = 'red';

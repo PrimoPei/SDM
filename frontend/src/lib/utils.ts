@@ -3,6 +3,27 @@ import { dev } from '$app/environment';
 export function randomSeed() {
 	return BigInt(13248873089935215612 & (((1 << 63) - 1) * Math.random()));
 }
+
+export function base64ToBlob(base64image: string): Promise<Blob> {
+	return new Promise((resolve) => {
+		const img = new Image();
+		img.onload = async () => {
+			const w = img.width;
+			const h = img.height;
+			const canvas = document.createElement('canvas');
+			canvas.width = w;
+			canvas.height = h;
+			const ctx = canvas.getContext('2d') as CanvasRenderingContext2D;
+			ctx.drawImage(img, 0, 0, w, h);
+
+			const imgBlob: Blob = await new Promise((_resolve) =>
+				canvas.toBlob(_resolve, 'image/jpeg', 0.95)
+			);
+			resolve(imgBlob);
+		};
+		img.src = base64image;
+	});
+}
 export async function uploadImage(imagBlob: Blob, prompt: string): string {
 	// simple regex slugify string	for file name
 	const promptSlug = slugify(prompt);
