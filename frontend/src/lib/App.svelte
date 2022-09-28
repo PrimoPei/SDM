@@ -6,7 +6,7 @@
 	import PromptModal from '$lib/PromptModal.svelte';
 	import type { Room } from '@liveblocks/client';
 	import { COLORS, EMOJIS } from '$lib/constants';
-	import { PUBLIC_WS_TXT2IMG, PUBLIC_WS_INPAINTING } from '$env/static/public';
+	import { PUBLIC_WS_INPAINTING } from '$env/static/public';
 	import { onMount } from 'svelte';
 	import {
 		isLoading,
@@ -44,11 +44,16 @@
 		const sessionHash = crypto.randomUUID();
 
 		const payload = {
-			fn_index: 2,
-			data: [_prompt],
+			fn_index: 0,
+			data: [
+				null,
+				//{ mask: null, image: null },
+				_prompt,
+				true
+			],
 			session_hash: sessionHash
 		};
-		const websocket = new WebSocket(PUBLIC_WS_ENDPOINT);
+		const websocket = new WebSocket(PUBLIC_WS_INPAINTING);
 		// websocket.onopen = async function (event) {
 		// 	websocket.send(JSON.stringify({ hash: sessionHash }));
 		// };
@@ -81,15 +86,18 @@
 						break;
 					case 'process_completed':
 						try {
-							const imgsBase64 = data.output.data[0] as string[];
-							const imgBlobs = await Promise.all(imgsBase64.map((base64) => base64ToBlob(base64)));
-							const imgURLs = await Promise.all(imgBlobs.map((blob) => uploadImage(blob, _prompt)));
+							const imgBase64 = data.output.data[0] as string;
+							const isNSWF = data.output.data[1] as boolean;
+
+							const imgBlob = await base64ToBlob(imgBase64);
+							const imgURL = await uploadImage(imgBlob, _prompt);
+
 							$imagesList.push({
 								prompt: _prompt,
-								images: imgURLs,
+								imgURL: imgURL,
 								position: $clickedPosition
 							});
-							console.log(imgURLs);
+							console.log(imgURL);
 							$loadingState = data.success ? 'Complete' : 'Error';
 						} catch (e) {
 							$loadingState = e.message;

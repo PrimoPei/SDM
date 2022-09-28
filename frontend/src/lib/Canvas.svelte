@@ -39,18 +39,19 @@
 				[-width * 0.1, -height * 0.1],
 				[width * 1.1, height * 1.1]
 			])
+			.tapDistance(10)
 			.on('zoom', zoomed);
 
 		select(canvasEl.parentElement)
 			.call(zoomHandler as any)
-			// .call(zoomHandler.scaleTo as any, 1 / scale)
-			.on('pointermove', handlePointerMove)
-			.on('pointerleave', handlePointerLeave)
-			.on('dblclick.zoom', null)
-			.on('dblclick', () => {
+			.on('dblclick.zoom', () => {
 				$isPrompting = true;
 				$clickedPosition = $myPresence.cursor;
-			});
+				return null;
+			})
+			// .call(zoomHandler.scaleTo as any, 1 / scale)
+			.on('pointermove', handlePointerMove)
+			.on('pointerleave', handlePointerLeave);
 
 		canvasCtx = canvasEl.getContext('2d') as CanvasRenderingContext2D;
 		canvasCtx.strokeStyle = 'blue';
@@ -59,14 +60,14 @@
 	});
 
 	function renderImages(imagesList) {
-		imagesList.forEach(({ images, position }) => {
+		imagesList.forEach(({ imgURL, position }) => {
 			// console.log(item);
 			const img = new Image();
 			img.onload = () => {
 				console.log(img);
 				canvasCtx.drawImage(img, position.x, position.y, img.width, img.height);
 			};
-			img.src = images[0];
+			img.src = imgURL;
 		});
 	}
 
