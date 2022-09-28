@@ -65,15 +65,18 @@
 	});
 
 	function renderImages(imagesList) {
-		imagesList.forEach(({ imgURL, position }) => {
-			const img = new Image();
-			img.onload = () => {
-				canvasCtx.drawImage(img, position.x, position.y, img.width, img.height);
-			};
-			const base = dev ? 'uploads/' : '';
-			const url = imgURL.split('/');
-			img.src = dev ? `uploads/${url.slice(3).join('/')}` : imgURL;
-		});
+		const images = [...imagesList.toImmutable()].sort((a, b) => a.date - b.date)
+		images
+			.forEach(({ imgURL, position }) => {
+				console.log(imgURL, position);
+				const img = new Image();
+				img.onload = () => {
+					canvasCtx.drawImage(img, position.x, position.y, img.width, img.height);
+				};
+				const base = dev ? 'uploads/' : '';
+				const url = imgURL.split('/');
+				img.src = dev ? `uploads/${url.slice(3).join('/')}` : imgURL;
+			});
 	}
 
 	function zoomed(e: Event) {

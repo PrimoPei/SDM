@@ -61,7 +61,6 @@
 		ctxCrop.save();
 		ctxCrop.clearRect(0, 0, 512, 512);
 
-	
 		ctxCrop.globalCompositeOperation = 'source-over';
 		ctxCrop.drawImage(canvasEl, cursor.x, cursor.y, 512, 512, 0, 0, 512, 512);
 		ctxCrop.restore();
@@ -93,13 +92,13 @@
 		tempCanvasCtx.drawImage(canvasCrop, 0, 0, 512, 512);
 		//convert canvas to base64
 		const base64Crop = tempCanvas.toDataURL('image/png');
-	
+
 		tempCanvasCtx.fillStyle = 'white';
 		tempCanvasCtx.fillRect(0, 0, 512, 512);
 		tempCanvasCtx.drawImage(mask, 0, 0, 512, 512);
 		//convert canvas to base64
 		const base64Mask = tempCanvas.toDataURL('image/png');
-		
+
 		return { image: base64Crop, mask: base64Mask };
 	}
 
@@ -164,7 +163,8 @@
 							$imagesList.push({
 								prompt: _prompt,
 								imgURL: imgURL,
-								position: $clickedPosition
+								position: $clickedPosition,
+								date: new Date().getTime()
 							});
 							console.log(imgURL);
 							$loadingState = data.success ? 'Complete' : 'Error';
