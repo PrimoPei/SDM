@@ -3,7 +3,13 @@
 	import { select } from 'd3-selection';
 	import { scaleLinear } from 'd3-scale';
 	import { onMount } from 'svelte';
-	import { currZoomTransform, myPresence, isPrompting, clickedPosition } from '$lib/store';
+	import {
+		currZoomTransform,
+		myPresence,
+		isPrompting,
+		clickedPosition,
+		imagesList
+	} from '$lib/store';
 
 	const height = 512 * 5;
 	const width = 512 * 5;
@@ -13,6 +19,10 @@
 	let canvasCtx: CanvasRenderingContext2D;
 	let xScale: (x: number) => number;
 	let yScale: (y: number) => number;
+
+	$: if ($imagesList) {
+		renderImages($imagesList);
+	}
 
 	onMount(() => {
 		xScale = scaleLinear().domain([0, width]).range([0, width]);
@@ -37,7 +47,7 @@
 			.on('pointermove', handlePointerMove)
 			.on('pointerleave', handlePointerLeave)
 			.on('dblclick.zoom', null)
-			.on('click', () => {
+			.on('dblclick', () => {
 				$isPrompting = true;
 				$clickedPosition = $myPresence.cursor;
 			});
@@ -47,6 +57,18 @@
 		canvasCtx.lineWidth = 10;
 		canvasCtx.strokeRect(0, 0, width, height);
 	});
+
+	function renderImages(imagesList) {
+		imagesList.forEach(({ images, position }) => {
+			// console.log(item);
+			const img = new Image();
+			img.onload = () => {
+				console.log(img);
+				canvasCtx.drawImage(img, position.x, position.y, img.width, img.height);
+			};
+			img.src = images[0];
+		});
+	}
 
 	function zoomed(e: Event) {
 		const transform = ($currZoomTransform = e.transform);

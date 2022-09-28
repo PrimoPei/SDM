@@ -6,7 +6,7 @@
 	import PromptModal from '$lib/PromptModal.svelte';
 	import type { Room } from '@liveblocks/client';
 	import { COLORS, EMOJIS } from '$lib/constants';
-	import { PUBLIC_WS_ENDPOINT } from '$env/static/public';
+	import { PUBLIC_WS_TXT2IMG, PUBLIC_WS_INPAINTING } from '$env/static/public';
 	import { onMount } from 'svelte';
 	import {
 		isLoading,
@@ -16,7 +16,8 @@
 		others,
 		isPrompting,
 		clickedPosition,
-		imagesList
+		imagesList,
+		showFrames
 	} from '$lib/store';
 	import { base64ToBlob, uploadImage } from '$lib/utils';
 	/**
@@ -112,9 +113,6 @@
 
 <!-- Show the current user's cursor location -->
 <div class="text touch-none pointer-events-none">
-	{$myPresence?.cursor
-		? `${$myPresence.cursor.x} × ${$myPresence.cursor.y}`
-		: 'Move your cursor to broadcast its position to other people in the room.'}
 	{$loadingState}
 	{$isLoading}
 </div>
@@ -125,12 +123,11 @@
 	<Canvas />
 
 	<main class="z-10 relative">
-		{#if $imagesList}
+		{#if $imagesList && $showFrames}
 			{#each $imagesList as image, i}
 				<Frame
 					color={COLORS[0]}
 					position={$imagesList.get(i).position}
-					images={$imagesList.get(i).images}
 					transform={$currZoomTransform}
 				/>
 			{/each}

@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { currZoomTransform } from '$lib/store';
+	import { showFrames } from '$lib/store';
 </script>
 
 <div class="grid grid-cols-3 gap-3 text-sm w-max mx-auto">
@@ -7,6 +7,7 @@
 		<input
 			id="showframes"
 			type="checkbox"
+			bind:checked={$showFrames}
 			class="w-4 h-4 text-blue-600 bg-gray-100 rounded border-gray-300 focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600 cursor-pointer"
 		/>
 		<label for="showframes" class="text-black dark:text-white cursor-pointer ml-2"
@@ -24,12 +25,6 @@
 </div>
 
 <style lang="postcss" scoped>
-	.link {
-		@apply text-xs underline font-bold hover:no-underline hover:text-gray-500 visited:text-gray-500;
-	}
-	.input {
-		@apply disabled:opacity-50 italic dark:placeholder:text-black placeholder:text-white text-white dark:text-black placeholder:text-opacity-30 dark:placeholder:text-opacity-10 dark:bg-white bg-slate-900 border-2 border-black rounded-2xl px-2 shadow-sm focus:outline-none focus:border-gray-400 focus:ring-1;
-	}
 	.button {
 		@apply disabled:opacity-50 dark:bg-white dark:text-black bg-black text-white rounded-2xl text-xs shadow-sm focus:outline-none focus:border-gray-400;
 	}

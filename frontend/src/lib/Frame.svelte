@@ -6,7 +6,6 @@
 	export let transform: ZoomTransform;
 	export let color = '';
 	export let position = { x: 0, y: 0 };
-	export let images: string[];
 
 	$: coord = {
 		x: transform.applyX(position.x),
@@ -25,11 +24,6 @@
 	<h2 class="text-lg">Click to paint</h2>
 
 	<div class="absolute bottom-0 font-bold">A cat on grass</div>
-	{#if images}
-		<div class="absolute top-0 left-0">
-			<img class="w-full" src={images[0]} alt="A cat on grass" />
-		</div>
-	{/if}
 </div>
 
 <style lang="postcss" scoped>
