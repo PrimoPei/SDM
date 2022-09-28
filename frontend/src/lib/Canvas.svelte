@@ -68,8 +68,8 @@
 		const images = [...imagesList.toImmutable()].sort((a, b) => a.date - b.date)
 		images
 			.forEach(({ imgURL, position }) => {
-				console.log(imgURL, position);
 				const img = new Image();
+				img.crossOrigin = 'anonymous';
 				img.onload = () => {
 					canvasCtx.drawImage(img, position.x, position.y, img.width, img.height);
 				};

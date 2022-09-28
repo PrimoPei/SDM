@@ -66,20 +66,23 @@
 		ctxCrop.restore();
 
 		// create black image
-		tempCanvasCtx.fillStyle = 'black';
+		tempCanvasCtx.fillStyle = 'white';
 		tempCanvasCtx.fillRect(0, 0, 512, 512);
 
 		// create Mask
 		ctxMask.save();
 		// ctxMask.clearRect(0, 0, 512, 512);
 		ctxMask.drawImage(canvasCrop, 0, 0, 512, 512);
-		ctxMask.globalCompositeOperation = 'source-in';
+		ctxMask.globalCompositeOperation = 'source-out';
 		ctxMask.drawImage(tempCanvas, 0, 0);
 		ctxMask.restore();
 
+		tempCanvasCtx.save();
 		tempCanvasCtx.fillStyle = 'white';
 		tempCanvasCtx.fillRect(0, 0, 512, 512);
 		//random pixels
+		// tempCanvasCtx.filter = 'blur(4px)';
+
 		// const imageData = tempCanvasCtx.getImageData(0, 0, 512, 512);
 		// const pix = imageData.data;
 		// for (let i = 0, n = pix.length; i < n; i += 4) {
@@ -92,12 +95,16 @@
 		tempCanvasCtx.drawImage(canvasCrop, 0, 0, 512, 512);
 		//convert canvas to base64
 		const base64Crop = tempCanvas.toDataURL('image/png');
+		tempCanvasCtx.restore();
 
-		tempCanvasCtx.fillStyle = 'white';
+		tempCanvasCtx.save();
+		tempCanvasCtx.fillStyle = 'black';
 		tempCanvasCtx.fillRect(0, 0, 512, 512);
 		tempCanvasCtx.drawImage(mask, 0, 0, 512, 512);
 		//convert canvas to base64
 		const base64Mask = tempCanvas.toDataURL('image/png');
+		tempCanvasCtx.restore();
+
 
 		return { image: base64Crop, mask: base64Mask };
 	}
