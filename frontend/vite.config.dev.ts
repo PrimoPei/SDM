@@ -11,12 +11,6 @@ const config: UserConfig = {
 				changeOrigin: true,
 				cookieDomainRewrite: 'localhost',
 				rewrite: (path) => path.replace(/^\/moon/, '')
-			},
-			'/uploads': {
-				target: 'https://s3.amazonaws.com',
-				changeOrigin: true,
-				cookieDomainRewrite: 'localhost',
-				rewrite: (path) => path.replace(/^\/uploads/, '')
 			}
 		}
 	}

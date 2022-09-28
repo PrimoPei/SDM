@@ -105,7 +105,6 @@
 		const base64Mask = tempCanvas.toDataURL('image/png');
 		tempCanvasCtx.restore();
 
-
 		return { image: base64Crop, mask: base64Mask };
 	}
 
