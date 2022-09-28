@@ -3,6 +3,7 @@
 	import { select } from 'd3-selection';
 	import { scaleLinear } from 'd3-scale';
 	import { onMount } from 'svelte';
+	import { dev } from '$app/environment';
 	import {
 		currZoomTransform,
 		myPresence,
@@ -15,6 +16,9 @@
 	const width = 512 * 5;
 
 	let canvasEl: HTMLCanvasElement;
+	export { canvasEl as value };
+	let value = canvasEl;
+
 	let containerEl: HTMLDivElement;
 	let canvasCtx: CanvasRenderingContext2D;
 	let xScale: (x: number) => number;
@@ -47,6 +51,7 @@
 			.on('dblclick.zoom', () => {
 				$isPrompting = true;
 				$clickedPosition = $myPresence.cursor;
+				console.log('clicked', $clickedPosition);
 				return null;
 			})
 			// .call(zoomHandler.scaleTo as any, 1 / scale)
@@ -61,13 +66,13 @@
 
 	function renderImages(imagesList) {
 		imagesList.forEach(({ imgURL, position }) => {
-			// console.log(item);
 			const img = new Image();
 			img.onload = () => {
-				console.log(img);
 				canvasCtx.drawImage(img, position.x, position.y, img.width, img.height);
 			};
-			img.src = imgURL;
+			const base = dev ? 'uploads/' : '';
+			const url = imgURL.split('/');
+			img.src = dev ? `uploads/${url.slice(3).join('/')}` : imgURL;
 		});
 	}
 

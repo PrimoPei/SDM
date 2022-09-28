@@ -17,7 +17,8 @@
 		isPrompting,
 		clickedPosition,
 		imagesList,
-		showFrames
+		showFrames,
+		text2img
 	} from '$lib/store';
 	import { base64ToBlob, uploadImage } from '$lib/utils';
 	/**
@@ -26,6 +27,10 @@
 	 */
 
 	export let room: Room;
+	let CA: HTMLCanvasElement;
+	let CB: HTMLCanvasElement;
+	let canvasEl: HTMLCanvasElement;
+
 	onMount(() => {});
 
 	async function onClose(e: CustomEvent) {
@@ -37,22 +42,91 @@
 		$isPrompting = false;
 		console.log('prompt', prompt, imgURLs);
 	}
+	function getImageMask(cursor: { x: number; y: number }) {
+		const blackImage = document.createElement('canvas');
+		const canvasCrop = document.createElement('canvas');
+		const mask = document.createElement('canvas');
+
+		blackImage.width = 512;
+		blackImage.height = 512;
+		canvasCrop.width = 512;
+		canvasCrop.height = 512;
+		mask.width = 512;
+		mask.height = 512;
+
+		const blackImageCtx = blackImage.getContext('2d') as CanvasRenderingContext2D;
+		const ctxCrop = canvasCrop.getContext('2d') as CanvasRenderingContext2D;
+		const ctxMask = mask.getContext('2d') as CanvasRenderingContext2D;
+
+		// crop image from point canvas
+		ctxCrop.save();
+		ctxCrop.clearRect(0, 0, 512, 512);
+
+		const imageData = ctxCrop.getImageData(0, 0, 512, 512);
+		const pix = imageData.data;
+		for (let i = 0, n = pix.length; i < n; i += 4) {
+			pix[i] = Math.round(255 * Math.random());
+			pix[i + 1] = Math.round(255 * Math.random());
+			pix[i + 2] = Math.round(255 * Math.random());
+			pix[i + 3] = 255;
+		}
+		// ctxCrop.putImageData(imageData, 0, 0);
+		ctxCrop.globalCompositeOperation = 'source-over';
+		ctxCrop.drawImage(canvasEl, cursor.x, cursor.y, 512, 512, 0, 0, 512, 512);
+		ctxCrop.restore();
+
+		// create black image
+		blackImageCtx.fillStyle = 'black';
+		blackImageCtx.fillRect(0, 0, 512, 512);
+
+		// create Mask
+		ctxMask.save();
+		// ctxMask.clearRect(0, 0, 512, 512);
+		ctxMask.drawImage(canvasCrop, 0, 0, 512, 512);
+		ctxMask.globalCompositeOperation = 'source-in';
+		ctxMask.drawImage(blackImage, 0, 0);
+		ctxMask.restore();
+
+		const contextA = CA.getContext('2d') as CanvasRenderingContext2D;
+		const contextB = CB.getContext('2d') as CanvasRenderingContext2D;
+
+		// draw image to canvas A
+		contextA.save();
+		contextA.clearRect(0, 0, 512, 512);
+		contextA.drawImage(canvasCrop, 0, 0, 512, 512);
+		contextA.restore();
+
+		// draw mask to canvas B
+		contextB.save();
+		contextB.clearRect(0, 0, 512, 512);
+		contextB.drawImage(mask, 0, 0, 512, 512);
+		contextB.restore();
+
+		//convert canvas to base64
+		const base64Crop = canvasCrop.toDataURL('image/png');
+		const base64Mask = mask.toDataURL('image/png');
+		return { image: base64Crop, mask: base64Mask };
+	}
+
 	async function generateImage(_prompt: string) {
+		// getImageMask($clickedPosition);
+		// return;
 		if (!_prompt || $isLoading == true) return;
 		$loadingState = 'Pending';
 		$isLoading = true;
 		const sessionHash = crypto.randomUUID();
-
 		const payload = {
 			fn_index: 0,
 			data: [
-				null,
-				//{ mask: null, image: null },
+				$text2img ? null : getImageMask($clickedPosition),
+				// { mask: null, image: null },
 				_prompt,
-				true
+				$text2img
 			],
 			session_hash: sessionHash
 		};
+		console.log('payload', payload);
+
 		const websocket = new WebSocket(PUBLIC_WS_INPAINTING);
 		// websocket.onopen = async function (event) {
 		// 	websocket.send(JSON.stringify({ hash: sessionHash }));
@@ -127,8 +201,13 @@
 {#if $isPrompting}
 	<PromptModal on:prompt={onPrompt} on:close={onClose} />
 {/if}
+
+<div class="flex">
+	<canvas bind:this={CA} width="512" height="512" />
+	<canvas bind:this={CB} width="512" height="512" />
+</div>
 <div class="fixed top-0 left-0 z-0 w-screen h-screen">
-	<Canvas />
+	<Canvas bind:value={canvasEl} />
 
 	<main class="z-10 relative">
 		{#if $imagesList && $showFrames}
@@ -174,6 +253,7 @@
 		{/if}
 	</main>
 </div>
+
 <div class="fixed bottom-0 left-0 right-0 z-10 my-2">
 	<Menu />
 </div>

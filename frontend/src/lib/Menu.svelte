@@ -1,8 +1,8 @@
 <script lang="ts">
-	import { showFrames } from '$lib/store';
+	import { showFrames, text2img } from '$lib/store';
 </script>
 
-<div class="grid grid-cols-3 gap-3 text-sm w-max mx-auto">
+<div class="grid grid-cols-4 gap-3 text-sm w-max mx-auto">
 	<div class="flex items-center">
 		<input
 			id="showframes"
@@ -12,6 +12,17 @@
 		/>
 		<label for="showframes" class="text-black dark:text-white cursor-pointer ml-2"
 			>Show Frames</label
+		>
+	</div>
+	<div class="flex items-center">
+		<input
+			id="txt2img"
+			type="checkbox"
+			bind:checked={$text2img}
+			class="w-4 h-4 text-blue-600 bg-gray-100 rounded border-gray-300 focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600 cursor-pointer"
+		/>
+		<label for="txt2img" class="text-black dark:text-white cursor-pointer ml-2"
+			>Text2Image</label
 		>
 	</div>
 	<button class="button" title="Add Prompt"> Add Prompt </button>
