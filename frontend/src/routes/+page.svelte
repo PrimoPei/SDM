@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
 	import { isLoading, loadingState, createPresenceStore, createStorageStore } from '$lib/store';
-	import { PUBLIC_WS_TXT2IMG, PUBLIC_DEV_MODE } from '$env/static/public';
+	import { PUBLIC_DEV_MODE } from '$env/static/public';
 	import type { Client, Room } from '@liveblocks/client';
 	import { createClient, LiveList } from '@liveblocks/client';
 

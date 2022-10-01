@@ -59,7 +59,8 @@
 	});
 
 	function renderImages(imagesList) {
-		const images = [...imagesList.toImmutable()].sort((a, b) => a.date - b.date);
+		const images = [...imagesList.toImmutable()].sort((a, b) => a.date < b.date);
+		console.log('images', images);
 		images.forEach(({ imgURL, position }) => {
 			const img = new Image();
 			img.crossOrigin = 'anonymous';

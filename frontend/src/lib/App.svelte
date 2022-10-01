@@ -41,6 +41,26 @@
 		$isPrompting = false;
 		console.log('prompt', prompt, imgURLs);
 	}
+	function getImageCrop(cursor: { x: number; y: number }) {
+		const canvasCrop = document.createElement('canvas');
+
+		canvasCrop.width = 512;
+		canvasCrop.height = 512;
+
+		const ctxCrop = canvasCrop.getContext('2d') as CanvasRenderingContext2D;
+
+		// crop image from point canvas
+		ctxCrop.save();
+		ctxCrop.clearRect(0, 0, 512, 512);
+		ctxCrop.globalCompositeOperation = 'source-over';
+		ctxCrop.drawImage(canvasEl, cursor.x, cursor.y, 512, 512, 0, 0, 512, 512);
+		ctxCrop.restore();
+
+		const base64Crop = canvasCrop.toDataURL('image/png');
+
+		return base64Crop.replaceAll('data:image/png;base64,', '');
+	}
+
 	function getImageMask(cursor: { x: number; y: number }) {
 		const tempCanvas = document.createElement('canvas');
 		const canvasCrop = document.createElement('canvas');
@@ -116,12 +136,17 @@
 		$isLoading = true;
 		const sessionHash = crypto.randomUUID();
 		const payload = {
-			fn_index: 0,
+			fn_index: 4,
 			data: [
-				$text2img ? null : getImageMask($clickedPosition),
-				// { mask: null, image: null },
+				getImageCrop($clickedPosition),
 				_prompt,
-				$text2img
+				0.75,
+				7.5,
+				30,
+				true,
+				'patchmatch',
+				true,
+				null
 			],
 			session_hash: sessionHash
 		};
@@ -160,10 +185,10 @@
 						break;
 					case 'process_completed':
 						try {
-							const imgBase64 = data.output.data[0] as string;
-							const isNSWF = data.output.data[1] as boolean;
+							const imgBase64 = data.output.data[0].value as string;
+							// const isNSWF = data.output.data[1] as boolean;
 
-							const imgBlob = await base64ToBlob(imgBase64);
+							const imgBlob = await base64ToBlob('data:image/png;base64,' + imgBase64);
 							const imgURL = await uploadImage(imgBlob, _prompt);
 
 							$imagesList.push({
