@@ -1,8 +1,12 @@
-datasets
-flask
-flask_cors
-flask_expects_json
-requests
-Pillow
+--extra-index-url https://download.pytorch.org/whl/cu113 
+torch
+huggingface_hub
+diffusers
+transformers
+scikit-image
+pillow
+opencv-python-headless
+fastapi
+uvicorn
+httpx
 gradio
-Flask-APScheduler
