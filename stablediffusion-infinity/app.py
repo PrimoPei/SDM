@@ -225,7 +225,7 @@ async def uploads(path: str, response: Response):
 
 
 app = gr.mount_gradio_app(app, blocks, "/gradio",
-                          gradio_api_url="http://localhost:7860/gradio")
+                          gradio_api_url="http://0.0.0.0:7860/gradio/")
 
 app.mount("/", StaticFiles(directory="../static", html=True), name="static")
 
