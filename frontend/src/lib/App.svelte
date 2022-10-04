@@ -136,17 +136,14 @@
 		$isLoading = true;
 		const sessionHash = crypto.randomUUID();
 		const payload = {
-			fn_index: 4,
+			fn_index: 0,
 			data: [
 				getImageCrop($clickedPosition),
 				_prompt,
 				0.75,
 				7.5,
 				30,
-				true,
-				'patchmatch',
-				true,
-				null
+				'patchmatch'
 			],
 			session_hash: sessionHash
 		};
@@ -185,10 +182,10 @@
 						break;
 					case 'process_completed':
 						try {
-							const imgBase64 = data.output.data[0].value as string;
-							// const isNSWF = data.output.data[1] as boolean;
+							const imgBase64 = data.output.data[0] as string;
+							const isNSWF = data.output.data[1] as boolean;
 
-							const imgBlob = await base64ToBlob('data:image/png;base64,' + imgBase64);
+							const imgBlob = await base64ToBlob(imgBase64);
 							const imgURL = await uploadImage(imgBlob, _prompt);
 
 							$imagesList.push({
