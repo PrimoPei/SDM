@@ -137,14 +137,7 @@
 		const sessionHash = crypto.randomUUID();
 		const payload = {
 			fn_index: 0,
-			data: [
-				getImageCrop($clickedPosition),
-				_prompt,
-				0.75,
-				7.5,
-				30,
-				'patchmatch'
-			],
+			data: [getImageCrop($clickedPosition), _prompt, 0.75, 7.5, 30, 'patchmatch'],
 			session_hash: sessionHash
 		};
 		console.log('payload', payload);
@@ -184,7 +177,9 @@
 						try {
 							const imgBase64 = data.output.data[0] as string;
 							const isNSWF = data.output.data[1] as boolean;
-
+							if (isNSWF) {
+								throw new Error('Potential NFSW content, please try again');
+							}
 							const imgBlob = await base64ToBlob(imgBase64);
 							const imgURL = await uploadImage(imgBlob, _prompt);
 
@@ -196,8 +191,9 @@
 							});
 							console.log(imgURL);
 							$loadingState = data.success ? 'Complete' : 'Error';
-						} catch (e) {
-							$loadingState = e.message;
+						} catch (err) {
+							const tError = err as Error;
+							$loadingState = tError?.message;
 						}
 						websocket.close();
 						$isLoading = false;
