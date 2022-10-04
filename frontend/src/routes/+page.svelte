@@ -1,19 +1,11 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
 	import { isLoading, loadingState, createPresenceStore, createStorageStore } from '$lib/store';
-	import { PUBLIC_DEV_MODE } from '$env/static/public';
 	import type { Client, Room } from '@liveblocks/client';
 	import { createClient, LiveList } from '@liveblocks/client';
 
 	import App from '$lib/App.svelte';
 	import type { Presence, Storage } from '$lib/types';
-	console.log('PUBLIC_DEV_MODE', PUBLIC_DEV_MODE);
-	const apiUrl =
-		PUBLIC_DEV_MODE === 'DEV'
-			? 'http://localhost:7860'
-			: '/embed/huggingface-projects/color-palette-generator-sd';
-
-	console.log(apiUrl);
 
 	let client: Client;
 	let room: Room;
