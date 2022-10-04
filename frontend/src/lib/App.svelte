@@ -58,7 +58,7 @@
 
 		const base64Crop = canvasCrop.toDataURL('image/png');
 
-		return base64Crop.replaceAll('data:image/png;base64,', '');
+		return base64Crop;
 	}
 
 	function getImageMask(cursor: { x: number; y: number }) {

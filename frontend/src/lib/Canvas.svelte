@@ -59,16 +59,24 @@
 	});
 
 	function renderImages(imagesList) {
-		const images = [...imagesList.toImmutable()].sort((a, b) => a.date < b.date);
-		console.log('images', images);
-		images.forEach(({ imgURL, position }) => {
-			const img = new Image();
-			img.crossOrigin = 'anonymous';
-			img.onload = () => {
+		const images = [...imagesList.toImmutable()].sort((a, b) => a.date - b.date);
+		Promise.all(
+			images.map(
+				({ imgURL, position }) =>
+					new Promise((resolve) => {
+						const img = new Image();
+						img.crossOrigin = 'anonymous';
+						img.onload = () => {
+							resolve({ img, position });
+						};
+						const url = imgURL.split('/');
+						img.src = `${PUBLIC_UPLOADS}/${url.slice(3).join('/')}`;
+					})
+			)
+		).then((images) => {
+			images.forEach(({ img, position }) => {
 				canvasCtx.drawImage(img, position.x, position.y, img.width, img.height);
-			};
-			const url = imgURL.split('/');
-			img.src = `${PUBLIC_UPLOADS}/${url.slice(3).join('/')}`;
+			});
 		});
 	}
 	function zoomed(e: Event) {
