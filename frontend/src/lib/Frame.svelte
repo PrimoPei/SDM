@@ -6,6 +6,7 @@
 	export let transform: ZoomTransform;
 	export let color = '';
 	export let position = { x: 0, y: 0 };
+	export let prompt = '';
 
 	$: coord = {
 		x: transform.applyX(position.x),
@@ -24,7 +25,7 @@
 	<LoadingIcon />
 	<h2 class="text-lg">Click to paint</h2>
 
-	<div class="absolute bottom-0 font-bold">A cat on grass</div>
+	<div class="absolute bottom-0 font-bold">{prompt}}</div>
 </div>
 
 <style lang="postcss" scoped>

@@ -1,4 +1,7 @@
-export type Presence = {
+import type { JsonObject } from "@liveblocks/client";
+
+
+export interface Presence extends JsonObject {
 	cursor: {
 		x: number;
 		y: number;
@@ -11,3 +14,16 @@ export type Storage = {
 };
 
 export type User = string;
+
+export type PromptImgObject = {
+	prompt: string;
+	imgURL: string;
+	position: {
+		x: number;
+		y: number;
+	}
+	date: number;
+	id: string;
+};
+
+export type PromptImgKey = string;

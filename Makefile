@@ -4,8 +4,6 @@ build-dev:
 	cd frontend && npm install && npm run build-dev && rm -rf ../static && cp -r build/ ../static/
 run-front-dev:
 	cd frontend && npm install && npm run dev
-run-dev:
-	rm -rf .data/ && FLASK_ENV=development python app.py
 run-prod:
 	python app.py
 build-all: run-prod

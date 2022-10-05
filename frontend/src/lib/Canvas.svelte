@@ -3,13 +3,13 @@
 	import { select } from 'd3-selection';
 	import { onMount } from 'svelte';
 	import { PUBLIC_UPLOADS } from '$env/static/public';
-	import {
-		currZoomTransform,
-		myPresence,
-		isPrompting,
-		clickedPosition,
-		imagesList
-	} from '$lib/store';
+	import { currZoomTransform, isPrompting, clickedPosition } from '$lib/store';
+
+	import { useMyPresence, useObject } from '$lib/liveblocks';
+	import type { PromptImgObject } from '$lib/types';
+
+	const myPresence = useMyPresence();
+	const promptImgStorage = useObject('promptImgStorage');
 
 	const height = 512 * 5;
 	const width = 512 * 5;
@@ -21,8 +21,21 @@
 	let containerEl: HTMLDivElement;
 	let canvasCtx: CanvasRenderingContext2D;
 
-	$: if ($imagesList) {
-		renderImages($imagesList);
+	// keep track of images already rendered
+	const imagesOnCanvas = new Set();
+
+	function getpromptImgList(promptImgList: PromptImgObject[]): PromptImgObject[] {
+		if (promptImgList) {
+			const list: PromptImgObject[] = Object.values(promptImgList).sort((a, b) => a.date - b.date);
+			return list.filter(({ id }) => !imagesOnCanvas.has(id));
+		}
+		return [];
+	}
+	let promptImgList: PromptImgObject[] = [];
+	$: promptImgList = getpromptImgList($promptImgStorage?.toObject());
+
+	$: if (promptImgList) {
+		renderImages(promptImgList);
 	}
 
 	onMount(() => {
@@ -58,23 +71,29 @@
 		canvasCtx.strokeRect(0, 0, width, height);
 	});
 
-	function renderImages(imagesList) {
-		const images = [...imagesList.toImmutable()].sort((a, b) => a.date - b.date);
+	function renderImages(promptImgList: PromptImgObject[]) {
 		Promise.all(
-			images.map(
-				({ imgURL, position }) =>
+			promptImgList.map(
+				({ imgURL, position, id }) =>
 					new Promise((resolve) => {
 						const img = new Image();
 						img.crossOrigin = 'anonymous';
 						img.onload = () => {
-							resolve({ img, position });
+							const res = { img, position, id } as {
+								img: HTMLImageElement;
+								position: { x: number; y: number };
+								id: string;
+							};
+							resolve(res);
 						};
 						const url = imgURL.split('/');
 						img.src = `${PUBLIC_UPLOADS}/${url.slice(3).join('/')}`;
 					})
 			)
 		).then((images) => {
-			images.forEach(({ img, position }) => {
+			images.forEach(({ img, position, id }) => {
+				// keep track of images already rendered
+				imagesOnCanvas.add(id);
 				canvasCtx.drawImage(img, position.x, position.y, img.width, img.height);
 			});
 		});
@@ -99,19 +118,19 @@
 		// const y = Math.round(event.layerY / grid) * grid; //round(Math.max(r, Math.min(512 * 5 - r, event.clientY)), 100);
 		// const x = round(Math.max(r, Math.min(512 * 5 - r, event.clientX)), grid);
 		// const y = round(Math.max(r, Math.min(512 * 5 - r, event.clientY)), grid);
-		$myPresence = {
+		myPresence.update({
 			cursor: {
 				x,
 				y
 			}
-		};
+		});
 	}
 
 	// When the pointer leaves the page, set cursor presence to null
 	function handlePointerLeave() {
-		$myPresence = {
+		myPresence.update({
 			cursor: null
-		};
+		});
 	}
 </script>
 

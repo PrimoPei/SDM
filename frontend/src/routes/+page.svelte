@@ -1,47 +1,46 @@
+<script context="module" lang="ts">
+	export const prerender = true;
+</script>
+
+<!--
+	The main code for this component is in src/PixelArtTogether.svelte
+	This file contains the Liveblocks providers, based on the
+	liveblocks-react library
+	https://liveblocks.io/docs/api-reference/liveblocks-react#LiveblocksProvider
+  -->
 <script lang="ts">
 	import { onMount } from 'svelte';
-	import { isLoading, loadingState, createPresenceStore, createStorageStore } from '$lib/store';
-	import type { Client, Room } from '@liveblocks/client';
-	import { createClient, LiveList } from '@liveblocks/client';
-
+	import { createClient } from '@liveblocks/client';
+	import type { Client } from '@liveblocks/client';
+	import LiveblocksProvider from '$lib/liveblocks/LiveblocksProvider.svelte';
+	import RoomProvider from '$lib/liveblocks/RoomProvider.svelte';
 	import App from '$lib/App.svelte';
-	import type { Presence, Storage } from '$lib/types';
 
+	let roomId: string;
+	let loaded = false;
 	let client: Client;
-	let room: Room;
-	let roomId = 'multiplayer-SD';
 
 	onMount(() => {
+		// Add random id to room param if not set, and return the id string
+		// e.g. /?room=758df70b5e94c13289df6
+		roomId = 'multiplayer-SD';
+
+		// Connect to the authentication API for Liveblocks
 		client = createClient({
 			publicApiKey: 'pk_test_JlUZGH3kQmhmZQiqU2l8eIi5'
 		});
 
-		room = client.enter<Presence, Storage /* UserMeta, RoomEvent */>(roomId, {
-			initialPresence: {
-				cursor: null
-			},
-			initialStorage: { imagesList: new LiveList() }
-		});
-		const unsubscribe = room.subscribe('error', (error) => {
-			console.error('error', error);
-		});
-
-		const unsubscribePresence = createPresenceStore(room);
-		createStorageStore(room);
-		return () => {
-			if (client && room) {
-				client.leave(roomId);
-				unsubscribePresence();
-			}
-		};
+		loaded = true;
 	});
 </script>
 
-<div class="max-w-screen-md mx-auto p-5 relative pointer-events-none touch-none z-10">
-	<h1 class="text-lg md:text-3xl font-bold leading-normal">
-		Stable Diffussion Outpainting Multiplayer
-	</h1>
-</div>
-{#if room}
-	<App {room} />
+{#if loaded}
+	<!-- Provides Liveblocks hooks to children -->
+	<LiveblocksProvider {client}>
+		<!-- Create a room from id e.g. `sveltekit-pixel-art-758df70b5e94c13289df6` -->
+		<RoomProvider id={roomId}>
+			<!-- Main app component -->
+			<App />
+		</RoomProvider>
+	</LiveblocksProvider>
 {/if}

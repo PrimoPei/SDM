@@ -8,29 +8,54 @@
 	import { COLORS, EMOJIS } from '$lib/constants';
 	import { PUBLIC_WS_INPAINTING } from '$env/static/public';
 	import { onMount } from 'svelte';
+	import type { PromptImgObject, PromptImgKey } from '$lib/types';
 	import {
 		isLoading,
 		loadingState,
 		currZoomTransform,
-		myPresence,
-		others,
 		isPrompting,
 		clickedPosition,
-		imagesList,
-		showFrames,
-		text2img
+		showFrames
 	} from '$lib/store';
+
+	import { useMyPresence, useObject, useOthers } from '$lib/liveblocks';
+
 	import { base64ToBlob, uploadImage } from '$lib/utils';
+
+	import { nanoid } from 'nanoid';
+
 	/**
 	 * The main Liveblocks code for the example.
 	 * Check in src/routes/index.svelte to see the setup code.
 	 */
 
-	export let room: Room;
+	const myPresence = useMyPresence();
+	const others = useOthers();
+
+	// Set a default value for presence
+	myPresence.update({
+		name: '',
+		cursor: null,
+		isPrompting: false,
+		currentPrompt: ''
+	});
+	function getKey({ position }: PromptImgObject): PromptImgKey {
+		return `${position.x}_${position.y}`;
+	}
+
+	const promptImgStorage = useObject('promptImgStorage');
+
+	function getpromptImgList(promptImgList: PromptImgObject[]): PromptImgObject[] {
+		if (promptImgList) {
+			const list: PromptImgObject[] = Object.values(promptImgList);
+			return list.sort((a, b) => a.date - b.date);
+		}
+		return [];
+	}
+	let promptImgList: PromptImgObject[] = [];
+	$: promptImgList = getpromptImgList($promptImgStorage?.toObject());
 
 	let canvasEl: HTMLCanvasElement;
-
-	onMount(() => {});
 
 	async function onClose(e: CustomEvent) {
 		$isPrompting = false;
@@ -182,13 +207,15 @@
 							}
 							const imgBlob = await base64ToBlob(imgBase64);
 							const imgURL = await uploadImage(imgBlob, _prompt);
-
-							$imagesList.push({
+							const promptImg = {
 								prompt: _prompt,
 								imgURL: imgURL,
 								position: $clickedPosition,
-								date: new Date().getTime()
-							});
+								date: new Date().getTime(),
+								id: nanoid()
+							};
+							const key = getKey(promptImg);
+							$promptImgStorage.set(key, promptImg);
 							console.log(imgURL);
 							$loadingState = data.success ? 'Complete' : 'Error';
 						} catch (err) {
@@ -224,18 +251,19 @@
 	<Canvas bind:value={canvasEl} />
 
 	<main class="z-10 relative">
-		{#if $imagesList && $showFrames}
-			{#each $imagesList as image, i}
+		{#if promptImgList && $showFrames}
+			{#each promptImgList as promptImg, i}
 				<Frame
 					color={COLORS[0]}
-					position={$imagesList.get(i).position}
 					transform={$currZoomTransform}
+					position={promptImg?.position}
+					prompt={promptImg?.prompt}
 				/>
 			{/each}
 		{/if}
-		{#if $clickedPosition}
+		<!-- {#if $clickedPosition}
 			<Frame color={COLORS[0]} position={$clickedPosition} transform={$currZoomTransform} />
-		{/if}
+		{/if} -->
 		{#if $myPresence?.cursor}
 			<Frame color={COLORS[0]} position={$myPresence.cursor} transform={$currZoomTransform} />
 			<Cursor
@@ -247,19 +275,20 @@
 		{/if}
 
 		<!-- When others connected, iterate through others and show their cursors -->
-		{#if others}
+		{#if $others}
 			{#each [...$others] as { connectionId, presence } (connectionId)}
 				{#if presence?.cursor}
 					<Frame
 						color={COLORS[1 + (connectionId % (COLORS.length - 1))]}
-						position={presence.cursor}
+						position={presence?.cursor}
+						prompt={presence?.currentPrompt}
 						transform={$currZoomTransform}
 					/>
 
 					<Cursor
 						emoji={EMOJIS[1 + (connectionId % (EMOJIS.length - 1))]}
 						color={COLORS[1 + (connectionId % (COLORS.length - 1))]}
-						position={presence.cursor}
+						position={presence?.cursor}
 						transform={$currZoomTransform}
 					/>
 				{/if}
