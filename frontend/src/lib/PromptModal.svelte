@@ -1,11 +1,26 @@
 <script lang="ts">
 	import { createEventDispatcher, onMount } from 'svelte';
+	import { useMyPresence } from '$lib/liveblocks';
+
 	const dispatch = createEventDispatcher();
 	let prompt: string;
+
+	const myPresence = useMyPresence();
+
+	$: {
+		myPresence.update({
+			currentPrompt: prompt,
+			isPrompting: true
+		});
+	}
 
 	const onKeyup = (e: KeyboardEvent) => {
 		if (e.key === 'Escape') {
 			dispatch('close');
+			myPresence.update({
+				currentPrompt: '',
+				isPrompting: false
+			});
 		}
 	};
 	onMount(() => {

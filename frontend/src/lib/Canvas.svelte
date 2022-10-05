@@ -128,9 +128,9 @@
 
 	// When the pointer leaves the page, set cursor presence to null
 	function handlePointerLeave() {
-		myPresence.update({
-			cursor: null
-		});
+		// myPresence.update({
+		// 	cursor: null
+		// });
 	}
 </script>
 

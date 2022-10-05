@@ -39,6 +39,9 @@
 		isPrompting: false,
 		currentPrompt: ''
 	});
+	$: {
+		console.log($others)
+	}
 	function getKey({ position }: PromptImgObject): PromptImgKey {
 		return `${position.x}_${position.y}`;
 	}
@@ -85,80 +88,15 @@
 
 		return base64Crop;
 	}
-
-	function getImageMask(cursor: { x: number; y: number }) {
-		const tempCanvas = document.createElement('canvas');
-		const canvasCrop = document.createElement('canvas');
-		const mask = document.createElement('canvas');
-
-		tempCanvas.width = 512;
-		tempCanvas.height = 512;
-		canvasCrop.width = 512;
-		canvasCrop.height = 512;
-		mask.width = 512;
-		mask.height = 512;
-
-		const tempCanvasCtx = tempCanvas.getContext('2d') as CanvasRenderingContext2D;
-		const ctxCrop = canvasCrop.getContext('2d') as CanvasRenderingContext2D;
-		const ctxMask = mask.getContext('2d') as CanvasRenderingContext2D;
-
-		// crop image from point canvas
-		ctxCrop.save();
-		ctxCrop.clearRect(0, 0, 512, 512);
-
-		ctxCrop.globalCompositeOperation = 'source-over';
-		ctxCrop.drawImage(canvasEl, cursor.x, cursor.y, 512, 512, 0, 0, 512, 512);
-		ctxCrop.restore();
-
-		// create black image
-		tempCanvasCtx.fillStyle = 'white';
-		tempCanvasCtx.fillRect(0, 0, 512, 512);
-
-		// create Mask
-		ctxMask.save();
-		// ctxMask.clearRect(0, 0, 512, 512);
-		ctxMask.drawImage(canvasCrop, 0, 0, 512, 512);
-		ctxMask.globalCompositeOperation = 'source-out';
-		ctxMask.drawImage(tempCanvas, 0, 0);
-		ctxMask.restore();
-
-		tempCanvasCtx.save();
-		tempCanvasCtx.fillStyle = 'white';
-		tempCanvasCtx.fillRect(0, 0, 512, 512);
-		//random pixels
-		// tempCanvasCtx.filter = 'blur(4px)';
-
-		// const imageData = tempCanvasCtx.getImageData(0, 0, 512, 512);
-		// const pix = imageData.data;
-		// for (let i = 0, n = pix.length; i < n; i += 4) {
-		// 	pix[i] = Math.round(255 * Math.random());
-		// 	pix[i + 1] = Math.round(255 * Math.random());
-		// 	pix[i + 2] = Math.round(255 * Math.random());
-		// 	pix[i + 3] = 255;
-		// }
-		// tempCanvasCtx.putImageData(imageData, 0, 0);
-		tempCanvasCtx.drawImage(canvasCrop, 0, 0, 512, 512);
-		//convert canvas to base64
-		const base64Crop = tempCanvas.toDataURL('image/png');
-		tempCanvasCtx.restore();
-
-		tempCanvasCtx.save();
-		tempCanvasCtx.fillStyle = 'black';
-		tempCanvasCtx.fillRect(0, 0, 512, 512);
-		tempCanvasCtx.drawImage(mask, 0, 0, 512, 512);
-		//convert canvas to base64
-		const base64Mask = tempCanvas.toDataURL('image/png');
-		tempCanvasCtx.restore();
-
-		return { image: base64Crop, mask: base64Mask };
-	}
-
 	async function generateImage(_prompt: string) {
-		// getImageMask($clickedPosition);
-		// return;
 		if (!_prompt || $isLoading == true) return;
 		$loadingState = 'Pending';
 		$isLoading = true;
+		myPresence.update({
+			currentPrompt: _prompt,
+			isPrompting: true,
+			cursor: $clickedPosition
+		});
 		const sessionHash = crypto.randomUUID();
 		const payload = {
 			fn_index: 0,
@@ -237,6 +175,7 @@
 		};
 	}
 	let modal = false;
+	let currentPrompt = '';
 </script>
 
 <!-- Show the current user's cursor location -->
@@ -265,7 +204,7 @@
 			<Frame color={COLORS[0]} position={$clickedPosition} transform={$currZoomTransform} />
 		{/if} -->
 		{#if $myPresence?.cursor}
-			<Frame color={COLORS[0]} position={$myPresence.cursor} transform={$currZoomTransform} />
+			<!-- <Frame color={COLORS[0]} position={$myPresence.cursor} transform={$currZoomTransform} /> -->
 			<Cursor
 				emoji={EMOJIS[0]}
 				color={COLORS[0]}
@@ -277,14 +216,15 @@
 		<!-- When others connected, iterate through others and show their cursors -->
 		{#if $others}
 			{#each [...$others] as { connectionId, presence } (connectionId)}
-				{#if presence?.cursor}
+				{#if presence?.isPrompting && presence?.cursor}
 					<Frame
 						color={COLORS[1 + (connectionId % (COLORS.length - 1))]}
 						position={presence?.cursor}
 						prompt={presence?.currentPrompt}
 						transform={$currZoomTransform}
 					/>
-
+				{/if}
+				{#if presence?.cursor}
 					<Cursor
 						emoji={EMOJIS[1 + (connectionId % (EMOJIS.length - 1))]}
 						color={COLORS[1 + (connectionId % (COLORS.length - 1))]}
