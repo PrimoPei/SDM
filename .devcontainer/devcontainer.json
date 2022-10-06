@@ -1,0 +1,32 @@
+{
+	"postCreateCommand": "oryx build -p virtualenv_name=.venv --log-file /tmp/oryx-build.log --manifest-dir /tmp || echo 'Could not auto-build. Skipping.' && make install-deps",
+	"hostRequirements": {
+		"gpus": 1
+	},
+	"features": {
+		"ghcr.io/devcontainers/features/nvidia-cuda:1": {
+			"installCudnn": true
+		}
+	},
+	"build": {
+		"dockerfile": "Dockerfile"
+	},
+	"customizations": {
+		"vscode": {
+			"extensions": [
+				"GitHub.vscode-pull-request-github"
+			]
+		}
+	},
+	"mounts": [
+		"source=codespaces-linux-var-lib-docker,target=/var/lib/docker,type=volume"
+	],
+	"runArgs": [
+		"--cap-add=SYS_PTRACE",
+		"--security-opt",
+		"seccomp=unconfined",
+		"--privileged",
+		"--init"
+	],
+	"remoteUser": "codespace"
+}
