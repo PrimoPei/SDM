@@ -1,14 +1,13 @@
 <script lang="ts">
 	import Cursor from '$lib/Cursor.svelte';
 	import Frame from '$lib/Frame.svelte';
+	import PaintFrame from '$lib/PaintFrame.svelte';
 	import Canvas from '$lib/Canvas.svelte';
 	import Menu from '$lib/Menu.svelte';
 	import PromptModal from '$lib/PromptModal.svelte';
-	import type { Room } from '@liveblocks/client';
 	import { COLORS, EMOJIS } from '$lib/constants';
 	import { PUBLIC_WS_INPAINTING } from '$env/static/public';
-	import { onMount } from 'svelte';
-	import type { PromptImgObject, PromptImgKey } from '$lib/types';
+	import type { PromptImgObject, PromptImgKey, Presence } from '$lib/types';
 	import {
 		isLoading,
 		loadingState,
@@ -33,15 +32,15 @@
 	const others = useOthers();
 
 	// Set a default value for presence
-	myPresence.update({
-		name: '',
+	const initialPresence: Presence = {
 		cursor: null,
 		isPrompting: false,
+		isLoading: false,
+		isMoving: true,
 		currentPrompt: ''
-	});
-	$: {
-		console.log($others)
-	}
+	};
+	myPresence.update(initialPresence);
+
 	function getKey({ position }: PromptImgObject): PromptImgKey {
 		return `${position.x}_${position.y}`;
 	}
@@ -60,6 +59,9 @@
 
 	let canvasEl: HTMLCanvasElement;
 
+	function onPaintMode(e: CustomEvent) {
+		const mode = e.detail.mode;
+	}
 	async function onClose(e: CustomEvent) {
 		$isPrompting = false;
 	}
@@ -187,9 +189,11 @@
 	<PromptModal on:prompt={onPrompt} on:close={onClose} />
 {/if}
 <div class="fixed top-0 left-0 z-0 w-screen h-screen">
-	<Canvas bind:value={canvasEl} />
+	<Canvas bind:value={canvasEl}  />
 
 	<main class="z-10 relative">
+		<PaintFrame transform={$currZoomTransform} />
+
 		{#if promptImgList && $showFrames}
 			{#each promptImgList as promptImg, i}
 				<Frame
@@ -204,13 +208,12 @@
 			<Frame color={COLORS[0]} position={$clickedPosition} transform={$currZoomTransform} />
 		{/if} -->
 		{#if $myPresence?.cursor}
-			<!-- <Frame color={COLORS[0]} position={$myPresence.cursor} transform={$currZoomTransform} /> -->
+			<!-- <Frame color={COLORS[0]} position={$myPresence.cursor} transform={$currZoomTransform} />
 			<Cursor
-				emoji={EMOJIS[0]}
 				color={COLORS[0]}
 				position={$myPresence.cursor}
 				transform={$currZoomTransform}
-			/>
+			/> -->
 		{/if}
 
 		<!-- When others connected, iterate through others and show their cursors -->
@@ -238,7 +241,7 @@
 </div>
 
 <div class="fixed bottom-0 left-0 right-0 z-10 my-2">
-	<Menu />
+	<Menu on:paintMode={onPaintMode} />
 </div>
 
 <style lang="postcss" scoped>

@@ -50,6 +50,10 @@ export async function uploadImage(imagBlob: Blob, prompt: string): string {
 	return url;
 }
 
+export function round(pos: number, size = 32) {
+	return pos % size < size / 2 ? pos - (pos % size) : pos + size - (pos % size);
+}
+
 function slugify(text: string) {
 	if (!text) return '';
 	return text

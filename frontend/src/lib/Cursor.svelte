@@ -3,7 +3,7 @@
 
 	export let transform: ZoomTransform;
 	export let color = '';
-	export let emoji = '';
+	export let emoji;
 	export let position = { x: 0, y: 0 };
 
 	$: coord = {
@@ -28,12 +28,14 @@
 			fill="#FFB800"
 		/>
 	</svg>
-	<div
-		class="absolute right-0 text-4xl col-start-2 row-start-2"
-		style={`text-shadow: 0px 5px 5px ${color}`}
-	>
-		{emoji}
-	</div>
+	{#if emoji}
+		<div
+			class="absolute right-0 text-4xl col-start-2 row-start-2"
+			style={`text-shadow: 0px 5px 5px ${color}`}
+		>
+			{emoji}
+		</div>
+	{/if}
 </div>
 
 <style lang="postcss" scoped>

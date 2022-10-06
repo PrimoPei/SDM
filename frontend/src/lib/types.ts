@@ -1,17 +1,13 @@
-import type { JsonObject } from "@liveblocks/client";
-
-
-export interface Presence extends JsonObject {
+export type Presence = {
 	cursor: {
 		x: number;
 		y: number;
 	} | null;
-};
-
-export type Storage = {
-	// animals: LiveList<string>,
-	// ...
-};
+	isPrompting: boolean;
+	isLoading: boolean;
+	isMoving: boolean;
+	currentPrompt: string
+}
 
 export type User = string;
 
