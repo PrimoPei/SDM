@@ -1,9 +1,5 @@
 import { dev } from '$app/environment';
 
-export function randomSeed() {
-	return BigInt(13248873089935215612 & (((1 << 63) - 1) * Math.random()));
-}
-
 export function base64ToBlob(base64image: string): Promise<Blob> {
 	return new Promise((resolve) => {
 		const img = new Image();
@@ -16,15 +12,15 @@ export function base64ToBlob(base64image: string): Promise<Blob> {
 			const ctx = canvas.getContext('2d') as CanvasRenderingContext2D;
 			ctx.drawImage(img, 0, 0, w, h);
 
-			const imgBlob: Blob = await new Promise((_resolve) =>
-				canvas.toBlob(_resolve, 'image/jpeg', 0.95)
+			const imgBlob: Blob = await new Promise((r) =>
+				canvas.toBlob(r as BlobCallback, 'image/jpeg', 0.95)
 			);
 			resolve(imgBlob);
 		};
 		img.src = base64image;
 	});
 }
-export async function uploadImage(imagBlob: Blob, prompt: string): string {
+export async function uploadImage(imagBlob: Blob, prompt: string): Promise<string> {
 	// simple regex slugify string	for file name
 	const promptSlug = slugify(prompt);
 	const UPLOAD_URL = dev ? 'moon/uploads' : 'https://huggingface.co/uploads';

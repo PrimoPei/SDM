@@ -48,9 +48,6 @@
 </form>
 
 <style lang="postcss" scoped>
-	.link {
-		@apply text-xs underline font-bold hover:no-underline hover:text-gray-500 visited:text-gray-500;
-	}
 	.input {
 		@apply w-full max-w-sm text-sm disabled:opacity-50 italic placeholder:text-white text-white placeholder:text-opacity-50 bg-slate-900 border-2 border-white rounded-2xl px-2 shadow-sm focus:outline-none focus:border-gray-400 focus:ring-1;
 	}

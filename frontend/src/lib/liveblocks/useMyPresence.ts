@@ -1,3 +1,4 @@
+// @ts-nocheck
 import type { Presence } from "@liveblocks/client";
 import { onDestroy } from "svelte";
 import { writable } from "svelte/store";

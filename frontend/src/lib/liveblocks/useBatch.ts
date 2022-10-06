@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { useRoom } from "./useRoom";
 
 /**

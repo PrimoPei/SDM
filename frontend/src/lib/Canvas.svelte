@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { zoom, type ZoomTransform, zoomIdentity } from 'd3-zoom';
+	import { zoom } from 'd3-zoom';
 	import { select } from 'd3-selection';
 	import { onMount } from 'svelte';
 	import { PUBLIC_UPLOADS } from '$env/static/public';
@@ -17,7 +17,6 @@
 
 	let canvasEl: HTMLCanvasElement;
 	export { canvasEl as value };
-	let value = canvasEl;
 
 	let containerEl: HTMLDivElement;
 	let canvasCtx: CanvasRenderingContext2D;
@@ -69,19 +68,20 @@
 		canvasCtx = canvasEl.getContext('2d') as CanvasRenderingContext2D;
 	});
 
+	type ImageRendered = {
+		img: HTMLImageElement;
+		position: { x: number; y: number };
+		id: string;
+	};
 	function renderImages(promptImgList: PromptImgObject[]) {
 		Promise.all(
 			promptImgList.map(
 				({ imgURL, position, id }) =>
-					new Promise((resolve) => {
+					new Promise<ImageRendered>((resolve) => {
 						const img = new Image();
 						img.crossOrigin = 'anonymous';
 						img.onload = () => {
-							const res = { img, position, id } as {
-								img: HTMLImageElement;
-								position: { x: number; y: number };
-								id: string;
-							};
+							const res: ImageRendered = { img, position, id };
 							canvasCtx.drawImage(img, position.x, position.y, img.width, img.height);
 							resolve(res);
 						};
@@ -106,8 +106,8 @@
 	// Update cursor presence to current pointer location
 	function handlePointerMove(event: PointerEvent) {
 		event.preventDefault();
-		const x = round($currZoomTransform.invertX(event.layerX));
-		const y = round($currZoomTransform.invertY(event.layerY));
+		const x = round($currZoomTransform.invertX(event.clientX));
+		const y = round($currZoomTransform.invertY(event.clientY));
 
 		myPresence.update({
 			cursor: {
@@ -125,7 +125,10 @@
 	}
 </script>
 
-<div bind:this={containerEl} class="absolute top-0 left-0 right-0 bottom-0 overflow-hidden z-0 bg-gray-800">
+<div
+	bind:this={containerEl}
+	class="absolute top-0 left-0 right-0 bottom-0 overflow-hidden z-0 bg-gray-800"
+>
 	<canvas bind:this={canvasEl} {width} {height} class="absolute top-0 left-0 bg-white" />
 	<slot />
 </div>

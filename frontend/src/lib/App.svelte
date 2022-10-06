@@ -60,9 +60,11 @@
 	let canvasEl: HTMLCanvasElement;
 
 	function onPaintMode(e: CustomEvent) {
-		const mode = e.detail.mode;
+		console.log('onPaintMode', e.detail);
+		// const mode = e.detail.mode;
 	}
 	async function onClose(e: CustomEvent) {
+		console.log('onClose', e.detail);
 		$isPrompting = false;
 	}
 	async function onPrompt(e: CustomEvent) {
@@ -132,7 +134,7 @@
 						$isLoading = false;
 						return;
 					case 'estimation':
-						const { msg, rank, queue_size } = data;
+						const { rank, queue_size } = data;
 						$loadingState = `On queue ${rank}/${queue_size}`;
 						break;
 					case 'process_generating':
@@ -176,8 +178,6 @@
 			}
 		};
 	}
-	let modal = false;
-	let currentPrompt = '';
 </script>
 
 <!-- Show the current user's cursor location -->
@@ -189,13 +189,13 @@
 	<PromptModal on:prompt={onPrompt} on:close={onClose} />
 {/if}
 <div class="fixed top-0 left-0 z-0 w-screen h-screen">
-	<Canvas bind:value={canvasEl}  />
+	<Canvas bind:value={canvasEl} />
 
 	<main class="z-10 relative">
 		<PaintFrame transform={$currZoomTransform} />
 
 		{#if promptImgList && $showFrames}
-			{#each promptImgList as promptImg, i}
+			{#each promptImgList as promptImg}
 				<Frame
 					color={COLORS[0]}
 					transform={$currZoomTransform}

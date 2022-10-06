@@ -3,7 +3,7 @@
 
 	export let transform: ZoomTransform;
 	export let color = '';
-	export let emoji;
+	export let emoji: string;
 	export let position = { x: 0, y: 0 };
 
 	$: coord = {

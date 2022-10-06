@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { getContext } from "svelte";
 import type { Room } from "@liveblocks/client";
 import { roomSymbol } from "./symbols";

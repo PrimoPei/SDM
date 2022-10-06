@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { LiveObject } from "@liveblocks/client";
 import { useStorage } from "./useStorage";
 import { onDestroy } from "svelte";

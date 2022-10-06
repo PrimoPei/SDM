@@ -1,3 +1,4 @@
+// @ts-nocheck
 /**
  * Works similarly to `liveblocks-react` useHistory
  * https://liveblocks.io/docs/api-reference/liveblocks-react#useHistory

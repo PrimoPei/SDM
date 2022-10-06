@@ -15,5 +15,7 @@ declare global {
 	}
 	interface Event {
 		transform: ZoomTransform;
+		x: number;
+		y: number;
 	}
 }

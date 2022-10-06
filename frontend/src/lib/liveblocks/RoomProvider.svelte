@@ -3,6 +3,7 @@
   https://liveblocks.io/docs/api-reference/liveblocks-react#RoomProvider
 -->
 <script lang="ts">
+  // @ts-nocheck
   import { clientSymbol, roomSymbol } from "./symbols";
   import type { Client, Room } from "@liveblocks/client";
   import { getContext, onDestroy, setContext } from "svelte";

@@ -1,3 +1,4 @@
+// @ts-nocheck
 import type { LiveObject } from "@liveblocks/client";
 import type { Writable } from "svelte/store";
 import { writable } from "svelte/store";

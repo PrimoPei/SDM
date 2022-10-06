@@ -23,13 +23,11 @@
 	};
 
 	onMount(() => {
-		function dragstarted(event, d) {
-			// d3.select(this).raise().attr('stroke', 'black');
+		function dragstarted(event: Event) {
+			console.log(event);
 		}
 
-		function dragged(event: CustomEvent) {
-			console.log(event.sourceEvent.layerX);
-			const grid = 20;
+		function dragged(event: Event) {
 			const x = round(transform.invertX(event.x) - 512 / 2);
 			const y = round(transform.invertY(event.y) - 512 / 2);
 			position = {
@@ -38,13 +36,12 @@
 			};
 		}
 
-		function dragended(event, d) {
-			// d3.select(this).attr('stroke', null);
+		function dragended(event: Event) {
+			console.log(event);
 		}
 
-		select(frameElement).call(
-			drag().on('start', dragstarted).on('drag', dragged).on('end', dragended)
-		);
+		const dragHandler = drag().on('start', dragstarted).on('drag', dragged).on('end', dragended);
+		select(frameElement).call(dragHandler as any);
 	});
 </script>
 
@@ -60,7 +57,7 @@
 	<LoadingIcon />
 	<h2 class="text-lg">Click to paint</h2>
 
-	<div class="absolute bottom-0 font-bold">{prompt}}</div>
+	<div class="absolute bottom-0 font-bold">{prompt}</div>
 </div>
 
 <style lang="postcss" scoped>
