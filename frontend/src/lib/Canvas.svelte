@@ -39,29 +39,25 @@
 	}
 
 	onMount(() => {
-		const margin = {
-			top: 0,
-			right: 0,
-			bottom: 0,
-			left: 0
-		};
 		const scale = width / containerEl.clientWidth;
+		const translatePadding = 0.1;
+		const scalePadding = 1.2;
 		const zoomHandler = zoom()
-			.scaleExtent([1 / scale, 1])
+			.scaleExtent([1 / scale / scalePadding, 1])
 			// .extent([
 			// 	[0, 0],
 			// 	[width, height]
 			// ])
 			.translateExtent([
-				[-margin.left, -margin.top],
-				[width + margin.right, height + margin.bottom]
+				[-width * translatePadding, -height * translatePadding],
+				[width * (1 + translatePadding), height * (1 + translatePadding)]
 			])
 			.tapDistance(10)
 			.on('zoom', zoomed);
 
 		const selection = select(canvasEl.parentElement)
 			.call(zoomHandler as any)
-			.call(zoomHandler.scaleTo as any, 1 / scale / 1.5)
+			.call(zoomHandler.scaleTo as any, 1 / scale / scalePadding)
 			.on('pointermove', handlePointerMove)
 			.on('pointerleave', handlePointerLeave);
 
@@ -69,8 +65,8 @@
 		function zoomReset() {
 			console.log('zoom reset');
 			const scale = width / containerEl.clientWidth;
-			zoomHandler.scaleExtent([1 / scale / 2, 1]);
-			selection.call(zoomHandler.scaleTo as any, 1 / scale / 1.5);
+			zoomHandler.scaleExtent([1 / scale / scalePadding, 1])
+			selection.call(zoomHandler.scaleTo as any, 1 / scale / scalePadding);
 		}
 		window.addEventListener('resize', zoomReset);
 		return () => {
