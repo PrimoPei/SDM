@@ -5,8 +5,8 @@
 	const dispatch = createEventDispatcher();
 </script>
 
-<div class="grid grid-cols-4 gap-3 text-sm w-max mx-auto">
-	<div class="flex items-center">
+<div class="grid grid-cols-1 gap-3 w-max mx-auto">
+	<!-- <div class="flex items-center">
 		<input
 			id="showframes"
 			type="checkbox"
@@ -16,28 +16,28 @@
 		<label for="showframes" class="text-white dark:text-white cursor-pointer ml-2">
 			Show Frames
 		</label>
-	</div>
-	<button class="button" title="Move" on:click={() => dispatch('paintMode', { mode: 'move' })}>
+	</div> -->
+	<!-- <button class="button" title="Move" on:click={() => dispatch('paintMode', { mode: 'move' })}>
 		Move
-	</button>
+	</button> -->
 	<button
 		class="button-paint bg-violet-100 text-violet-900"
 		title="New Paint Frame"
 		on:click={() => dispatch('paintMode', { mode: 'paint' })}
 	>
 		<span
-			class="rounded-sm h-5 w-5 m-1 flex justify-center items-center border-2 border-dashed border-violet-700 mr-2"
+			class="rounded-sm h-6 w-6 flex justify-center items-center border-2 border-dashed border-violet-700 mr-2"
 			>+</span
 		>
-		Paint
+		<span>Paint</span>
 	</button>
 </div>
 
 <style lang="postcss" scoped>
-	.button {
+	/* .button {
 		@apply disabled:opacity-50 dark:bg-white dark:text-black bg-black text-white rounded-2xl text-xs shadow-sm focus:outline-none focus:border-gray-400;
-	}
+	} */
 	.button-paint {
-		@apply flex justify-center items-center disabled:opacity-50  dark:bg-white dark:text-black rounded-2xl shadow-sm focus:outline-none focus:border-gray-400;
+		@apply flex justify-center items-center disabled:opacity-50  dark:bg-white dark:text-black rounded-2xl px-3 py-1 shadow-sm focus:outline-none focus:border-gray-400;
 	}
 </style>

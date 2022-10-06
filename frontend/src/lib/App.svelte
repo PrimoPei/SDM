@@ -8,14 +8,7 @@
 	import { COLORS, EMOJIS } from '$lib/constants';
 	import { PUBLIC_WS_INPAINTING } from '$env/static/public';
 	import type { PromptImgObject, PromptImgKey, Presence } from '$lib/types';
-	import {
-		isLoading,
-		loadingState,
-		currZoomTransform,
-		isPrompting,
-		clickedPosition,
-		showFrames
-	} from '$lib/store';
+	import { loadingState, currZoomTransform, showFrames } from '$lib/store';
 
 	import { useMyPresence, useObject, useOthers } from '$lib/liveblocks';
 
@@ -34,6 +27,7 @@
 	// Set a default value for presence
 	const initialPresence: Presence = {
 		cursor: null,
+		frame: null,
 		isPrompting: false,
 		isLoading: false,
 		isMoving: true,
@@ -54,25 +48,29 @@
 		}
 		return [];
 	}
+	let showModal = false;
 	let promptImgList: PromptImgObject[] = [];
 	$: promptImgList = getpromptImgList($promptImgStorage?.toObject());
+
+	$: isPrompting = $myPresence?.isPrompting || false;
 
 	let canvasEl: HTMLCanvasElement;
 
 	function onPaintMode(e: CustomEvent) {
-		console.log('onPaintMode', e.detail);
-		// const mode = e.detail.mode;
+		const mode = e.detail.mode;
+		if (mode == 'paint') {
+			showModal = true;
+		}
 	}
-	async function onClose(e: CustomEvent) {
-		console.log('onClose', e.detail);
-		$isPrompting = false;
+	function onClose() {
+		showModal = false;
 	}
-	async function onPrompt(e: CustomEvent) {
-		const prompt = e.detail.prompt;
-		const imgURLs = await generateImage(prompt);
-		$isPrompting = false;
-		console.log('prompt', prompt, imgURLs);
+
+	function onPrompt(e: CustomEvent) {
+		generateImage();
+		showModal = false;
 	}
+
 	function getImageCrop(cursor: { x: number; y: number }) {
 		const canvasCrop = document.createElement('canvas');
 
@@ -92,19 +90,20 @@
 
 		return base64Crop;
 	}
-	async function generateImage(_prompt: string) {
-		if (!_prompt || $isLoading == true) return;
+	async function generateImage() {
+		// if (isPrompting) return;
 		$loadingState = 'Pending';
-		$isLoading = true;
+		const prompt = $myPresence.currentPrompt;
+		const position = $myPresence.frame;
+		console.log('Generating...', prompt, position);
 		myPresence.update({
-			currentPrompt: _prompt,
 			isPrompting: true,
-			cursor: $clickedPosition
+			isLoading: true
 		});
 		const sessionHash = crypto.randomUUID();
 		const payload = {
 			fn_index: 0,
-			data: [getImageCrop($clickedPosition), _prompt, 0.75, 7.5, 30, 'patchmatch'],
+			data: [getImageCrop(position), prompt, 0.75, 7.5, 30, 'patchmatch'],
 			session_hash: sessionHash
 		};
 		console.log('payload', payload);
@@ -116,7 +115,10 @@
 		websocket.onclose = (evt) => {
 			if (!evt.wasClean) {
 				$loadingState = 'Error';
-				$isLoading = false;
+				myPresence.update({
+					isPrompting: false,
+					isLoading: false
+				});
 			}
 		};
 		websocket.onmessage = async function (event) {
@@ -131,7 +133,9 @@
 					case 'queue_full':
 						$loadingState = 'Queue full';
 						websocket.close();
-						$isLoading = false;
+						myPresence.update({
+							isPrompting: false
+						});
 						return;
 					case 'estimation':
 						const { rank, queue_size } = data;
@@ -148,11 +152,11 @@
 								throw new Error('Potential NFSW content, please try again');
 							}
 							const imgBlob = await base64ToBlob(imgBase64);
-							const imgURL = await uploadImage(imgBlob, _prompt);
+							const imgURL = await uploadImage(imgBlob, prompt);
 							const promptImg = {
-								prompt: _prompt,
+								prompt,
 								imgURL: imgURL,
-								position: $clickedPosition,
+								position,
 								date: new Date().getTime(),
 								id: nanoid()
 							};
@@ -165,7 +169,9 @@
 							$loadingState = tError?.message;
 						}
 						websocket.close();
-						$isLoading = false;
+						myPresence.update({
+							isPrompting: false
+						});
 						return;
 					case 'process_starts':
 						$loadingState = 'Processing';
@@ -173,7 +179,6 @@
 				}
 			} catch (e) {
 				console.error(e);
-				$isLoading = false;
 				$loadingState = 'Error';
 			}
 		};
@@ -183,9 +188,8 @@
 <!-- Show the current user's cursor location -->
 <div class="text touch-none pointer-events-none">
 	{$loadingState}
-	{$isLoading}
 </div>
-{#if $isPrompting}
+{#if showModal}
 	<PromptModal on:prompt={onPrompt} on:close={onClose} />
 {/if}
 <div class="fixed top-0 left-0 z-0 w-screen h-screen">
@@ -204,18 +208,6 @@
 				/>
 			{/each}
 		{/if}
-		<!-- {#if $clickedPosition}
-			<Frame color={COLORS[0]} position={$clickedPosition} transform={$currZoomTransform} />
-		{/if} -->
-		{#if $myPresence?.cursor}
-			<!-- <Frame color={COLORS[0]} position={$myPresence.cursor} transform={$currZoomTransform} />
-			<Cursor
-				color={COLORS[0]}
-				position={$myPresence.cursor}
-				transform={$currZoomTransform}
-			/> -->
-		{/if}
-
 		<!-- When others connected, iterate through others and show their cursors -->
 		{#if $others}
 			{#each [...$others] as { connectionId, presence } (connectionId)}

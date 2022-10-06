@@ -33,7 +33,7 @@
 
 <form
 	class="fixed w-screen top-0 left-0 bottom-0 right-0 max-h-screen z-50 flex items-center justify-center bg-black bg-opacity-80 px-3"
-	on:submit|preventDefault={() => dispatch('prompt', { prompt })}
+	on:submit|preventDefault={() => dispatch('prompt')}
 	on:click={() => dispatch('close')}
 >
 	<input

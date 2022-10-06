@@ -3,6 +3,10 @@ export type Presence = {
 		x: number;
 		y: number;
 	} | null;
+	frame: {
+		x: number;
+		y: number;
+	} | null;
 	isPrompting: boolean;
 	isLoading: boolean;
 	isMoving: boolean;

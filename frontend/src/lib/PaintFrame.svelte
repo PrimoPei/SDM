@@ -7,14 +7,19 @@
 	import type { ZoomTransform } from 'd3-zoom';
 	import { onMount } from 'svelte';
 
+	import { loadingState } from '$lib/store';
+	import { useMyPresence } from '$lib/liveblocks';
+
+	const myPresence = useMyPresence();
+
 	export let transform: ZoomTransform;
-	export let color = '';
+	export let color = 'black';
+	
 
 	let position = {
 		x: transform.invertX(768),
 		y: transform.invertX(768)
 	};
-	export let prompt = '';
 
 	let frameElement: HTMLDivElement;
 	$: coord = {
@@ -22,9 +27,11 @@
 		y: transform.applyY(position.y)
 	};
 
+	$: prompt = $myPresence?.currentPrompt
+
 	onMount(() => {
 		function dragstarted(event: Event) {
-			console.log(event);
+			// console.log(event);
 		}
 
 		function dragged(event: Event) {
@@ -37,7 +44,15 @@
 		}
 
 		function dragended(event: Event) {
-			console.log(event);
+			const x = round(transform.invertX(event.x) - 512 / 2);
+			const y = round(transform.invertY(event.y) - 512 / 2);
+
+			myPresence.update({
+				frame: {
+					x,
+					y
+				}
+			});
 		}
 
 		const dragHandler = drag().on('start', dragstarted).on('drag', dragged).on('end', dragended);
@@ -54,6 +69,7 @@
 	`}
 >
 	<div class="small-frame z-0 flex relative" />
+	{$loadingState}
 	<LoadingIcon />
 	<h2 class="text-lg">Click to paint</h2>
 

@@ -3,7 +3,7 @@
 	import { select } from 'd3-selection';
 	import { onMount } from 'svelte';
 	import { PUBLIC_UPLOADS } from '$env/static/public';
-	import { currZoomTransform, isPrompting, clickedPosition } from '$lib/store';
+	import { currZoomTransform } from '$lib/store';
 	import { round } from '$lib/utils';
 
 	import { useMyPresence, useObject } from '$lib/liveblocks';
@@ -39,28 +39,28 @@
 	}
 
 	onMount(() => {
+		const margin = {
+			top: 0,
+			right: 0,
+			bottom: 0,
+			left: 0
+		};
 		const scale = width / containerEl.clientWidth;
 		const zoomHandler = zoom()
-			.scaleExtent([1 / scale / 2, 1])
+			.scaleExtent([1 / scale, 1])
 			// .extent([
 			// 	[0, 0],
 			// 	[width, height]
 			// ])
 			.translateExtent([
-				[-width * 0.3, -height * 0.3],
-				[width * 1.3, height * 1.3]
+				[-margin.left, -margin.top],
+				[width + margin.right, height + margin.bottom]
 			])
 			.tapDistance(10)
 			.on('zoom', zoomed);
 
 		const selection = select(canvasEl.parentElement)
 			.call(zoomHandler as any)
-			.on('dblclick.zoom', () => {
-				$isPrompting = true;
-				$clickedPosition = $myPresence.cursor;
-				console.log('clicked', $clickedPosition);
-				return null;
-			})
 			.call(zoomHandler.scaleTo as any, 1 / scale / 1.5)
 			.on('pointermove', handlePointerMove)
 			.on('pointerleave', handlePointerLeave);

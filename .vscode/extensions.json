@@ -2,5 +2,5 @@
     "recommendations": [
         "bradlc.vscode-tailwindcss",
         "svelte.svelte-vscode"
-    ]
+    ],
 }
