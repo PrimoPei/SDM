@@ -53,7 +53,7 @@
 			.tapDistance(10)
 			.on('zoom', zoomed);
 
-		select(canvasEl.parentElement)
+		const selection = select(canvasEl.parentElement)
 			.call(zoomHandler as any)
 			.on('dblclick.zoom', () => {
 				$isPrompting = true;
@@ -66,6 +66,16 @@
 			.on('pointerleave', handlePointerLeave);
 
 		canvasCtx = canvasEl.getContext('2d') as CanvasRenderingContext2D;
+		function zoomReset() {
+			console.log('zoom reset');
+			const scale = width / containerEl.clientWidth;
+			zoomHandler.scaleExtent([1 / scale / 2, 1]);
+			selection.call(zoomHandler.scaleTo as any, 1 / scale / 1.5);
+		}
+		window.addEventListener('resize', zoomReset);
+		return () => {
+			window.removeEventListener('resize', zoomReset);
+		};
 	});
 
 	type ImageRendered = {
