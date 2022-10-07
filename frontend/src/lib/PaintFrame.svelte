@@ -30,19 +30,25 @@
 		}
 
 		function dragged(event: Event) {
-			const x = round(transform.invertX(event.x) - 512 / 2);
-			const y = round(transform.invertY(event.y) - 512 / 2);
+			const x = round(transform.invertX(event.x)) - 256;
+			const y = round(transform.invertY(event.y)) - 256;
 			position = {
 				x,
 				y
 			};
+			myPresence.update({
+				cursor: {
+					x: x + 256,
+					y: y + 256
+				}
+			});
 		}
 
 		function dragended(event: Event) {
 			isDragging = false;
 
-			const x = round(transform.invertX(event.x) - 512 / 2);
-			const y = round(transform.invertY(event.y) - 512 / 2);
+			const x = round(transform.invertX(event.x)) - 256;
+			const y = round(transform.invertY(event.y)) - 256;
 
 			myPresence.update({
 				frame: {
@@ -51,11 +57,39 @@
 				}
 			});
 		}
+		// Update cursor presence to current pointer location
+		function handlePointerMove(event: PointerEvent) {
+			event.preventDefault();
+			const x = round(transform.invertX(event.clientX));
+			const y = round(transform.invertY(event.clientY));
+
+			myPresence.update({
+				cursor: {
+					x,
+					y
+				}
+			});
+		}
+
+		// When the pointer leaves the page, set cursor presence to null
+		function handlePointerLeave() {
+			myPresence.update({
+				cursor: null
+			});
+		}
 		const dragHandler = drag().on('start', dragstarted).on('drag', dragged).on('end', dragended);
 		select(frameElement).call(dragHandler as any);
 	});
 </script>
 
 <div bind:this={frameElement}>
-	<Frame {color} {position} loadingState={$loadingState} {prompt} {transform} {isDragging} {interactive} />
+	<Frame
+		{color}
+		{position}
+		loadingState={$loadingState}
+		{prompt}
+		{transform}
+		{isDragging}
+		{interactive}
+	/>
 </div>

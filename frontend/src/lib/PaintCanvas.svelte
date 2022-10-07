@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { zoom } from 'd3-zoom';
+	import { zoom, zoomIdentity } from 'd3-zoom';
 	import { select } from 'd3-selection';
 	import { onMount } from 'svelte';
 	import { PUBLIC_UPLOADS } from '$env/static/public';
@@ -15,7 +15,7 @@
 	const height = 512 * 4;
 	const width = 512 * 4;
 
-	export let canvasEl: HTMLCanvasElement = undefined;
+	export let canvasEl: HTMLCanvasElement = document.createElement('canvas');
 
 	let containerEl: HTMLDivElement;
 	let canvasCtx: CanvasRenderingContext2D;
@@ -38,34 +38,29 @@
 	}
 
 	onMount(() => {
-		const scale = width / containerEl.clientWidth;
-		const translatePadding = 0.1;
-		const scalePadding = 3;
+		const padding = 200;
+		const scale = (width + padding * 2) / containerEl.clientWidth;
 		const zoomHandler = zoom()
-			.scaleExtent([1 / scale / scalePadding, 1])
-			// .extent([
-			// 	[0, 0],
-			// 	[width, height]
-			// ])
+			.scaleExtent([1 / scale / 2, 3])
 			.translateExtent([
-				[-width * translatePadding, -height * translatePadding],
-				[width * (1 + translatePadding), height * (1 + translatePadding)]
+				[-padding, -padding],
+				[width + padding, height + padding]
 			])
 			.tapDistance(10)
 			.on('zoom', zoomed);
 
 		const selection = select(canvasEl.parentElement)
 			.call(zoomHandler as any)
-			.call(zoomHandler.scaleTo as any, 1 / scale / 2)
+			.call(zoomHandler.transform as any, zoomIdentity)
+			.call(zoomHandler.scaleTo as any, 1 / scale)
 			.on('pointermove', handlePointerMove)
 			.on('pointerleave', handlePointerLeave);
 
 		canvasCtx = canvasEl.getContext('2d') as CanvasRenderingContext2D;
 		function zoomReset() {
-			console.log('zoom reset');
-			const scale = width / containerEl.clientWidth;
-			zoomHandler.scaleExtent([1 / scale / scalePadding, 1]);
-			selection.call(zoomHandler.scaleTo as any, 1 / scale / 2);
+			const scale = (width + padding * 2) / containerEl.clientWidth;
+			selection.call(zoomHandler.transform as any, zoomIdentity);
+			selection.call(zoomHandler.scaleTo as any, 1 / scale);
 		}
 		window.addEventListener('resize', zoomReset);
 		return () => {
