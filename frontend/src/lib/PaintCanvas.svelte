@@ -39,7 +39,11 @@
 
 	onMount(() => {
 		const padding = 200;
-		const scale = (width + padding * 2) / containerEl.clientWidth;
+		const scale =
+			(width + padding * 2) /
+			(containerEl.clientHeight > containerEl.clientWidth
+				? containerEl.clientWidth
+				: containerEl.clientHeight);
 		const zoomHandler = zoom()
 			.scaleExtent([1 / scale / 2, 3])
 			.translateExtent([
@@ -58,7 +62,11 @@
 
 		canvasCtx = canvasEl.getContext('2d') as CanvasRenderingContext2D;
 		function zoomReset() {
-			const scale = (width + padding * 2) / containerEl.clientWidth;
+			const scale =
+				(width + padding * 2) /
+				(containerEl.clientHeight > containerEl.clientWidth
+					? containerEl.clientWidth
+					: containerEl.clientHeight);
 			selection.call(zoomHandler.transform as any, zoomIdentity);
 			selection.call(zoomHandler.scaleTo as any, 1 / scale);
 		}

@@ -57,7 +57,6 @@
 				}
 			});
 		}
-		// Update cursor presence to current pointer location
 		function handlePointerMove(event: PointerEvent) {
 			event.preventDefault();
 			const x = round(transform.invertX(event.clientX));
@@ -70,15 +69,16 @@
 				}
 			});
 		}
-
-		// When the pointer leaves the page, set cursor presence to null
 		function handlePointerLeave() {
 			myPresence.update({
 				cursor: null
 			});
 		}
 		const dragHandler = drag().on('start', dragstarted).on('drag', dragged).on('end', dragended);
-		select(frameElement).call(dragHandler as any);
+		select(frameElement)
+			.call(dragHandler as any)
+			.on('pointermove', handlePointerMove)
+			.on('pointerleave', handlePointerLeave);
 	});
 </script>
 

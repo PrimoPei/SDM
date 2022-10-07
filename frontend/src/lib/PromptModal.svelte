@@ -9,11 +9,7 @@
 
 	const onKeyup = (e: KeyboardEvent) => {
 		if (e.key === 'Escape') {
-			myPresence.update({
-				currentPrompt: '',
-				isPrompting: false
-			});
-			dispatch('close');
+			cancel();
 		}
 	};
 	onMount(() => {
@@ -46,12 +42,19 @@
 		const target = event.target as HTMLInputElement;
 		debouce(target.value);
 	}
+	function cancel() {
+		myPresence.update({
+			currentPrompt: '',
+			isPrompting: false
+		});
+		dispatch('close');
+	}
 </script>
 
 <form
 	class="fixed w-screen top-0 left-0 bottom-0 right-0 max-h-screen z-50 flex items-center justify-center bg-black bg-opacity-80 px-3"
 	on:submit|preventDefault={onPrompt}
-	on:click={() => dispatch('close')}
+	on:click={cancel}
 >
 	<input
 		bind:this={inputEl}
