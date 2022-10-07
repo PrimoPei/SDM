@@ -10,6 +10,7 @@
 	export let loadingState = '';
 	export let interactive = false;
 	export let isDragging = false;
+	export let isLoading = false;
 	$: coord = {
 		x: transform.applyX(position.x),
 		y: transform.applyY(position.y)
@@ -17,19 +18,26 @@
 </script>
 
 <div
-	class="frame z-0 flex relative
+	class="frame z-0 relative grid grid-cols-3 grid-rows-3
 	{!interactive ? 'pointer-events-none touch-none' : ''}
 	{isDragging ? 'cursor-grabbing' : 'cursor-grab'}"
 	style={`transform: translateX(${coord.x}px) translateY(${coord.y}px) scale(${transform.k}); border-color: ${color};`}
 >
 	{#if loadingState}
-		<span class="text-white drop-shadow-lg">{loadingState}</span>
+		<div class="col-span-2 row-start-1">
+			<span class="text-white drop-shadow-lg">{loadingState}</span>
+		</div>
 	{/if}
 	<div class="small-frame z-0 flex relative" />
-	<LoadingIcon />
+	{#if isLoading}
+		<div class="col-start-2 row-start-2">
+			<LoadingIcon />
+		</div>
+	{/if}
+
 	<h2 class="text-lg">Click to paint</h2>
 
-	<div class="absolute bottom-0 font-bold">{prompt}</div>
+	<div class="absolute bottom-0 font-bold text-lg">{prompt}</div>
 </div>
 
 <style lang="postcss" scoped>

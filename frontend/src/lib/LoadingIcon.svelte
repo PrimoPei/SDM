@@ -3,7 +3,7 @@
 	fill="none"
 	width="50"
 	viewBox="0 0 24 24"
-	class="animate-spin max-w-[1rem] inline-block"
+	class="animate-spin block w-full opacity-60"
 >
 	<path
 		fill="currentColor"

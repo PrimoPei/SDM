@@ -23,6 +23,7 @@
 	let frameElement: HTMLDivElement;
 	let isDragging = false;
 	$: prompt = $myPresence?.currentPrompt;
+	$: isLoading = $myPresence?.isLoading || false;
 
 	onMount(() => {
 		function dragstarted() {
@@ -89,6 +90,7 @@
 		loadingState={$loadingState}
 		{prompt}
 		{transform}
+		{isLoading}
 		{isDragging}
 		{interactive}
 	/>
