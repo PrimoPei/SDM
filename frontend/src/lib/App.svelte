@@ -2,13 +2,13 @@
 	import Cursor from '$lib/Cursor.svelte';
 	import Frame from '$lib/Frame.svelte';
 	import PaintFrame from '$lib/PaintFrame.svelte';
-	import Canvas from '$lib/Canvas.svelte';
+	import PaintCanvas from '$lib/PaintCanvas.svelte';
 	import Menu from '$lib/Menu.svelte';
 	import PromptModal from '$lib/PromptModal.svelte';
 	import { COLORS, EMOJIS } from '$lib/constants';
 	import { PUBLIC_WS_INPAINTING } from '$env/static/public';
 	import type { PromptImgObject, PromptImgKey, Presence } from '$lib/types';
-	import { loadingState, currZoomTransform, showFrames } from '$lib/store';
+	import { loadingState, currZoomTransform } from '$lib/store';
 
 	import { useMyPresence, useObject, useOthers } from '$lib/liveblocks';
 
@@ -30,7 +30,6 @@
 		frame: null,
 		isPrompting: false,
 		isLoading: false,
-		isMoving: true,
 		currentPrompt: ''
 	};
 	myPresence.update(initialPresence);
@@ -41,18 +40,10 @@
 
 	const promptImgStorage = useObject('promptImgStorage');
 
-	function getpromptImgList(promptImgList: PromptImgObject[]): PromptImgObject[] {
-		if (promptImgList) {
-			const list: PromptImgObject[] = Object.values(promptImgList);
-			return list.sort((a, b) => a.date - b.date);
-		}
-		return [];
-	}
 	let showModal = false;
-	let promptImgList: PromptImgObject[] = [];
-	$: promptImgList = getpromptImgList($promptImgStorage?.toObject());
 
 	$: isPrompting = $myPresence?.isPrompting || false;
+	$: isLoading = $myPresence?.isLoading || false;
 
 	let canvasEl: HTMLCanvasElement;
 
@@ -69,7 +60,8 @@
 		showModal = false;
 	}
 
-	function onPrompt(e: CustomEvent) {
+	function onPrompt() {
+		console.log('onPrompt');
 		generateImage();
 		showModal = false;
 	}
@@ -94,7 +86,7 @@
 		return base64Crop;
 	}
 	async function generateImage() {
-		if (isPrompting) return;
+		if (isLoading) return;
 		$loadingState = 'Pending';
 		const prompt = $myPresence.currentPrompt;
 		const position = $myPresence.frame;
@@ -106,7 +98,7 @@
 		const sessionHash = crypto.randomUUID();
 		const payload = {
 			fn_index: 0,
-			data: [getImageCrop(position), prompt, 0.75, 7.5, 30, 'patchmatch'],
+			data: [getImageCrop(position), prompt, 0.75, 7.5, 40, 'patchmatch'],
 			session_hash: sessionHash
 		};
 		console.log('payload', payload);
@@ -137,7 +129,8 @@
 						$loadingState = 'Queue full';
 						websocket.close();
 						myPresence.update({
-							isPrompting: false
+							isPrompting: false,
+							isLoading: false
 						});
 						return;
 					case 'estimation':
@@ -167,13 +160,17 @@
 							$promptImgStorage.set(key, promptImg);
 							console.log(imgURL);
 							$loadingState = data.success ? 'Complete' : 'Error';
+							setTimeout(() => {
+								$loadingState = '';
+							}, 2000);
 						} catch (err) {
 							const tError = err as Error;
 							$loadingState = tError?.message;
 						}
 						websocket.close();
 						myPresence.update({
-							isPrompting: false
+							isPrompting: false,
+							isLoading: false
 						});
 						return;
 					case 'process_starts':
@@ -196,7 +193,7 @@
 	<PromptModal on:prompt={onPrompt} on:close={onClose} />
 {/if}
 <div class="fixed top-0 left-0 z-0 w-screen h-screen">
-	<Canvas bind:value={canvasEl} />
+	<PaintCanvas bind:canvasEl />
 
 	<main class="z-10 relative">
 		<PaintFrame transform={$currZoomTransform} interactive={!isPrompting} />

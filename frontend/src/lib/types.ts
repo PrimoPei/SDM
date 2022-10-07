@@ -9,7 +9,6 @@ export type Presence = {
 	} | null;
 	isPrompting: boolean;
 	isLoading: boolean;
-	isMoving: boolean;
 	currentPrompt: string
 }
 

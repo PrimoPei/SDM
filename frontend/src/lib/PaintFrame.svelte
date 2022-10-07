@@ -1,5 +1,4 @@
 <script lang="ts">
-	import LoadingIcon from '$lib/LoadingIcon.svelte';
 	import Frame from '$lib/Frame.svelte';
 	import { drag } from 'd3-drag';
 	import { select } from 'd3-selection';
@@ -8,9 +7,8 @@
 	import type { ZoomTransform } from 'd3-zoom';
 	import { onMount } from 'svelte';
 
-	import { loadingState } from '$lib/store';
 	import { useMyPresence } from '$lib/liveblocks';
-
+	import { loadingState } from '$lib/store';
 	const myPresence = useMyPresence();
 
 	export let transform: ZoomTransform;
@@ -27,7 +25,7 @@
 	$: prompt = $myPresence?.currentPrompt;
 
 	onMount(() => {
-		function dragstarted(event: Event) {
+		function dragstarted() {
 			isDragging = true;
 		}
 
@@ -59,5 +57,5 @@
 </script>
 
 <div bind:this={frameElement}>
-	<Frame {color} {position} {prompt} {transform} {isDragging} {interactive} />
+	<Frame {color} {position} loadingState={$loadingState} {prompt} {transform} {isDragging} {interactive} />
 </div>

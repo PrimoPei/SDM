@@ -7,6 +7,7 @@
 	export let color = '';
 	export let position = { x: 0, y: 0 };
 	export let prompt = '';
+	export let loadingState = '';
 	export let interactive = false;
 	export let isDragging = false;
 	$: coord = {
@@ -19,11 +20,11 @@
 	class="frame z-0 flex relative
 	{!interactive ? 'pointer-events-none touch-none' : ''}
 	{isDragging ? 'cursor-grabbing' : 'cursor-grab'}"
-	style={`transform: translateX(${coord.x}px) translateY(${coord.y}px) scale(${transform.k});
-			background-image: linear-gradient(${color}, rgba(255,255,255,0));
-			color: ${color};
-	`}
+	style={`transform: translateX(${coord.x}px) translateY(${coord.y}px) scale(${transform.k}); border-color: ${color};`}
 >
+	{#if loadingState}
+		<span class="text-white drop-shadow-lg">{loadingState}</span>
+	{/if}
 	<div class="small-frame z-0 flex relative" />
 	<LoadingIcon />
 	<h2 class="text-lg">Click to paint</h2>
@@ -37,7 +38,7 @@
 		transform-origin: 0 0;
 	}
 	.small-frame {
-		@apply pointer-events-none touch-none absolute top-1/2  left-1/2 border-2 border-spacing-3 border-sky-500 w-[256px] h-[256px];
+		@apply pointer-events-none touch-none absolute top-1/2 left-1/2 border-2 border-spacing-3  w-[256px] h-[256px];
 		transform: translateX(-50%) translateY(-50%);
 	}
 </style>

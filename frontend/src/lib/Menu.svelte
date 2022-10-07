@@ -4,7 +4,6 @@
 	const dispatch = createEventDispatcher();
 
 	const onKeyup = (e: KeyboardEvent) => {
-		e.preventDefault();
 		if (e.key === 'Enter') {
 			dispatch('paintMode', { mode: 'paint' });
 		}

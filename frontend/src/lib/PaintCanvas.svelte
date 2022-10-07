@@ -15,8 +15,7 @@
 	const height = 512 * 4;
 	const width = 512 * 4;
 
-	let canvasEl: HTMLCanvasElement;
-	export { canvasEl as value };
+	export let canvasEl: HTMLCanvasElement = undefined;
 
 	let containerEl: HTMLDivElement;
 	let canvasCtx: CanvasRenderingContext2D;

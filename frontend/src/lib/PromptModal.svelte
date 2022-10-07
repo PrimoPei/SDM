@@ -3,38 +3,48 @@
 	import { useMyPresence } from '$lib/liveblocks';
 
 	const dispatch = createEventDispatcher();
-	let prompt: string;
+	let prompt = '';
 	let inputEl: HTMLInputElement;
 	const myPresence = useMyPresence();
 
-	$: {
-		myPresence.update({
-			currentPrompt: prompt,
-			isPrompting: true
-		});
-	}
-
 	const onKeyup = (e: KeyboardEvent) => {
 		if (e.key === 'Escape') {
-			dispatch('close');
 			myPresence.update({
 				currentPrompt: '',
 				isPrompting: false
 			});
+			dispatch('close');
 		}
 	};
 	onMount(() => {
 		inputEl.focus();
+		prompt = '';
 		window.addEventListener('keyup', onKeyup);
 		return () => {
 			window.removeEventListener('keyup', onKeyup);
 		};
 	});
 
+	let timer: NodeJS.Timeout;
+	function debouce(newPrompt: string) {
+		clearTimeout(timer);
+		timer = setTimeout(() => {
+			prompt = newPrompt;
+			myPresence.update({
+				currentPrompt: prompt,
+				isPrompting: true
+			});
+		}, 100);
+	}
 	function onPrompt() {
 		if (prompt.trim() !== '') {
-			dispatch('prompt', prompt);
+			console.log('Prompting with: ', prompt);
+			dispatch('prompt');
 		}
+	}
+	function onInput(event: Event) {
+		const target = event.target as HTMLInputElement;
+		debouce(target.value);
 	}
 </script>
 
@@ -45,8 +55,8 @@
 >
 	<input
 		bind:this={inputEl}
-		bind:value={prompt}
 		on:click|stopPropagation
+		on:input={onInput}
 		class="input"
 		placeholder="Type a prompt..."
 		title="Input prompt to generate image and obtain palette"
