@@ -41,7 +41,7 @@
 	onMount(() => {
 		const scale = width / containerEl.clientWidth;
 		const translatePadding = 0.1;
-		const scalePadding = 1.2;
+		const scalePadding = 3;
 		const zoomHandler = zoom()
 			.scaleExtent([1 / scale / scalePadding, 1])
 			// .extent([
@@ -57,7 +57,7 @@
 
 		const selection = select(canvasEl.parentElement)
 			.call(zoomHandler as any)
-			.call(zoomHandler.scaleTo as any, 1 / scale / scalePadding)
+			.call(zoomHandler.scaleTo as any, 1 / scale / 2)
 			.on('pointermove', handlePointerMove)
 			.on('pointerleave', handlePointerLeave);
 
@@ -65,8 +65,8 @@
 		function zoomReset() {
 			console.log('zoom reset');
 			const scale = width / containerEl.clientWidth;
-			zoomHandler.scaleExtent([1 / scale / scalePadding, 1])
-			selection.call(zoomHandler.scaleTo as any, 1 / scale / scalePadding);
+			zoomHandler.scaleExtent([1 / scale / scalePadding, 1]);
+			selection.call(zoomHandler.scaleTo as any, 1 / scale / 2);
 		}
 		window.addEventListener('resize', zoomReset);
 		return () => {
@@ -125,9 +125,9 @@
 
 	// When the pointer leaves the page, set cursor presence to null
 	function handlePointerLeave() {
-		// myPresence.update({
-		// 	cursor: null
-		// });
+		myPresence.update({
+			cursor: null
+		});
 	}
 </script>
 

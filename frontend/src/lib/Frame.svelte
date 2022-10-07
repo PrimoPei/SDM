@@ -7,6 +7,7 @@
 	export let color = '';
 	export let position = { x: 0, y: 0 };
 	export let prompt = '';
+	export let interactive = false;
 
 	$: coord = {
 		x: transform.applyX(position.x),
@@ -15,7 +16,7 @@
 </script>
 
 <div
-	class="frame z-0 flex relative"
+	class="frame z-0 flex relative {!interactive ? 'pointer-events-none touch-none' : ''}"
 	style={`transform: translateX(${coord.x}px) translateY(${coord.y}px) scale(${transform.k});
 			background-image: linear-gradient(${color}, rgba(255,255,255,0));
 			color: ${color};
@@ -30,7 +31,7 @@
 
 <style lang="postcss" scoped>
 	.frame {
-		@apply pointer-events-none touch-none absolute top-0 left-0 border-2 border-spacing-3 border-sky-500 w-[512px] h-[512px];
+		@apply absolute top-0 left-0 border-2 border-spacing-3 border-sky-500 w-[512px] h-[512px];
 		transform-origin: 0 0;
 	}
 	.small-frame {

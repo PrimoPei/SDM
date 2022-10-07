@@ -58,8 +58,11 @@
 
 	function onPaintMode(e: CustomEvent) {
 		const mode = e.detail.mode;
-		if (mode == 'paint') {
+		if (mode == 'paint' && !isPrompting) {
 			showModal = true;
+			myPresence.update({
+				isPrompting: true
+			});
 		}
 	}
 	function onClose() {
@@ -91,7 +94,7 @@
 		return base64Crop;
 	}
 	async function generateImage() {
-		// if (isPrompting) return;
+		if (isPrompting) return;
 		$loadingState = 'Pending';
 		const prompt = $myPresence.currentPrompt;
 		const position = $myPresence.frame;
@@ -196,25 +199,15 @@
 	<Canvas bind:value={canvasEl} />
 
 	<main class="z-10 relative">
-		<PaintFrame transform={$currZoomTransform} />
+		<PaintFrame transform={$currZoomTransform} interactive={!isPrompting} />
 
-		{#if promptImgList && $showFrames}
-			{#each promptImgList as promptImg}
-				<Frame
-					color={COLORS[0]}
-					transform={$currZoomTransform}
-					position={promptImg?.position}
-					prompt={promptImg?.prompt}
-				/>
-			{/each}
-		{/if}
 		<!-- When others connected, iterate through others and show their cursors -->
 		{#if $others}
 			{#each [...$others] as { connectionId, presence } (connectionId)}
-				{#if presence?.isPrompting && presence?.cursor}
+				{#if presence?.isPrompting && presence?.frame}
 					<Frame
 						color={COLORS[1 + (connectionId % (COLORS.length - 1))]}
-						position={presence?.cursor}
+						position={presence?.frame}
 						prompt={presence?.currentPrompt}
 						transform={$currZoomTransform}
 					/>

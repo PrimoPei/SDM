@@ -4,7 +4,7 @@
 
 	const dispatch = createEventDispatcher();
 	let prompt: string;
-
+	let inputEl: HTMLInputElement;
 	const myPresence = useMyPresence();
 
 	$: {
@@ -24,26 +24,34 @@
 		}
 	};
 	onMount(() => {
+		inputEl.focus();
 		window.addEventListener('keyup', onKeyup);
 		return () => {
 			window.removeEventListener('keyup', onKeyup);
 		};
 	});
+
+	function onPrompt() {
+		if (prompt.trim() !== '') {
+			dispatch('prompt', prompt);
+		}
+	}
 </script>
 
 <form
 	class="fixed w-screen top-0 left-0 bottom-0 right-0 max-h-screen z-50 flex items-center justify-center bg-black bg-opacity-80 px-3"
-	on:submit|preventDefault={() => dispatch('prompt')}
+	on:submit|preventDefault={onPrompt}
 	on:click={() => dispatch('close')}
 >
 	<input
+		bind:this={inputEl}
+		bind:value={prompt}
 		on:click|stopPropagation
 		class="input"
 		placeholder="Type a prompt..."
 		title="Input prompt to generate image and obtain palette"
 		type="text"
 		name="prompt"
-		bind:value={prompt}
 	/>
 </form>
 

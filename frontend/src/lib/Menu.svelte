@@ -1,8 +1,20 @@
 <script lang="ts">
-	import { showFrames } from '$lib/store';
-	import { createEventDispatcher } from 'svelte';
+	import { onMount, createEventDispatcher } from 'svelte';
 
 	const dispatch = createEventDispatcher();
+
+	const onKeyup = (e: KeyboardEvent) => {
+		e.preventDefault();
+		if (e.key === 'Enter') {
+			dispatch('paintMode', { mode: 'paint' });
+		}
+	};
+	onMount(() => {
+		window.addEventListener('keyup', onKeyup);
+		return () => {
+			window.removeEventListener('keyup', onKeyup);
+		};
+	});
 </script>
 
 <div class="grid grid-cols-1 gap-3 w-max mx-auto">
