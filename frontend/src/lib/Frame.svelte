@@ -8,7 +8,7 @@
 	export let position = { x: 0, y: 0 };
 	export let prompt = '';
 	export let interactive = false;
-
+	export let isDragging = false;
 	$: coord = {
 		x: transform.applyX(position.x),
 		y: transform.applyY(position.y)
@@ -16,7 +16,9 @@
 </script>
 
 <div
-	class="frame z-0 flex relative {!interactive ? 'pointer-events-none touch-none' : ''}"
+	class="frame z-0 flex relative
+	{!interactive ? 'pointer-events-none touch-none' : ''}
+	{isDragging ? 'cursor-grabbing' : 'cursor-grab'}"
 	style={`transform: translateX(${coord.x}px) translateY(${coord.y}px) scale(${transform.k});
 			background-image: linear-gradient(${color}, rgba(255,255,255,0));
 			color: ${color};
@@ -26,7 +28,7 @@
 	<LoadingIcon />
 	<h2 class="text-lg">Click to paint</h2>
 
-	<div class="absolute bottom-0 font-bold">{prompt}}</div>
+	<div class="absolute bottom-0 font-bold">{prompt}</div>
 </div>
 
 <style lang="postcss" scoped>

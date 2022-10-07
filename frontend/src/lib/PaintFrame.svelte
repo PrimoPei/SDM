@@ -23,12 +23,12 @@
 	};
 
 	let frameElement: HTMLDivElement;
-
+	let isDragging = false;
 	$: prompt = $myPresence?.currentPrompt;
 
 	onMount(() => {
 		function dragstarted(event: Event) {
-			// console.log(event);
+			isDragging = true;
 		}
 
 		function dragged(event: Event) {
@@ -41,6 +41,8 @@
 		}
 
 		function dragended(event: Event) {
+			isDragging = false;
+
 			const x = round(transform.invertX(event.x) - 512 / 2);
 			const y = round(transform.invertY(event.y) - 512 / 2);
 
@@ -57,5 +59,5 @@
 </script>
 
 <div bind:this={frameElement}>
-	<Frame {color} {position} {prompt} {transform} {interactive} />
+	<Frame {color} {position} {prompt} {transform} {isDragging} {interactive} />
 </div>
