@@ -39,8 +39,8 @@
 			};
 			myPresence.update({
 				cursor: {
-					x: x + 256,
-					y: y + 256
+					x: transform.invertX(event.x),
+					y: transform.invertY(event.y)
 				}
 			});
 		}
@@ -59,14 +59,10 @@
 			});
 		}
 		function handlePointerMove(event: PointerEvent) {
-			event.preventDefault();
-			const x = round(transform.invertX(event.clientX));
-			const y = round(transform.invertY(event.clientY));
-
 			myPresence.update({
 				cursor: {
-					x,
-					y
+					x: transform.invertX(event.clientX),
+					y: transform.invertY(event.clientY)
 				}
 			});
 		}

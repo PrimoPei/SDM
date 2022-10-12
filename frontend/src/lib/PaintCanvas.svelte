@@ -114,8 +114,8 @@
 	// Update cursor presence to current pointer location
 	function handlePointerMove(event: PointerEvent) {
 		event.preventDefault();
-		const x = round($currZoomTransform.invertX(event.clientX));
-		const y = round($currZoomTransform.invertY(event.clientY));
+		const x = $currZoomTransform.invertX(event.clientX);
+		const y = $currZoomTransform.invertY(event.clientY);
 
 		myPresence.update({
 			cursor: {
