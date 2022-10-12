@@ -1,16 +1,21 @@
 <script lang="ts">
 	import Frame from '$lib/Frame.svelte';
-	import Move from '$lib/Icons/Move.svelte';
+	import PPButton from '$lib/Buttons/PPButton.svelte';
+	import DragButton from '$lib/Buttons/DragButton.svelte';
+	import MaskButton from '$lib/Buttons/MaskButton.svelte';
+
 	import { drag } from 'd3-drag';
 	import { select } from 'd3-selection';
 	import { round } from '$lib/utils';
 
 	import type { ZoomTransform } from 'd3-zoom';
-	import { onMount } from 'svelte';
+	import { onMount, createEventDispatcher } from 'svelte';
 
 	import { useMyPresence } from '$lib/liveblocks';
 	import { loadingState } from '$lib/store';
 	const myPresence = useMyPresence();
+
+	const dispatch = createEventDispatcher();
 
 	export let transform: ZoomTransform;
 	export let color = 'black';
@@ -100,5 +105,24 @@
 		{isLoading}
 		{isDragging}
 		{interactive}
-	/>
+	>
+		<div slot="bottom">
+			{#if !isDragging}
+				<div class="py-2">
+					<PPButton on:click={() => dispatch('paintMode', { mode: 'paint' })} />
+				</div>
+			{/if}
+		</div>
+		<div slot="right">
+			{#if !isDragging}
+				<div class="px-2 flex flex-col gap-2">
+					<DragButton />
+					<MaskButton />
+				</div>
+			{/if}
+		</div>
+	</Frame>
 </div>
+
+<style lang="postcss" scoped>
+</style>

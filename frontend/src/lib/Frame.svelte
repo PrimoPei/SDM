@@ -1,5 +1,5 @@
 <script lang="ts">
-	import LoadingIcon from '$lib/LoadingIcon.svelte';
+	import LoadingIcon from '$lib/Icons/LoadingIcon.svelte';
 
 	import type { ZoomTransform } from 'd3-zoom';
 
@@ -18,7 +18,7 @@
 </script>
 
 <div
-	class="frame z-0 relative grid grid-cols-3 grid-rows-3
+	class="frame
 	{!interactive ? 'pointer-events-none touch-none' : ''}
 	{isDragging ? 'cursor-grabbing' : 'cursor-grab'}"
 	style={`transform: translateX(${coord.x}px) translateY(${coord.y}px) scale(${transform.k}); border-color: ${color};`}
@@ -36,13 +36,18 @@
 	{/if}
 
 	<h2 class="text-lg">Click to paint</h2>
-
 	<div class="absolute bottom-0 font-bold text-lg">{prompt}</div>
+	<div class="absolute top-full">
+		<slot name="bottom" />
+	</div>
+	<div class="absolute left-full bottom-0">
+		<slot name="right" />
+	</div>
 </div>
 
 <style lang="postcss" scoped>
 	.frame {
-		@apply absolute top-0 left-0 border-2 border-spacing-3 border-sky-500 w-[512px] h-[512px];
+		@apply absolute top-0 left-0  grid grid-cols-3 grid-rows-3 border-2 border-spacing-3 border-sky-500 w-[512px] h-[512px];
 		transform-origin: 0 0;
 	}
 	.small-frame {

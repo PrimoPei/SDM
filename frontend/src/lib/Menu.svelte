@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { onMount, createEventDispatcher } from 'svelte';
-
+	import PPButton from '$lib/Buttons/PPButton.svelte';
 	const dispatch = createEventDispatcher();
 
 	const onKeyup = (e: KeyboardEvent) => {
@@ -31,24 +31,5 @@
 	<!-- <button class="button" title="Move" on:click={() => dispatch('paintMode', { mode: 'move' })}>
 		Move
 	</button> -->
-	<button
-		class="button-paint bg-violet-100 text-violet-900"
-		title="New Paint Frame"
-		on:click={() => dispatch('paintMode', { mode: 'paint' })}
-	>
-		<span
-			class="rounded-sm h-6 w-6 flex justify-center items-center border-2 border-dashed border-violet-700 mr-2"
-			>+</span
-		>
-		<span>Paint</span>
-	</button>
+	<PPButton on:click={() => dispatch('paintMode', { mode: 'paint' })} />
 </div>
-
-<style lang="postcss" scoped>
-	/* .button {
-		@apply disabled:opacity-50 dark:bg-white dark:text-black bg-black text-white rounded-2xl text-xs shadow-sm focus:outline-none focus:border-gray-400;
-	} */
-	.button-paint {
-		@apply flex justify-center items-center disabled:opacity-50  dark:bg-white dark:text-black rounded-2xl px-3 py-1 shadow-sm focus:outline-none focus:border-gray-400;
-	}
-</style>

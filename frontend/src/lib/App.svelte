@@ -196,7 +196,11 @@
 	<PaintCanvas bind:canvasEl />
 
 	<main class="z-10 relative">
-		<PaintFrame transform={$currZoomTransform} interactive={!isPrompting} />
+		<PaintFrame
+			on:paintMode={onPaintMode}
+			transform={$currZoomTransform}
+			interactive={!isPrompting}
+		/>
 
 		<!-- When others connected, iterate through others and show their cursors -->
 		{#if $others}
