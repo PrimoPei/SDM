@@ -3,6 +3,7 @@
 	import PPButton from '$lib/Buttons/PPButton.svelte';
 	import DragButton from '$lib/Buttons/DragButton.svelte';
 	import MaskButton from '$lib/Buttons/MaskButton.svelte';
+	import LoadingIcon from '$lib/Icons/LoadingIcon.svelte';
 
 	import { drag } from 'd3-drag';
 	import { select } from 'd3-selection';
@@ -27,9 +28,15 @@
 	};
 
 	let frameElement: HTMLDivElement;
+	let dragEnabled = true;
 	let isDragging = false;
 	$: prompt = $myPresence?.currentPrompt;
 	$: isLoading = $myPresence?.isLoading || false;
+
+	$: coord = {
+		x: transform.applyX(position.x),
+		y: transform.applyY(position.y)
+	};
 
 	let offsetX = 0;
 	let offsetY = 0;
@@ -93,36 +100,59 @@
 			.on('pointermove', handlePointerMove)
 			.on('pointerleave', handlePointerLeave);
 	});
+
+	function DragMask() {
+		dragEnabled = !dragEnabled;
+	}
 </script>
 
-<div bind:this={frameElement}>
-	<Frame
-		{color}
-		{position}
-		loadingState={$loadingState}
-		{prompt}
-		{transform}
-		{isLoading}
-		{isDragging}
-		{interactive}
+<div>
+	<div
+		class="absolute top-0 left-0"
+		style={`transform: translateX(${coord.x}px) translateY(${coord.y}px) scale(${transform.k}); border-color: ${color}; transform-origin: 0 0;`}
 	>
-		<div slot="bottom">
+		<div class="frame">
+			<div class="pointer-events-none touch-none">
+				{#if $loadingState}
+					<div class="col-span-2 row-start-1">
+						<span class="text-white drop-shadow-lg">{$loadingState}</span>
+					</div>
+				{/if}
+				{#if isLoading}
+					<div class="col-start-2 row-start-2">
+						<LoadingIcon />
+					</div>
+				{/if}
+
+				<h2 class="text-lg">Click to paint</h2>
+				<div class="absolute bottom-0 font-bold text-lg">{prompt}</div>
+			</div>
 			{#if !isDragging}
-				<div class="py-2">
-					<PPButton on:click={() => dispatch('paintMode', { mode: 'paint' })} />
+				<div class="absolute top-full">
+					<div class="py-2">
+						<PPButton on:click={() => dispatch('paintMode', { mode: 'paint' })} />
+					</div>
+				</div>
+				<div class="absolute left-full bottom-0">
+					<div class="px-2 flex flex-col gap-2">
+						<DragButton isActive={dragEnabled} on:click={() => (dragEnabled = true)} />
+						<MaskButton isActive={!dragEnabled} on:click={() => (dragEnabled = false)} />
+					</div>
 				</div>
 			{/if}
 		</div>
-		<div slot="right">
-			{#if !isDragging}
-				<div class="px-2 flex flex-col gap-2">
-					<DragButton />
-					<MaskButton />
-				</div>
-			{/if}
-		</div>
-	</Frame>
+	</div>
+	<div
+		bind:this={frameElement}
+		class="absolute top-0 left-0 w-[512px] h-[512px] border-2 border-black
+		{isDragging ? 'cursor-grabbing' : 'cursor-grab'}
+		{dragEnabled ? 'block' : 'hidden'}"
+		style={`transform: translateX(${coord.x}px) translateY(${coord.y}px) scale(${transform.k}); border-color: ${color}; transform-origin: 0 0;`}
+	/>
 </div>
 
 <style lang="postcss" scoped>
+	.frame {
+		@apply relative grid grid-cols-3 grid-rows-3 border-2 border-spacing-3 border-sky-500 w-[512px] h-[512px];
+	}
 </style>

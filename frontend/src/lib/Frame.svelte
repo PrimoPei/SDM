@@ -18,30 +18,23 @@
 </script>
 
 <div
-	class="frame
-	{!interactive ? 'pointer-events-none touch-none' : ''}
-	{isDragging ? 'cursor-grabbing' : 'cursor-grab'}"
+	class="frame {isDragging ? 'cursor-grabbing' : 'cursor-grab'}"
 	style={`transform: translateX(${coord.x}px) translateY(${coord.y}px) scale(${transform.k}); border-color: ${color};`}
 >
-	{#if loadingState}
-		<div class="col-span-2 row-start-1">
-			<span class="text-white drop-shadow-lg">{loadingState}</span>
-		</div>
-	{/if}
-	<div class="small-frame z-0 flex relative" />
-	{#if isLoading}
-		<div class="col-start-2 row-start-2">
-			<LoadingIcon />
-		</div>
-	{/if}
+	<div class={!interactive ? 'pointer-events-none touch-none' : ''}>
+		{#if loadingState}
+			<div class="col-span-2 row-start-1">
+				<span class="text-white drop-shadow-lg">{loadingState}</span>
+			</div>
+		{/if}
+		{#if isLoading}
+			<div class="col-start-2 row-start-2">
+				<LoadingIcon />
+			</div>
+		{/if}
 
-	<h2 class="text-lg">Click to paint</h2>
-	<div class="absolute bottom-0 font-bold text-lg">{prompt}</div>
-	<div class="absolute top-full">
-		<slot name="bottom" />
-	</div>
-	<div class="absolute left-full bottom-0">
-		<slot name="right" />
+		<h2 class="text-lg">Click to paint</h2>
+		<div class="absolute bottom-0 font-bold text-lg">{prompt}</div>
 	</div>
 </div>
 
@@ -49,9 +42,5 @@
 	.frame {
 		@apply absolute top-0 left-0  grid grid-cols-3 grid-rows-3 border-2 border-spacing-3 border-sky-500 w-[512px] h-[512px];
 		transform-origin: 0 0;
-	}
-	.small-frame {
-		@apply pointer-events-none touch-none absolute top-1/2 left-1/2 border-2 border-spacing-3  w-[256px] h-[256px];
-		transform: translateX(-50%) translateY(-50%);
 	}
 </style>
