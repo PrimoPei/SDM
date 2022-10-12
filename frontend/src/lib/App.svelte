@@ -8,7 +8,7 @@
 	import { COLORS, EMOJIS } from '$lib/constants';
 	import { PUBLIC_WS_INPAINTING } from '$env/static/public';
 	import type { PromptImgObject, PromptImgKey, Presence } from '$lib/types';
-	import { loadingState, currZoomTransform } from '$lib/store';
+	import { loadingState, currZoomTransform, maskEl } from '$lib/store';
 
 	import { useMyPresence, useObject, useOthers } from '$lib/liveblocks';
 
@@ -45,8 +45,6 @@
 	$: isPrompting = $myPresence?.isPrompting || false;
 	$: isLoading = $myPresence?.isLoading || false;
 
-	let canvasEl: HTMLCanvasElement;
-
 	function onPaintMode(e: CustomEvent) {
 		const mode = e.detail.mode;
 		if (mode == 'paint' && !isPrompting) {
@@ -67,21 +65,21 @@
 	}
 
 	function getImageCrop(cursor: { x: number; y: number }) {
-		const canvasCrop = document.createElement('canvas');
+		// const canvasCrop = document.createElement('canvas');
 
-		canvasCrop.width = 512;
-		canvasCrop.height = 512;
+		// canvasCrop.width = 512;
+		// canvasCrop.height = 512;
 
-		const ctxCrop = canvasCrop.getContext('2d') as CanvasRenderingContext2D;
+		// const ctxCrop = canvasCrop.getContext('2d') as CanvasRenderingContext2D;
 
-		// crop image from point canvas
-		ctxCrop.save();
-		ctxCrop.clearRect(0, 0, 512, 512);
-		ctxCrop.globalCompositeOperation = 'source-over';
-		ctxCrop.drawImage(canvasEl, cursor.x, cursor.y, 512, 512, 0, 0, 512, 512);
-		ctxCrop.restore();
-
-		const base64Crop = canvasCrop.toDataURL('image/png');
+		// // crop image from point canvas
+		// ctxCrop.save();
+		// ctxCrop.clearRect(0, 0, 512, 512);
+		// ctxCrop.globalCompositeOperation = 'source-over';
+		// ctxCrop.drawImage($maskEl, cursor.x, cursor.y, 512, 512, 0, 0, 512, 512);
+		// ctxCrop.restore();
+		
+		const base64Crop = $maskEl.toDataURL('image/png');
 
 		return base64Crop;
 	}
@@ -193,7 +191,7 @@
 	<PromptModal on:prompt={onPrompt} on:close={onClose} />
 {/if}
 <div class="fixed top-0 left-0 z-0 w-screen h-screen">
-	<PaintCanvas bind:canvasEl />
+	<PaintCanvas />
 
 	<main class="z-10 relative">
 		<PaintFrame

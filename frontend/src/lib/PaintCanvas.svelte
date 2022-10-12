@@ -3,7 +3,7 @@
 	import { select } from 'd3-selection';
 	import { onMount } from 'svelte';
 	import { PUBLIC_UPLOADS } from '$env/static/public';
-	import { currZoomTransform } from '$lib/store';
+	import { currZoomTransform, canvasEl } from '$lib/store';
 	import { round } from '$lib/utils';
 
 	import { useMyPresence, useObject } from '$lib/liveblocks';
@@ -14,8 +14,6 @@
 
 	const height = 512 * 4;
 	const width = 512 * 4;
-
-	export let canvasEl: HTMLCanvasElement = document.createElement('canvas');
 
 	let containerEl: HTMLDivElement;
 	let canvasCtx: CanvasRenderingContext2D;
@@ -53,14 +51,14 @@
 			.tapDistance(10)
 			.on('zoom', zoomed);
 
-		const selection = select(canvasEl.parentElement)
+		const selection = select($canvasEl.parentElement)
 			.call(zoomHandler as any)
 			.call(zoomHandler.transform as any, zoomIdentity)
 			.call(zoomHandler.scaleTo as any, 1 / scale)
 			.on('pointermove', handlePointerMove)
 			.on('pointerleave', handlePointerLeave);
 
-		canvasCtx = canvasEl.getContext('2d') as CanvasRenderingContext2D;
+		canvasCtx = $canvasEl.getContext('2d') as CanvasRenderingContext2D;
 		function zoomReset() {
 			const scale =
 				(width + padding * 2) /
@@ -108,7 +106,7 @@
 	}
 	function zoomed(e: Event) {
 		const transform = ($currZoomTransform = e.transform);
-		canvasEl.style.transform = `translate(${transform.x}px, ${transform.y}px) scale(${transform.k})`;
+		$canvasEl.style.transform = `translate(${transform.x}px, ${transform.y}px) scale(${transform.k})`;
 	}
 
 	// Update cursor presence to current pointer location
@@ -137,7 +135,7 @@
 	bind:this={containerEl}
 	class="absolute top-0 left-0 right-0 bottom-0 overflow-hidden z-0 bg-gray-800"
 >
-	<canvas bind:this={canvasEl} {width} {height} class="absolute top-0 left-0 bg-white" />
+	<canvas bind:this={$canvasEl} {width} {height} class="absolute top-0 left-0 bg-white" />
 	<slot />
 </div>
 
