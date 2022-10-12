@@ -17,5 +17,6 @@ declare global {
 		transform: ZoomTransform;
 		x: number;
 		y: number;
+		sourceEvent: PointerEvent | MouseEvent | TouchEvent
 	}
 }

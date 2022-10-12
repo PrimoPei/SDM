@@ -1,5 +1,6 @@
 <script lang="ts">
 	import Frame from '$lib/Frame.svelte';
+	import Move from '$lib/Icons/Move.svelte';
 	import { drag } from 'd3-drag';
 	import { select } from 'd3-selection';
 	import { round } from '$lib/utils';
@@ -25,14 +26,24 @@
 	$: prompt = $myPresence?.currentPrompt;
 	$: isLoading = $myPresence?.isLoading || false;
 
+	let offsetX = 0;
+	let offsetY = 0;
 	onMount(() => {
-		function dragstarted() {
+		function dragstarted(event: Event) {
+			const rect = (event.sourceEvent.target as HTMLElement).getBoundingClientRect();
+			if (event.sourceEvent instanceof TouchEvent) {
+				offsetX = event.sourceEvent.targetTouches[0].pageX - rect.left;
+				offsetY = event.sourceEvent.targetTouches[0].pageY - rect.top;
+			} else {
+				offsetX = event.sourceEvent.pageX - rect.left;
+				offsetY = event.sourceEvent.pageY - rect.top;
+			}
 			isDragging = true;
 		}
 
 		function dragged(event: Event) {
-			const x = round(transform.invertX(event.x)) - 256;
-			const y = round(transform.invertY(event.y)) - 256;
+			const x = round(transform.invertX(event.x - offsetX));
+			const y = round(transform.invertY(event.y - offsetY));
 			position = {
 				x,
 				y
@@ -48,8 +59,8 @@
 		function dragended(event: Event) {
 			isDragging = false;
 
-			const x = round(transform.invertX(event.x)) - 256;
-			const y = round(transform.invertY(event.y)) - 256;
+			const x = round(transform.invertX(event.x - offsetX));
+			const y = round(transform.invertY(event.y - offsetY));
 
 			myPresence.update({
 				frame: {

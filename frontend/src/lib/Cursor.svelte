@@ -1,6 +1,6 @@
 <script lang="ts">
 	import type { ZoomTransform } from 'd3-zoom';
-
+	import Cursor from '$lib/Icons/Cursor.svelte';
 	export let transform: ZoomTransform;
 	export let color = '';
 	export let emoji: string;
@@ -16,18 +16,8 @@
 	class="cursor"
 	style={`transform: translateX(${coord.x}px) translateY(${coord.y}px) scale(${transform.k});`}
 >
-	<svg
-		class="block z-0 col-span-2 row-span-2"
-		width="40"
-		viewBox="0 0 15 15"
-		fill="currentColor"
-		xmlns="http://www.w3.org/2000/svg"
-	>
-		<path
-			d="M0.91603 0.916054L7.09131 14.9234L8.89871 8.89873L14.9234 7.09133L0.91603 0.916054Z"
-			fill="#FFB800"
-		/>
-	</svg>
+	<Cursor classList={'block z-0 col-span-2 row-span-2'} />
+
 	{#if emoji}
 		<div
 			class="absolute right-0 text-4xl col-start-2 row-start-2"
