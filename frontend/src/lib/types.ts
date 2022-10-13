@@ -1,3 +1,12 @@
+export enum Status {
+	ready = 'ready',
+	loading = 'loading',
+	prompting = 'prompting',
+	processing = 'processing',
+	dragging = 'dragging',
+	masking = 'masking',
+}
+
 export type Presence = {
 	cursor: {
 		x: number;
@@ -7,8 +16,7 @@ export type Presence = {
 		x: number;
 		y: number;
 	} | null;
-	isPrompting: boolean;
-	isLoading: boolean;
+	status: Status;
 	currentPrompt: string
 }
 
@@ -26,3 +34,4 @@ export type PromptImgObject = {
 };
 
 export type PromptImgKey = string;
+

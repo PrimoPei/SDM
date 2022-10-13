@@ -16,13 +16,13 @@
 	import { loadingState, canvasEl, maskEl } from '$lib/store';
 
 	import { toggle_class } from 'svelte/internal';
+	import { Status } from './types';
 	const myPresence = useMyPresence();
 
 	const dispatch = createEventDispatcher();
 
 	export let transform: ZoomTransform;
 	export let color = 'black';
-	export let interactive = false;
 
 	let maskCtx: CanvasRenderingContext2D;
 
@@ -35,7 +35,7 @@
 	let dragEnabled = true;
 	let isDragging = false;
 	$: prompt = $myPresence?.currentPrompt;
-	$: isLoading = $myPresence?.isLoading || false;
+	$: isLoading = $myPresence?.status === Status.loading || false;
 
 	$: coord = {
 		x: transform.applyX(position.x),
@@ -52,25 +52,30 @@
 		maskCtx.drawImage($canvasEl, cursor.x, cursor.y, 512, 512, 0, 0, 512, 512);
 		maskCtx.restore();
 	}
-	function drawCircle(cursor: { x: number; y: number }) {
+	function drawLine(points: { x: number; y: number; lastx: number; lasty: number }) {
 		maskCtx.save();
 		maskCtx.globalCompositeOperation = 'destination-out';
 		maskCtx.beginPath();
-		maskCtx.arc(cursor.x, cursor.y, 20, 0, 2 * Math.PI);
-		maskCtx.fill();
+		maskCtx.moveTo(points.lastx, points.lasty);
+		maskCtx.lineTo(points.x, points.y);
+		maskCtx.lineWidth = 50;
+		maskCtx.lineCap = 'round';
+		maskCtx.strokeStyle = 'black';
+		maskCtx.stroke();
 		maskCtx.restore();
 	}
-
 	onMount(() => {
 		maskCtx = $maskEl.getContext('2d') as CanvasRenderingContext2D;
 
 		select(frameElement)
 			.call(dragMoveHandler() as any)
 			.call(cursorUpdate);
-		select($maskEl).call(maskingHandler() as any);
+		select($maskEl)
+			.call(maskingHandler() as any)
+			.call(cursorUpdate);
 	});
 
-	function cursorUpdate(selection: Selection) {
+	function cursorUpdate(selection) {
 		function handlePointerMove(event: PointerEvent) {
 			myPresence.update({
 				cursor: {
@@ -87,21 +92,24 @@
 		return selection.on('pointermove', handlePointerMove).on('pointerleave', handlePointerLeave);
 	}
 	function maskingHandler() {
+		let lastx: number;
+		let lasty: number;
 		function dragstarted(event: Event) {
 			const x = event.x / transform.k;
 			const y = event.y / transform.k;
+			lastx = x;
+			lasty = y;
 		}
 
 		function dragged(event: Event) {
 			const x = event.x / transform.k;
 			const y = event.y / transform.k;
-			drawCircle({ x, y });
+			drawLine({ x, y, lastx, lasty });
+			lastx = x;
+			lasty = y;
 		}
 
-		function dragended(event: Event) {
-			const x = event.x / transform.k;
-			const y = event.y / transform.k;
-		}
+		function dragended(event: Event) {}
 		return drag().on('start', dragstarted).on('drag', dragged).on('end', dragended);
 	}
 	function dragMoveHandler() {
@@ -151,25 +159,30 @@
 	}
 	function toggleDrag() {
 		dragEnabled = true;
+		myPresence.update({
+			status: Status.dragging
+		});
 	}
-	function toggleMask() {
+	function toggleDrawMask() {
 		dragEnabled = false;
+		cropCanvas(position);
+		myPresence.update({
+			status: Status.masking
+		});
+	}
+
+	function cleanMask() {
 		cropCanvas(position);
 	}
 </script>
 
 <div>
 	<div
-		class="absolute top-0 left-0"
-		style={`transform: translateX(${coord.x}px) translateY(${coord.y}px) scale(${transform.k}); border-color: ${color}; transform-origin: 0 0;`}
+		class="absolute top-0 left-0 pen"
+		style={`transform: translateX(${coord.x}px) translateY(${coord.y}px) scale(${transform.k}); transform-origin: 0 0;`}
 	>
 		<div class="frame">
-			<canvas
-				class={dragEnabled || isLoading ? '' : 'bg-white'}
-				bind:this={$maskEl}
-				width="512"
-				height="512"
-			/>
+			<canvas class={dragEnabled ? '' : 'bg-white'} bind:this={$maskEl} width="512" height="512" />
 			<div class="pointer-events-none touch-none">
 				{#if $loadingState}
 					<div class="col-span-2 row-start-1">
@@ -182,23 +195,23 @@
 					</div>
 				{/if}
 
-				<h2 class="text-lg">Click to paint</h2>
+				<h2 class="text-lg" />
 				<div class="absolute bottom-0 font-bold text-lg">{prompt}</div>
 			</div>
 			{#if !isDragging}
 				<div class="absolute top-full ">
 					<div class="py-2">
-						<PPButton on:click={() => dispatch('paintMode', { mode: 'paint' })} />
+						<PPButton on:click={() => dispatch('prompt')} />
 					</div>
 				</div>
 				<div class="absolute left-full bottom-0">
 					<div class="px-2">
 						<DragButton isActive={dragEnabled} on:click={toggleDrag} />
 						<div class="flex bg-white rounded-full mt-3">
-							<MaskButton isActive={!dragEnabled} on:click={toggleMask} />
+							<MaskButton isActive={!dragEnabled} on:click={toggleDrawMask} />
 							{#if !dragEnabled}
 								<span class="border-gray-800 border-opacity-50 border-r-2 my-2" />
-								<UndoButton on:click={() => {}} />
+								<UndoButton on:click={cleanMask} />
 							{/if}
 						</div>
 					</div>
@@ -208,8 +221,7 @@
 	</div>
 	<div
 		bind:this={frameElement}
-		class="absolute top-0 left-0 w-[512px] h-[512px] ring-2 ring-black
-		{isDragging ? 'cursor-grabbing' : 'cursor-grab'}
+		class="absolute top-0 left-0 w-[512px] h-[512px] hand
 		{dragEnabled ? 'block' : 'hidden'}"
 		style={`transform: translateX(${coord.x}px) translateY(${coord.y}px) scale(${transform.k}); transform-origin: 0 0;`}
 	/>
@@ -217,6 +229,16 @@
 
 <style lang="postcss" scoped>
 	.frame {
-		@apply relative grid grid-cols-3 grid-rows-3 ring-2 ring-blue-500 w-[512px] h-[512px];
+		@apply relative grid grid-cols-3 grid-rows-3 ring-8 ring-blue-500 w-[512px] h-[512px];
+	}
+	.hand {
+		cursor: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABMAAAAUCAYAAABvVQZ0AAAACXBIWXMAAAsTAAALEwEAmpwYAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAHSSURBVHgBzVQ9LENRFD4VozZWP4ku/jqJAYNoEQaWNpEwIYJFBINY6UCn6mKTKhYNSTuwVFBiaEgai9bP4CWKUftqv845vU+k7evr2C/5cu6799zvnHvOvQ+gUmEqNimEsKLZQ3YgA0j6TiNXeJPJlIZygEK1yFAmo4rj0Kkg0Jj4DyHyMxKyIt/I+zH5LJrau8V76lPMLa6KjU2vyKhZsbHl1YTX8/dX5X071eyPdX5xDRrr68BiNsNJ+AxsrS1sCf6DIEQub2hoNxJjxO7ivHnMNZqzzlHAIJBIvkBPV6cm7JC11RULWMw1LELRhwf6IPXxxSSRyMU1ztk5mKpmyX9aV0x2KUoitMHW1sxHjd3HWYQyGh7sY1+Z3ZTRMfcpCxLxHwZhZnIc63TEC3TU3iEXj2XdqGGOomKyBhxNq1fi6ZVF3J5tyK+rPGqHXmZX6OAgR61eVCc9UBDE332rzlu3uj0+WRs7GKGxoY5MWi8zZWZygp1KZUSg6yIR1RNzYQeV2/MQLC/MQqmM5HoYb8CDNl/w0GUTlpFLVDPfzi5myZ0DW3szX5Ex5whYLGYFp/pRTAEjyHcaFoX4RvqKPXRTOaJoHJDrmoKMlv0Lqhj8AlEeE/77ZUZMAAAAAElFTkSuQmCC')
+				8 8,
+			pointer;
+	}
+	.pen {
+		cursor: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAACXBIWXMAAAsTAAALEwEAmpwYAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAExSURBVHgBnZJBjkRQEIZLt45YSIwTsLUQbuAqc4LpG3AUO9ueE5idpSFhSyKxsWCBDfKmyozZtcafVLz38r6/Sr0COCDGmEwBZ4TgB0bDfuUchvM8Z7ZtM1VVGa13m9BFuh1FEZNlmdERmfxJvryCi6JwNU2DOI4hCAJAkyVIHMe1mzCVStloS+F53lJJ0yytcA/BFKZprqXfT8FPM/u+r4ZhGJRl2ZyCkyRp0jRlfd8z13X3wyTs7oPg1YDeejeM4ghcN7quAz0ZgoC/AY7jAM/zrSRJb88M+Ov12s7zLN9ut+UAewDjOEJd18u3qqrN2eeHYfgWBMGmy1mWARnRetU0TZ9bBhecpnes4H+iVhj7AaIotoZh3DcNLMsq0MDquu6xHpKhoihf2A8LExRbBj/Uih2c7AwcBQAAAABJRU5ErkJggg==')
+				8 8,
+			pointer;
 	}
 </style>

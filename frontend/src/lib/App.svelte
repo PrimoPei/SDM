@@ -8,12 +8,10 @@
 	import { COLORS, EMOJIS } from '$lib/constants';
 	import { PUBLIC_WS_INPAINTING } from '$env/static/public';
 	import type { PromptImgObject, PromptImgKey, Presence } from '$lib/types';
+	import { Status } from '$lib/types';
 	import { loadingState, currZoomTransform, maskEl } from '$lib/store';
-
 	import { useMyPresence, useObject, useOthers } from '$lib/liveblocks';
-
 	import { base64ToBlob, uploadImage } from '$lib/utils';
-
 	import { nanoid } from 'nanoid';
 
 	/**
@@ -28,8 +26,7 @@
 	const initialPresence: Presence = {
 		cursor: null,
 		frame: null,
-		isPrompting: false,
-		isLoading: false,
+		status: Status.dragging,
 		currentPrompt: ''
 	};
 	myPresence.update(initialPresence);
@@ -42,15 +39,17 @@
 
 	let showModal = false;
 
-	$: isPrompting = $myPresence?.isPrompting || false;
-	$: isLoading = $myPresence?.isLoading || false;
+	$: isPrompting = $myPresence?.status === Status.prompting || false;
+	$: isLoading = $myPresence?.status === Status.loading || false;
 
-	function onPaintMode(e: CustomEvent) {
-		const mode = e.detail.mode;
-		if (mode == 'paint' && !isPrompting) {
+	$: {
+		console.log($myPresence.status);
+	}
+	function onPrompt() {
+		if (!isLoading) {
 			showModal = true;
 			myPresence.update({
-				isPrompting: true
+				status: Status.prompting
 			});
 		}
 	}
@@ -58,31 +57,12 @@
 		showModal = false;
 	}
 
-	function onPrompt() {
-		console.log('onPrompt');
+	function onPaint() {
+		console.log('onPaint');
 		generateImage();
 		showModal = false;
 	}
 
-	function getImageCrop(cursor: { x: number; y: number }) {
-		// const canvasCrop = document.createElement('canvas');
-
-		// canvasCrop.width = 512;
-		// canvasCrop.height = 512;
-
-		// const ctxCrop = canvasCrop.getContext('2d') as CanvasRenderingContext2D;
-
-		// // crop image from point canvas
-		// ctxCrop.save();
-		// ctxCrop.clearRect(0, 0, 512, 512);
-		// ctxCrop.globalCompositeOperation = 'source-over';
-		// ctxCrop.drawImage($maskEl, cursor.x, cursor.y, 512, 512, 0, 0, 512, 512);
-		// ctxCrop.restore();
-		
-		const base64Crop = $maskEl.toDataURL('image/png');
-
-		return base64Crop;
-	}
 	async function generateImage() {
 		if (isLoading) return;
 		$loadingState = 'Pending';
@@ -90,13 +70,14 @@
 		const position = $myPresence.frame;
 		console.log('Generating...', prompt, position);
 		myPresence.update({
-			isPrompting: true,
-			isLoading: true
+			status: Status.loading
 		});
 		const sessionHash = crypto.randomUUID();
+		const base64Crop = $maskEl.toDataURL('image/png');
+
 		const payload = {
 			fn_index: 0,
-			data: [getImageCrop(position), prompt, 0.75, 7.5, 40, 'patchmatch'],
+			data: [base64Crop, prompt, 0.75, 7.5, 40, 'patchmatch'],
 			session_hash: sessionHash
 		};
 		console.log('payload', payload);
@@ -109,8 +90,7 @@
 			if (!evt.wasClean) {
 				$loadingState = 'Error';
 				myPresence.update({
-					isPrompting: false,
-					isLoading: false
+					status: Status.ready
 				});
 			}
 		};
@@ -127,8 +107,7 @@
 						$loadingState = 'Queue full';
 						websocket.close();
 						myPresence.update({
-							isPrompting: false,
-							isLoading: false
+							status: Status.ready
 						});
 						return;
 					case 'estimation':
@@ -167,8 +146,7 @@
 						}
 						websocket.close();
 						myPresence.update({
-							isPrompting: false,
-							isLoading: false
+							status: Status.ready
 						});
 						return;
 					case 'process_starts':
@@ -188,22 +166,18 @@
 	{$loadingState}
 </div>
 {#if showModal}
-	<PromptModal on:prompt={onPrompt} on:close={onClose} />
+	<PromptModal on:paint={onPaint} on:close={onClose} />
 {/if}
 <div class="fixed top-0 left-0 z-0 w-screen h-screen">
 	<PaintCanvas />
 
 	<main class="z-10 relative">
-		<PaintFrame
-			on:paintMode={onPaintMode}
-			transform={$currZoomTransform}
-			interactive={!isPrompting}
-		/>
+		<PaintFrame on:prompt={onPrompt} transform={$currZoomTransform} />
 
 		<!-- When others connected, iterate through others and show their cursors -->
 		{#if $others}
 			{#each [...$others] as { connectionId, presence } (connectionId)}
-				{#if presence?.isPrompting && presence?.frame}
+				{#if (presence?.status === Status.prompting || presence?.status === Status.masking) && presence?.frame}
 					<Frame
 						color={COLORS[1 + (connectionId % (COLORS.length - 1))]}
 						position={presence?.frame}
@@ -225,7 +199,7 @@
 </div>
 
 <div class="fixed bottom-0 left-0 right-0 z-10 my-2">
-	<Menu on:paintMode={onPaintMode} />
+	<Menu on:prompt={onPrompt} />
 </div>
 
 <style lang="postcss" scoped>

@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { createEventDispatcher, onMount } from 'svelte';
 	import { useMyPresence } from '$lib/liveblocks';
+	import { Status } from '$lib/types';
 
 	const dispatch = createEventDispatcher();
 	let prompt = '';
@@ -28,14 +29,14 @@
 			prompt = newPrompt;
 			myPresence.update({
 				currentPrompt: prompt,
-				isPrompting: true
+				status: Status.prompting
 			});
 		}, 100);
 	}
 	function onPrompt() {
 		if (prompt.trim() !== '') {
 			console.log('Prompting with: ', prompt);
-			dispatch('prompt');
+			dispatch('paint');
 		}
 	}
 	function onInput(event: Event) {
@@ -45,7 +46,7 @@
 	function cancel() {
 		myPresence.update({
 			currentPrompt: '',
-			isPrompting: false
+			status: Status.ready
 		});
 		dispatch('close');
 	}
@@ -56,20 +57,25 @@
 	on:submit|preventDefault={onPrompt}
 	on:click={cancel}
 >
-	<input
-		bind:this={inputEl}
-		on:click|stopPropagation
-		on:input={onInput}
-		class="input"
-		placeholder="Type a prompt..."
-		title="Input prompt to generate image and obtain palette"
-		type="text"
-		name="prompt"
-	/>
+	<div class="flex bg-white rounded-2xl px-2 w-full max-w-md">
+		<input
+			bind:this={inputEl}
+			on:click|stopPropagation
+			on:input={onInput}
+			class="input"
+			placeholder="Type a prompt..."
+			title="Input prompt to generate image and obtain palette"
+			type="text"
+			name="prompt"
+		/>
+		<button on:click|preventDefault={onPrompt} class="font-mono border-l-2 pl-2" type="submit"
+			>Paint</button
+		>
+	</div>
 </form>
 
 <style lang="postcss" scoped>
 	.input {
-		@apply w-full max-w-sm text-sm disabled:opacity-50 italic placeholder:text-white text-white placeholder:text-opacity-50 bg-slate-900 border-2 border-white rounded-2xl px-2 shadow-sm focus:outline-none focus:border-gray-400 focus:ring-1;
+		@apply flex-grow text-sm m-2 p-0 disabled:opacity-50 italic placeholder:text-black text-black placeholder:text-opacity-50 border-0 focus:outline-none focus:border-gray-400 focus:ring-1;
 	}
 </style>

@@ -33,7 +33,7 @@
 			</div>
 		{/if}
 
-		<h2 class="text-lg">Click to paint</h2>
+		<h2 class="text-lg"></h2>
 		<div class="absolute bottom-0 font-bold text-lg">{prompt}</div>
 	</div>
 </div>

@@ -21,6 +21,8 @@
 	let client: Client;
 
 	onMount(() => {
+		document.addEventListener('wheel', (e) => e.preventDefault(), { passive: false });
+
 		// Add random id to room param if not set, and return the id string
 		// e.g. /?room=758df70b5e94c13289df6
 		roomId = 'multiplayer-SD';
