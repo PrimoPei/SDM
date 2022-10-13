@@ -35,8 +35,8 @@
 	let dragEnabled = true;
 	let isDragging = false;
 	$: prompt = $myPresence?.currentPrompt;
-	$: isLoading = $myPresence?.status === Status.loading || false;
-
+	$: isLoading = $myPresence?.status === Status.loading ||  $myPresence?.status === Status.prompting || false;
+	
 	$: coord = {
 		x: transform.applyX(position.x),
 		y: transform.applyY(position.y)
@@ -95,6 +95,7 @@
 		let lastx: number;
 		let lasty: number;
 		function dragstarted(event: Event) {
+			if (isLoading) return;
 			const x = event.x / transform.k;
 			const y = event.y / transform.k;
 			lastx = x;
@@ -102,6 +103,7 @@
 		}
 
 		function dragged(event: Event) {
+			if (isLoading) return;
 			const x = event.x / transform.k;
 			const y = event.y / transform.k;
 			drawLine({ x, y, lastx, lasty });
@@ -114,6 +116,8 @@
 	}
 	function dragMoveHandler() {
 		function dragstarted(event: Event) {
+			if (isLoading) return;
+
 			const rect = (event.sourceEvent.target as HTMLElement).getBoundingClientRect();
 			if (event.sourceEvent instanceof TouchEvent) {
 				offsetX = event.sourceEvent.targetTouches[0].pageX - rect.left;
@@ -126,6 +130,8 @@
 		}
 
 		function dragged(event: Event) {
+			if (isLoading) return;
+
 			const x = round(transform.invertX(event.x - offsetX));
 			const y = round(transform.invertY(event.y - offsetY));
 			position = {
@@ -142,6 +148,8 @@
 		}
 
 		function dragended(event: Event) {
+			if (isLoading) return;
+
 			isDragging = false;
 
 			const x = round(transform.invertX(event.x - offsetX));
@@ -184,34 +192,33 @@
 		<div class="frame">
 			<canvas class={dragEnabled ? '' : 'bg-white'} bind:this={$maskEl} width="512" height="512" />
 			<div class="pointer-events-none touch-none">
-				{#if $loadingState}
-					<div class="col-span-2 row-start-1">
-						<span class="text-white drop-shadow-lg">{$loadingState}</span>
+				{#if prompt}
+					<div class="pointer-events-none touch-none">
+						<div class="font-bold text-xl text-[#387CFF] text-center px-2 line-clamp-4">
+							{prompt}
+						</div>
 					</div>
 				{/if}
-				{#if isLoading}
-					<div class="col-start-2 row-start-2">
-						<LoadingIcon />
-					</div>
-				{/if}
-
-				<h2 class="text-lg" />
-				<div class="absolute bottom-0 font-bold text-lg">{prompt}</div>
 			</div>
+			{#if isLoading}
+				<div class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2">
+					<LoadingIcon />
+				</div>
+			{/if}
 			{#if !isDragging}
 				<div class="absolute top-full ">
 					<div class="py-2">
-						<PPButton on:click={() => dispatch('prompt')} />
+						<PPButton {isLoading} on:click={() => dispatch('prompt')} />
 					</div>
 				</div>
 				<div class="absolute left-full bottom-0">
 					<div class="px-2">
-						<DragButton isActive={dragEnabled} on:click={toggleDrag} />
+						<DragButton {isLoading} isActive={dragEnabled} on:click={toggleDrag} />
 						<div class="flex bg-white rounded-full mt-3">
-							<MaskButton isActive={!dragEnabled} on:click={toggleDrawMask} />
+							<MaskButton {isLoading} isActive={!dragEnabled} on:click={toggleDrawMask} />
 							{#if !dragEnabled}
 								<span class="border-gray-800 border-opacity-50 border-r-2 my-2" />
-								<UndoButton on:click={cleanMask} />
+								<UndoButton {isLoading} on:click={cleanMask} />
 							{/if}
 						</div>
 					</div>
@@ -229,7 +236,7 @@
 
 <style lang="postcss" scoped>
 	.frame {
-		@apply relative grid grid-cols-3 grid-rows-3 ring-8 ring-blue-500 w-[512px] h-[512px];
+		@apply relative grid grid-cols-3 grid-rows-3 ring-8 ring-[#387CFF] w-[512px] h-[512px];
 	}
 	.hand {
 		cursor: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABMAAAAUCAYAAABvVQZ0AAAACXBIWXMAAAsTAAALEwEAmpwYAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAHSSURBVHgBzVQ9LENRFD4VozZWP4ku/jqJAYNoEQaWNpEwIYJFBINY6UCn6mKTKhYNSTuwVFBiaEgai9bP4CWKUftqv845vU+k7evr2C/5cu6799zvnHvOvQ+gUmEqNimEsKLZQ3YgA0j6TiNXeJPJlIZygEK1yFAmo4rj0Kkg0Jj4DyHyMxKyIt/I+zH5LJrau8V76lPMLa6KjU2vyKhZsbHl1YTX8/dX5X071eyPdX5xDRrr68BiNsNJ+AxsrS1sCf6DIEQub2hoNxJjxO7ivHnMNZqzzlHAIJBIvkBPV6cm7JC11RULWMw1LELRhwf6IPXxxSSRyMU1ztk5mKpmyX9aV0x2KUoitMHW1sxHjd3HWYQyGh7sY1+Z3ZTRMfcpCxLxHwZhZnIc63TEC3TU3iEXj2XdqGGOomKyBhxNq1fi6ZVF3J5tyK+rPGqHXmZX6OAgR61eVCc9UBDE332rzlu3uj0+WRs7GKGxoY5MWi8zZWZygp1KZUSg6yIR1RNzYQeV2/MQLC/MQqmM5HoYb8CDNl/w0GUTlpFLVDPfzi5myZ0DW3szX5Ex5whYLGYFp/pRTAEjyHcaFoX4RvqKPXRTOaJoHJDrmoKMlv0Lqhj8AlEeE/77ZUZMAAAAAElFTkSuQmCC')

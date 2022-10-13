@@ -12,8 +12,8 @@
 	const myPresence = useMyPresence();
 	const promptImgStorage = useObject('promptImgStorage');
 
-	const height = 512 * 4;
-	const width = 512 * 4;
+	const height = 512 * 5;
+	const width = 512 * 5;
 
 	let containerEl: HTMLDivElement;
 	let canvasCtx: CanvasRenderingContext2D;

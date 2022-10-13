@@ -177,9 +177,9 @@
 		<!-- When others connected, iterate through others and show their cursors -->
 		{#if $others}
 			{#each [...$others] as { connectionId, presence } (connectionId)}
-				{#if (presence?.status === Status.prompting || presence?.status === Status.masking) && presence?.frame}
+				{#if (presence?.status === Status.loading || presence?.status === Status.prompting || presence?.status === Status.masking) && presence?.frame}
 					<Frame
-						color={COLORS[1 + (connectionId % (COLORS.length - 1))]}
+						isLoading={presence?.status === Status.loading}
 						position={presence?.frame}
 						prompt={presence?.currentPrompt}
 						transform={$currZoomTransform}

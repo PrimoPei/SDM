@@ -4,12 +4,8 @@
 	import type { ZoomTransform } from 'd3-zoom';
 
 	export let transform: ZoomTransform;
-	export let color = '';
 	export let position = { x: 0, y: 0 };
 	export let prompt = '';
-	export let loadingState = '';
-	export let interactive = false;
-	export let isDragging = false;
 	export let isLoading = false;
 	$: coord = {
 		x: transform.applyX(position.x),
@@ -18,29 +14,18 @@
 </script>
 
 <div
-	class="frame {isDragging ? 'cursor-grabbing' : 'cursor-grab'}"
-	style={`transform: translateX(${coord.x}px) translateY(${coord.y}px) scale(${transform.k}); border-color: ${color};`}
+	class="frame @apply absolute top-0 left-0 ring-8 ring-[#EC8E65] w-[512px] h-[512px]"
+	style={`transform: translateX(${coord.x}px) translateY(${coord.y}px) scale(${transform.k}); transform-origin: 0 0;`}
 >
-	<div class={!interactive ? 'pointer-events-none touch-none' : ''}>
-		{#if loadingState}
-			<div class="col-span-2 row-start-1">
-				<span class="text-white drop-shadow-lg">{loadingState}</span>
-			</div>
-		{/if}
-		{#if isLoading}
-			<div class="col-start-2 row-start-2">
-				<LoadingIcon />
-			</div>
-		{/if}
-
-		<h2 class="text-lg"></h2>
-		<div class="absolute bottom-0 font-bold text-lg">{prompt}</div>
+	<div class="pointer-events-none touch-none">
+		<div class="font-bold text-xl text-[#EC8E65] text-center px-2 line-clamp-4">{prompt}</div>
 	</div>
+	{#if isLoading}
+		<div class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2">
+			<LoadingIcon />
+		</div>
+	{/if}
 </div>
 
 <style lang="postcss" scoped>
-	.frame {
-		@apply absolute top-0 left-0  grid grid-cols-3 grid-rows-3 border-2 border-spacing-3 border-sky-500 w-[512px] h-[512px];
-		transform-origin: 0 0;
-	}
 </style>
