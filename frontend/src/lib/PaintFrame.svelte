@@ -6,23 +6,21 @@
 	import LoadingIcon from '$lib/Icons/LoadingIcon.svelte';
 
 	import { drag } from 'd3-drag';
-	import { select, type Selection } from 'd3-selection';
+	import { select } from 'd3-selection';
 	import { round } from '$lib/utils';
 
 	import type { ZoomTransform } from 'd3-zoom';
 	import { onMount, createEventDispatcher } from 'svelte';
 
 	import { useMyPresence } from '$lib/liveblocks';
-	import { loadingState, canvasEl, maskEl } from '$lib/store';
+	import { canvasEl, maskEl } from '$lib/store';
 
-	import { toggle_class } from 'svelte/internal';
 	import { Status } from './types';
 	const myPresence = useMyPresence();
 
 	const dispatch = createEventDispatcher();
 
 	export let transform: ZoomTransform;
-	export let color = 'black';
 
 	let maskCtx: CanvasRenderingContext2D;
 
@@ -35,8 +33,9 @@
 	let dragEnabled = true;
 	let isDragging = false;
 	$: prompt = $myPresence?.currentPrompt;
-	$: isLoading = $myPresence?.status === Status.loading ||  $myPresence?.status === Status.prompting || false;
-	
+	$: isLoading =
+		$myPresence?.status === Status.loading || $myPresence?.status === Status.prompting || false;
+
 	$: coord = {
 		x: transform.applyX(position.x),
 		y: transform.applyY(position.y)
@@ -75,7 +74,7 @@
 			.call(cursorUpdate);
 	});
 
-	function cursorUpdate(selection) {
+	function cursorUpdate(selection: any) {
 		function handlePointerMove(event: PointerEvent) {
 			myPresence.update({
 				cursor: {
@@ -111,8 +110,9 @@
 			lasty = y;
 		}
 
-		function dragended(event: Event) {}
-		return drag().on('start', dragstarted).on('drag', dragged).on('end', dragended);
+		// function dragended(event: Event) {}
+		return drag().on('start', dragstarted).on('drag', dragged);
+		// on('end', dragended);
 	}
 	function dragMoveHandler() {
 		function dragstarted(event: Event) {

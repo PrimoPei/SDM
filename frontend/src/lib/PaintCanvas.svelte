@@ -4,7 +4,6 @@
 	import { onMount } from 'svelte';
 	import { PUBLIC_UPLOADS } from '$env/static/public';
 	import { currZoomTransform, canvasEl } from '$lib/store';
-	import { round } from '$lib/utils';
 
 	import { useMyPresence, useObject } from '$lib/liveblocks';
 	import type { PromptImgObject } from '$lib/types';

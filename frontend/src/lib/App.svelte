@@ -39,7 +39,6 @@
 
 	let showModal = false;
 
-	$: isPrompting = $myPresence?.status === Status.prompting || false;
 	$: isLoading = $myPresence?.status === Status.loading || false;
 
 	$: {
