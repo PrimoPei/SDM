@@ -15,10 +15,12 @@
 	};
 	onMount(() => {
 		inputEl.focus();
+		inputEl.addEventListener('focusout', cancel);
 		prompt = '';
 		window.addEventListener('keyup', onKeyup);
 		return () => {
 			window.removeEventListener('keyup', onKeyup);
+			inputEl.removeEventListener('focusout', cancel);
 		};
 	});
 
@@ -55,7 +57,6 @@
 <form
 	class="fixed w-screen top-0 left-0 bottom-0 right-0 max-h-screen z-50 flex items-center justify-center bg-black bg-opacity-80 px-3"
 	on:submit|preventDefault={onPrompt}
-	on:click={cancel}
 >
 	<div class="flex bg-white rounded-2xl px-2 w-full max-w-md">
 		<input

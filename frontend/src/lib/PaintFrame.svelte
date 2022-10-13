@@ -36,6 +36,11 @@
 	$: isLoading =
 		$myPresence?.status === Status.loading || $myPresence?.status === Status.prompting || false;
 
+	$: {
+		if (!dragEnabled && $myPresence.status === Status.loading) {
+			dragEnabled = true;
+		}
+	}
 	$: coord = {
 		x: transform.applyX(position.x),
 		y: transform.applyY(position.y)
@@ -207,18 +212,23 @@
 			{/if}
 			{#if !isDragging}
 				<div class="absolute top-full ">
-					<div class="py-2">
+					<div class="py-3">
 						<PPButton {isLoading} on:click={() => dispatch('prompt')} />
 					</div>
 				</div>
 				<div class="absolute left-full bottom-0">
-					<div class="px-2">
-						<DragButton {isLoading} isActive={dragEnabled} on:click={toggleDrag} />
-						<div class="flex bg-white rounded-full mt-3">
-							<MaskButton {isLoading} isActive={!dragEnabled} on:click={toggleDrawMask} />
+					<div class="mx-4">
+						<DragButton
+							className={'p-1'}
+							{isLoading}
+							isActive={dragEnabled}
+							on:click={toggleDrag}
+						/>
+						<div class="flex bg-white rounded-full mt-3 shadow-lg">
+							<MaskButton className={'p-1'} isActive={!dragEnabled} on:click={toggleDrawMask} />
 							{#if !dragEnabled}
 								<span class="border-gray-800 border-opacity-50 border-r-2 my-2" />
-								<UndoButton {isLoading} on:click={cleanMask} />
+								<UndoButton className={'p-1 px-4'} {isLoading} on:click={cleanMask} />
 							{/if}
 						</div>
 					</div>

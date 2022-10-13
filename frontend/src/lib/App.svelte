@@ -41,11 +41,8 @@
 
 	$: isLoading = $myPresence?.status === Status.loading || false;
 
-	$: {
-		console.log($myPresence.status);
-	}
 	function onPrompt() {
-		if (!isLoading) {
+		if (!isLoading && !showModal) {
 			showModal = true;
 			myPresence.update({
 				status: Status.prompting
