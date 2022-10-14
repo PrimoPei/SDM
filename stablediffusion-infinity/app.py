@@ -221,6 +221,7 @@ async def uploads(path: str, response: Response):
     response.headers['Access-Control-Allow-Origin'] = '*'
     response.headers['Access-Control-Allow-Methods'] = 'POST, GET, DELETE, OPTIONS'
     response.headers['Access-Control-Allow-Headers'] = 'Authorization, Content-Type'
+    response.headers['Cache-Control'] = 'max-age=31536000'
     return response
 
 
