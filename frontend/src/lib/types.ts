@@ -34,4 +34,3 @@ export type PromptImgObject = {
 };
 
 export type PromptImgKey = string;
-

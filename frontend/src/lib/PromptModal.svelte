@@ -1,22 +1,25 @@
 <script lang="ts">
-	import { createEventDispatcher, onMount } from 'svelte';
+	import { createEventDispatcher, onMount, tick } from 'svelte';
 	import { useMyPresence } from '$lib/liveblocks';
 	import { Status } from '$lib/types';
 
 	const dispatch = createEventDispatcher();
-	let prompt = '';
+	export let initPrompt = '';
+	let prompt: string;
 	let inputEl: HTMLInputElement;
+	let buttonEl: HTMLElement;
 	const myPresence = useMyPresence();
 
 	const onKeyup = (e: KeyboardEvent) => {
 		if (e.key === 'Escape') {
-			cancel();
+			cancel(e);
 		}
 	};
+
 	onMount(() => {
 		inputEl.focus();
 		inputEl.addEventListener('focusout', cancel);
-		prompt = '';
+		prompt = initPrompt;
 		window.addEventListener('keyup', onKeyup);
 		return () => {
 			window.removeEventListener('keyup', onKeyup);
@@ -39,15 +42,18 @@
 		if (prompt.trim() !== '') {
 			console.log('Prompting with: ', prompt);
 			dispatch('paint');
+			dispatch('close');
 		}
 	}
 	function onInput(event: Event) {
 		const target = event.target as HTMLInputElement;
 		debouce(target.value);
 	}
-	function cancel() {
+	function cancel(event?: Event) {
+		console.log(event?.relatedTarget)
+		if (!(event instanceof KeyboardEvent) && event?.relatedTarget !== null) return;
+
 		myPresence.update({
-			currentPrompt: '',
 			status: Status.ready
 		});
 		dispatch('close');
@@ -60,6 +66,7 @@
 >
 	<div class="flex bg-white rounded-2xl px-2 w-full max-w-md">
 		<input
+			value={prompt}
 			bind:this={inputEl}
 			on:click|stopPropagation
 			on:input={onInput}
@@ -69,8 +76,11 @@
 			type="text"
 			name="prompt"
 		/>
-		<button on:click|preventDefault={onPrompt} class="font-mono border-l-2 pl-2" type="submit"
-			>Paint</button
+		<button
+			bind:this={buttonEl}
+			on:click|preventDefault={onPrompt}
+			class="font-mono border-l-2 pl-2"
+			type="submit">Paint</button
 		>
 	</div>
 </form>

@@ -51,6 +51,7 @@
 	}
 	function onClose() {
 		showModal = false;
+		console.log('close Modal');
 	}
 
 	function onPaint() {
@@ -142,7 +143,8 @@
 						}
 						websocket.close();
 						myPresence.update({
-							status: Status.ready
+							status: Status.ready,
+							currentPrompt: ''
 						});
 						return;
 					case 'process_starts':
@@ -162,7 +164,7 @@
 	{$loadingState}
 </div>
 {#if showModal}
-	<PromptModal on:paint={onPaint} on:close={onClose} />
+	<PromptModal on:paint={onPaint} on:close={onClose} initPrompt={$myPresence?.currentPrompt} />
 {/if}
 <div class="fixed top-0 left-0 z-0 w-screen h-screen">
 	<PaintCanvas />

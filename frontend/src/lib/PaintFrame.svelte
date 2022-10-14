@@ -53,7 +53,7 @@
 		maskCtx.save();
 		maskCtx.clearRect(0, 0, 512, 512);
 		maskCtx.globalCompositeOperation = 'source-over';
-		maskCtx.drawImage($canvasEl, cursor.x, cursor.y, 512, 512, 0, 0, 512, 512);
+		maskCtx.drawImage($canvasEl, cursor.x, cursor.y, 512, 512, cursor.x > 0 ? 0 : -cursor.x, cursor.y > 0 ? 0 : -cursor.y, 512, 512);
 		maskCtx.restore();
 	}
 	function drawLine(points: { x: number; y: number; lastx: number; lasty: number }) {
@@ -122,9 +122,9 @@
 	function dragMoveHandler() {
 		function dragstarted(event: Event) {
 			if (isLoading) return;
-
 			const rect = (event.sourceEvent.target as HTMLElement).getBoundingClientRect();
-			if (event.sourceEvent instanceof TouchEvent) {
+
+			if (typeof TouchEvent !== 'undefined' && event.sourceEvent instanceof TouchEvent) {
 				offsetX = event.sourceEvent.targetTouches[0].pageX - rect.left;
 				offsetY = event.sourceEvent.targetTouches[0].pageY - rect.top;
 			} else {
@@ -238,7 +238,7 @@
 	</div>
 	<div
 		bind:this={frameElement}
-		class="absolute top-0 left-0 w-[512px] h-[512px] hand
+		class="absolute top-0 left-0 w-[512px] h-[512px] ring-8 hand
 		{dragEnabled ? 'block' : 'hidden'}"
 		style={`transform: translateX(${coord.x}px) translateY(${coord.y}px) scale(${transform.k}); transform-origin: 0 0;`}
 	/>

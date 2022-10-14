@@ -47,7 +47,8 @@ export async function uploadImage(imagBlob: Blob, prompt: string): Promise<strin
 }
 
 export function round(pos: number, size = 32) {
-	return pos % size < size / 2 ? pos - (pos % size) : pos + size - (pos % size);
+	const value =  pos % size < size / 2 ? pos - (pos % size) : pos + size - (pos % size);
+	return Math.round(value);
 }
 
 function slugify(text: string) {
