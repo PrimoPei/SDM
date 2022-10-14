@@ -242,7 +242,7 @@ blocks.config['dev_mode'] = False
 #     return response
 
 @app.post('/uploadfile/')
-async def create_upload_file(background_tasks, file):
+async def create_upload_file(background_tasks: BackgroundTasks, file: UploadFile):
     contents = await file.read()
     file_size = len(contents)
     if not 0 < file_size < 2E+06:
@@ -260,7 +260,7 @@ async def create_upload_file(background_tasks, file):
     temp_file.write(contents)
     temp_file.seek(0)
     s3.upload_fileobj(Fileobj=temp_file, Bucket=AWS_S3_BUCKET_NAME, Key="uploads/" +
-                      file.filename, ExtraArgs={"ContentType": file.content_type})
+                      file.filename, ExtraArgs={"ContentType": file.content_type, "CacheControl": "max-age=31536000"})
     temp_file.close()
 
     return {"url": f'https://d26smi9133w0oo.cloudfront.net/uploads/{file.filename}', "filename": file.filename}
