@@ -242,7 +242,7 @@ blocks.config['dev_mode'] = False
 #     return response
 
 @app.post('/uploadfile/')
-async def create_upload_file(background_tasks: BackgroundTasks, file: UploadFile | None = None):
+async def create_upload_file(background_tasks, file):
     contents = await file.read()
     file_size = len(contents)
     if not 0 < file_size < 2E+06:
