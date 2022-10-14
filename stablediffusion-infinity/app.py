@@ -5,8 +5,9 @@ from random import sample
 from sched import scheduler
 
 import uvicorn
-from fastapi import FastAPI, Response
+from fastapi import FastAPI, Response, BackgroundTasks, HTTPException, UploadFile, File, status
 from fastapi.staticfiles import StaticFiles
+from fastapi.middleware.cors import CORSMiddleware
 
 import httpx
 from urllib.parse import urljoin
@@ -23,13 +24,29 @@ import base64
 import skimage
 import skimage.measure
 from utils import *
+import boto3
+import magic
+
+AWS_ACCESS_KEY_ID = os.getenv('AWS_ACCESS_KEY_ID')
+AWS_SECRET_KEY = os.getenv('AWS_SECRET_KEY')
+AWS_S3_BUCKET_NAME = os.getenv('AWS_S3_BUCKET_NAME')
+
+FILE_TYPES = {
+    'image/png': 'png',
+    'image/jpeg': 'jpg',
+}
+
+WHITES = 66846720
+MASK = Image.open("mask.png")
 
 app = FastAPI()
 
 auth_token = os.environ.get("API_TOKEN") or True
 
-WHITES = 66846720
-MASK = Image.open("mask.png")
+
+s3 = boto3.client(service_name='s3',
+                  aws_access_key_id=AWS_ACCESS_KEY_ID,
+                  aws_secret_access_key=AWS_SECRET_KEY)
 try:
     SAMPLING_MODE = Image.Resampling.LANCZOS
 except Exception as e:
@@ -209,26 +226,60 @@ with blocks as demo:
 
 blocks.config['dev_mode'] = False
 
-S3_HOST = "https://s3.amazonaws.com"
+# S3_HOST = "https://s3.amazonaws.com"
 
 
-@app.get("/uploads/{path:path}")
-async def uploads(path: str, response: Response):
-    async with httpx.AsyncClient() as client:
-        proxy = await client.get(f"{S3_HOST}/{path}")
-    response.body = proxy.content
-    response.status_code = proxy.status_code
-    response.headers['Access-Control-Allow-Origin'] = '*'
-    response.headers['Access-Control-Allow-Methods'] = 'POST, GET, DELETE, OPTIONS'
-    response.headers['Access-Control-Allow-Headers'] = 'Authorization, Content-Type'
-    response.headers['Cache-Control'] = 'max-age=31536000'
-    return response
+# @app.get("/uploads/{path:path}")
+# async def uploads(path: str, response: Response):
+#     async with httpx.AsyncClient() as client:
+#         proxy = await client.get(f"{S3_HOST}/{path}")
+#     response.body = proxy.content
+#     response.status_code = proxy.status_code
+#     response.headers['Access-Control-Allow-Origin'] = '*'
+#     response.headers['Access-Control-Allow-Methods'] = 'POST, GET, DELETE, OPTIONS'
+#     response.headers['Access-Control-Allow-Headers'] = 'Authorization, Content-Type'
+#     response.headers['Cache-Control'] = 'max-age=31536000'
+#     return response
+
+@app.post('/uploadfile/')
+async def create_upload_file(background_tasks: BackgroundTasks, file: UploadFile | None = None):
+    contents = await file.read()
+    file_size = len(contents)
+    if not 0 < file_size < 2E+06:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail='Supported file size is less than 2 MB'
+        )
+    file_type = magic.from_buffer(contents, mime=True)
+    if file_type.lower() not in FILE_TYPES:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f'Unsupported file type {file_type}. Supported types are {FILE_TYPES}'
+        )
+    temp_file = io.BytesIO()
+    temp_file.write(contents)
+    temp_file.seek(0)
+    s3.upload_fileobj(Fileobj=temp_file, Bucket=AWS_S3_BUCKET_NAME, Key="uploads/" +
+                      file.filename, ExtraArgs={"ContentType": file.content_type})
+    temp_file.close()
+
+    return {"url": f'https://d26smi9133w0oo.cloudfront.net/uploads/{file.filename}', "filename": file.filename}
 
 
 app = gr.mount_gradio_app(app, blocks, "/gradio",
                           gradio_api_url="http://0.0.0.0:7860/gradio/")
 
 app.mount("/", StaticFiles(directory="../static", html=True), name="static")
+
+origins = ["*"]
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 if __name__ == "__main__":
     uvicorn.run(app, host="0.0.0.0", port=7860,
