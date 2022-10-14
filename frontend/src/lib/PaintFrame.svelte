@@ -13,7 +13,7 @@
 	import { onMount, createEventDispatcher } from 'svelte';
 
 	import { useMyPresence } from '$lib/liveblocks';
-	import { canvasEl, maskEl } from '$lib/store';
+	import { canvasEl, maskEl, loadingState } from '$lib/store';
 
 	import { Status } from './types';
 	const myPresence = useMyPresence();
@@ -218,6 +218,17 @@
 					<div class="py-3">
 						<PPButton {isLoading} on:click={() => dispatch('prompt')} />
 					</div>
+					{#if $loadingState !== ''}
+						<div class="p-3 bg-white rounded-lg font-mono">
+							{#if $loadingState === 'NFSW'}
+								<h2 class="text-red-500 text-2xl font-bold">NSFW Alert</h2>
+								<h3 class="text-red-500 text-lg">
+									Possible NSFW result detected, please try again
+								</h3>
+							{/if}
+							<p>{$loadingState}</p>
+						</div>
+					{/if}
 				</div>
 				<div
 					class="absolute left-full"

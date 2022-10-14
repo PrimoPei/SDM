@@ -2,7 +2,7 @@
 	import { onMount, createEventDispatcher } from 'svelte';
 	import PPButton from '$lib/Buttons/PPButton.svelte';
 	const dispatch = createEventDispatcher();
-
+	export let isLoading = false;
 	const onKeyup = (e: KeyboardEvent) => {
 		if (e.key === 'Enter') {
 			dispatch('prompt');
@@ -17,5 +17,5 @@
 </script>
 
 <div class="grid grid-cols-1 gap-3 w-max mx-auto">
-	<PPButton on:click={() => dispatch('prompt')} />
+	<PPButton {isLoading} on:click={() => dispatch('prompt')} />
 </div>

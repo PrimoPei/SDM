@@ -119,7 +119,7 @@
 							const imgBase64 = data.output.data[0] as string;
 							const isNSWF = data.output.data[1] as boolean;
 							if (isNSWF) {
-								throw new Error('Potential NFSW content, please try again');
+								throw new Error('NFSW');
 							}
 							const imgBlob = await base64ToBlob(imgBase64);
 							const imgURL = await uploadImage(imgBlob, prompt);
@@ -197,7 +197,7 @@
 </div>
 
 <div class="fixed bottom-0 left-0 right-0 z-10 my-2">
-	<Menu on:prompt={onPrompt} />
+	<Menu on:prompt={onPrompt} {isLoading} />
 </div>
 
 <style lang="postcss" scoped>

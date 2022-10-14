@@ -104,29 +104,29 @@ def run_outpaint(
     process_size = 512
 
     mask_sum = mask.sum()
-    if mask_sum >= WHITES:
-        print("inpaiting with fixed Mask")
-        mask = np.array(MASK)[:, :, 0]
-        img, mask = functbl[fill_mode](img, mask)
-        init_image = Image.fromarray(img)
-        mask = 255 - mask
-        mask = skimage.measure.block_reduce(mask, (8, 8), np.max)
-        mask = mask.repeat(8, axis=0).repeat(8, axis=1)
-        mask_image = Image.fromarray(mask)
+    # if mask_sum >= WHITES:
+    #     print("inpaiting with fixed Mask")
+    #     mask = np.array(MASK)[:, :, 0]
+    #     img, mask = functbl[fill_mode](img, mask)
+    #     init_image = Image.fromarray(img)
+    #     mask = 255 - mask
+    #     mask = skimage.measure.block_reduce(mask, (8, 8), np.max)
+    #     mask = mask.repeat(8, axis=0).repeat(8, axis=1)
+    #     mask_image = Image.fromarray(mask)
 
-        # mask_image=mask_image.filter(ImageFilter.GaussianBlur(radius = 8))
-        with autocast("cuda"):
-            images = inpaint(
-                prompt=prompt_text,
-                init_image=init_image.resize(
-                    (process_size, process_size), resample=SAMPLING_MODE
-                ),
-                mask_image=mask_image.resize((process_size, process_size)),
-                strength=strength,
-                num_inference_steps=step,
-                guidance_scale=guidance,
-            )
-    elif mask_sum > 0 and mask_sum < WHITES:
+    #     # mask_image=mask_image.filter(ImageFilter.GaussianBlur(radius = 8))
+    #     with autocast("cuda"):
+    #         images = inpaint(
+    #             prompt=prompt_text,
+    #             init_image=init_image.resize(
+    #                 (process_size, process_size), resample=SAMPLING_MODE
+    #             ),
+    #             mask_image=mask_image.resize((process_size, process_size)),
+    #             strength=strength,
+    #             num_inference_steps=step,
+    #             guidance_scale=guidance,
+    #         )
+    if mask_sum > 0:
         print("inpainting")
         img, mask = functbl[fill_mode](img, mask)
         init_image = Image.fromarray(img)
