@@ -45,11 +45,13 @@ export async function uploadImage(imagBlob: Blob, prompt: string): Promise<strin
 	console.log('uploaded images', url);
 	return url;
 }
+const MAX = 512 * 5 - 512
 
 export function round(pos: number, size = 32) {
-	const value =  pos % size < size / 2 ? pos - (pos % size) : pos + size - (pos % size);
-	return Math.round(value);
+	const value = pos % size < size / 2 ? pos - (pos % size) : pos + size - (pos % size);
+	return Math.max(0, Math.min(Math.round(value), MAX))
 }
+
 
 function slugify(text: string) {
 	if (!text) return '';

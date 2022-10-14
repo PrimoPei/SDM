@@ -53,7 +53,7 @@
 		maskCtx.save();
 		maskCtx.clearRect(0, 0, 512, 512);
 		maskCtx.globalCompositeOperation = 'source-over';
-		maskCtx.drawImage($canvasEl, cursor.x, cursor.y, 512, 512, cursor.x > 0 ? 0 : -cursor.x, cursor.y > 0 ? 0 : -cursor.y, 512, 512);
+		maskCtx.drawImage($canvasEl, cursor.x, cursor.y, 512, 512, 0, 0, 512, 512);
 		maskCtx.restore();
 	}
 	function drawLine(points: { x: number; y: number; lastx: number; lasty: number }) {
@@ -211,12 +211,18 @@
 				</div>
 			{/if}
 			{#if !isDragging}
-				<div class="absolute top-full ">
+				<div
+					class="absolute top-full"
+					style={`transform: scale(${Math.max(2 - transform.k, 1)}); transform-origin: 0 0;`}
+				>
 					<div class="py-3">
 						<PPButton {isLoading} on:click={() => dispatch('prompt')} />
 					</div>
 				</div>
-				<div class="absolute left-full bottom-0">
+				<div
+					class="absolute left-full"
+					style={`transform: scale(${Math.max(2 - transform.k, 1)}); transform-origin: 0 0;`}
+				>
 					<div class="mx-4">
 						<DragButton
 							className={'p-1'}
@@ -225,10 +231,15 @@
 							on:click={toggleDrag}
 						/>
 						<div class="flex bg-white rounded-full mt-3 shadow-lg">
-							<MaskButton className={'p-1'} isActive={!dragEnabled} on:click={toggleDrawMask} />
+							<MaskButton
+								{isLoading}
+								className={'p-1'}
+								isActive={!dragEnabled}
+								on:click={toggleDrawMask}
+							/>
 							{#if !dragEnabled}
 								<span class="border-gray-800 border-opacity-50 border-r-2 my-2" />
-								<UndoButton className={'p-1 px-4'} {isLoading} on:click={cleanMask} />
+								<UndoButton className={'p-1'} {isLoading} on:click={cleanMask} />
 							{/if}
 						</div>
 					</div>
