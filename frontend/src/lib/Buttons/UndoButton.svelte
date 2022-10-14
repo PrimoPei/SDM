@@ -8,7 +8,7 @@
 <button
 	on:click
 	disabled={isLoading}
-	class="{className} bg-white rounded-full bg-white rounded-full {isActive
+	class="{className} bg-white rounded-full disabled:opacity-50 bg-white rounded-full {isActive
 		? 'text-blue-700'
 		: 'text-gray-800'}"
 	title="Clear Masking"

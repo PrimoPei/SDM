@@ -3,13 +3,14 @@
 	export let isActive = false;
 	export let isLoading = false;
 	export let className = '';
-
 </script>
 
 <button
 	on:click
 	disabled={isLoading}
-	class="{className} rounded-full {isActive ? 'text-blue-700' : 'text-gray-800'}"
+	class="{className} rounded-full disabled:opacity-50  {isActive
+		? 'text-blue-700'
+		: 'text-gray-800'}"
 	title="Enable Masking"
 >
 	<Mask />

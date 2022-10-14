@@ -127,7 +127,7 @@
 			if (typeof TouchEvent !== 'undefined' && event.sourceEvent instanceof TouchEvent) {
 				offsetX = event.sourceEvent.targetTouches[0].pageX - rect.left;
 				offsetY = event.sourceEvent.targetTouches[0].pageY - rect.top;
-			} else {
+			} else if (event.sourceEvent instanceof MouseEvent) {
 				offsetX = event.sourceEvent.pageX - rect.left;
 				offsetY = event.sourceEvent.pageY - rect.top;
 			}

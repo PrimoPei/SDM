@@ -24,6 +24,6 @@
 		@apply disabled:opacity-50 dark:bg-white dark:text-black bg-black text-white rounded-2xl text-xs shadow-sm focus:outline-none focus:border-gray-400;
 	} */
 	.button-paint {
-		@apply text-base font-mono bg-violet-100 text-violet-900 min-w-[25ch] flex justify-center items-center disabled:opacity-80  dark:bg-white dark:text-black rounded-2xl px-3 py-1 shadow-sm focus:outline-none focus:border-gray-400;
+		@apply text-base font-mono bg-violet-100 text-violet-900 min-w-[25ch] flex justify-center items-center disabled:opacity-50 dark:bg-white dark:text-black rounded-2xl px-3 py-1 shadow-sm focus:outline-none focus:border-gray-400;
 	}
 </style>

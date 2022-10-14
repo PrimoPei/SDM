@@ -8,7 +8,9 @@
 <button
 	on:click
 	disabled={isLoading}
-	class="{className} shadow-lg bg-white rounded-full {isActive ? 'text-blue-700' : 'text-gray-800'}"
+	class="{className} shadow-lg bg-white rounded-full disabled:opacity-50 {isActive
+		? 'text-blue-700'
+		: 'text-gray-800'}"
 	title="Enable Dragging"
 >
 	<Move />

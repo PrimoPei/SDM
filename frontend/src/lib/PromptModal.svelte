@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { createEventDispatcher, onMount, tick } from 'svelte';
+	import { createEventDispatcher, onMount } from 'svelte';
 	import { useMyPresence } from '$lib/liveblocks';
 	import { Status } from '$lib/types';
 
@@ -7,7 +7,6 @@
 	export let initPrompt = '';
 	let prompt: string;
 	let inputEl: HTMLInputElement;
-	let buttonEl: HTMLElement;
 	const myPresence = useMyPresence();
 
 	const onKeyup = (e: KeyboardEvent) => {
@@ -50,7 +49,6 @@
 		debouce(target.value);
 	}
 	function cancel(event?: Event) {
-		console.log(event?.relatedTarget)
 		if (!(event instanceof KeyboardEvent) && event?.relatedTarget !== null) return;
 
 		myPresence.update({
@@ -76,11 +74,8 @@
 			type="text"
 			name="prompt"
 		/>
-		<button
-			bind:this={buttonEl}
-			on:click|preventDefault={onPrompt}
-			class="font-mono border-l-2 pl-2"
-			type="submit">Paint</button
+		<button on:click|preventDefault={onPrompt} class="font-mono border-l-2 pl-2" type="submit"
+			>Paint</button
 		>
 	</div>
 </form>

@@ -14,6 +14,7 @@ declare global {
 		}
 	}
 	interface Event {
+		relatedTarget: EventTarget | null;
 		transform: ZoomTransform;
 		x: number;
 		y: number;
