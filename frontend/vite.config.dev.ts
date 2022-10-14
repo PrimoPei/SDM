@@ -6,11 +6,11 @@ const config: UserConfig = {
 	server: {
 		// host: "0.0.0.0",
 		proxy: {
-			'/moon': {
-				target: 'https://huggingface.co',
+			'/server': {
+				target: 'http://localhost:7860',
 				changeOrigin: true,
 				cookieDomainRewrite: 'localhost',
-				rewrite: (path) => path.replace(/^\/moon/, '')
+				rewrite: (path) => path.replace(/^\/server/, '')
 			}
 		}
 	}

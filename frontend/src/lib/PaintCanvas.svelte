@@ -90,8 +90,7 @@
 							canvasCtx.drawImage(img, position.x, position.y, img.width, img.height);
 							resolve(res);
 						};
-						const url = imgURL.split('/');
-						img.src = `${PUBLIC_UPLOADS}/${url.slice(3).join('/')}`;
+						img.src = `${PUBLIC_UPLOADS}/${imgURL}`;
 					})
 			)
 		).then((images) => {

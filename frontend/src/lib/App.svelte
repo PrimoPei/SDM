@@ -31,7 +31,7 @@
 	};
 	myPresence.update(initialPresence);
 
-	function getKey({ position }: PromptImgObject): PromptImgKey {
+	function getKey(position: { x: number; y: number }): PromptImgKey {
 		return `${position.x}_${position.y}`;
 	}
 
@@ -121,8 +121,9 @@
 							if (isNSWF) {
 								throw new Error('NFSW');
 							}
+							const key = getKey(position);
 							const imgBlob = await base64ToBlob(imgBase64);
-							const imgURL = await uploadImage(imgBlob, prompt);
+							const imgURL = await uploadImage(imgBlob, prompt, key);
 							const promptImg = {
 								prompt,
 								imgURL: imgURL,
@@ -130,7 +131,6 @@
 								date: new Date().getTime(),
 								id: nanoid()
 							};
-							const key = getKey(promptImg);
 							$promptImgStorage.set(key, promptImg);
 							console.log(imgURL);
 							$loadingState = data.success ? 'Complete' : 'Error';

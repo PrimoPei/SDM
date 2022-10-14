@@ -20,30 +20,29 @@ export function base64ToBlob(base64image: string): Promise<Blob> {
 		img.src = base64image;
 	});
 }
-export async function uploadImage(imagBlob: Blob, prompt: string): Promise<string> {
+export async function uploadImage(imagBlob: Blob, prompt: string, key: string): Promise<string> {
 	// simple regex slugify string	for file name
 	const promptSlug = slugify(prompt);
-	const UPLOAD_URL = dev ? 'moon/uploads' : 'https://huggingface.co/uploads';
+	const UPLOAD_URL = dev ? 'server/uploadfile/' : 'uploadfile/';
 
 	const hash = crypto.randomUUID().split('-')[0];
-	const fileName = `color-palette-${hash}-${promptSlug}.jpeg`;
+	const fileName = `color-palette-${hash}-${promptSlug}-${key}.jpeg`;
 
 	const file = new File([imagBlob], fileName, { type: 'image/jpeg' });
+
+	const formData = new FormData()
+	formData.append('file', file)
 
 	console.log('uploading image', file);
 
 	const response = await fetch(UPLOAD_URL, {
 		method: 'POST',
-		headers: {
-			'Content-Type': file.type,
-			'X-Requested-With': 'XMLHttpRequest'
-		},
-		body: file /// <- File inherits from Blob
+		body: formData
 	});
-	const url = await response.text();
+	const res = await response.json();
 
-	console.log('uploaded images', url);
-	return url;
+	console.log('uploaded images', res);
+	return res.filename;
 }
 const MAX = 512 * 5 - 512
 
