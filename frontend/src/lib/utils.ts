@@ -23,7 +23,7 @@ export function base64ToBlob(base64image: string): Promise<Blob> {
 export async function uploadImage(imagBlob: Blob, prompt: string, key: string): Promise<string> {
 	// simple regex slugify string	for file name
 	const promptSlug = slugify(prompt);
-	const UPLOAD_URL = dev ? 'server/uploadfile/' : 'uploadfile/';
+	const UPLOAD_URL = dev ? '/server/uploadfile/' : '/embed/huggingface-projects/stable-diffusion-multiplayer/uploadfile/';
 
 	const hash = crypto.randomUUID().split('-')[0];
 	const fileName = `color-palette-${hash}-${promptSlug}-${key}.jpeg`;
