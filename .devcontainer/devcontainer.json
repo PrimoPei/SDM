@@ -14,7 +14,10 @@
 	"customizations": {
 		"vscode": {
 			"extensions": [
-				"GitHub.vscode-pull-request-github"
+				"GitHub.vscode-pull-request-github",
+				"bradlc.vscode-tailwindcss",
+				"svelte.svelte-vscode",
+				"csstools.postcss"
 			]
 		}
 	},

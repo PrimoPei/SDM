@@ -5,7 +5,7 @@
 <button
 	on:click
 	disabled={isLoading}
-	class="button-paint"
+	class="button-paint {isLoading ? 'cursor-wait' : 'cursor-pointer'}"
 	title="New Paint Frame"
 >
 	{#if isLoading}
@@ -24,6 +24,6 @@
 		@apply disabled:opacity-50 dark:bg-white dark:text-black bg-black text-white rounded-2xl text-xs shadow-sm focus:outline-none focus:border-gray-400;
 	} */
 	.button-paint {
-		@apply text-sm font-mono bg-violet-100 text-violet-900 min-w-[25ch] flex justify-center items-center disabled:opacity-50 dark:bg-white dark:text-black rounded-2xl px-3 py-1 shadow-sm focus:outline-none focus:border-gray-400;
+		@apply text-sm font-mono bg-violet-100 text-violet-900 min-w-[25ch] flex justify-center items-center disabled:opacity-50 rounded-xl px-3 py-1 shadow-sm focus:outline-none focus:border-gray-400;
 	}
 </style>

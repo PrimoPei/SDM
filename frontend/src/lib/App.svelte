@@ -7,7 +7,7 @@
 	import PromptModal from '$lib/PromptModal.svelte';
 	import { COLORS, EMOJIS } from '$lib/constants';
 	import { PUBLIC_WS_INPAINTING } from '$env/static/public';
-	import type { PromptImgObject, PromptImgKey, Presence } from '$lib/types';
+	import type { PromptImgKey, Presence } from '$lib/types';
 	import { Status } from '$lib/types';
 	import { loadingState, currZoomTransform, maskEl } from '$lib/store';
 	import { useMyPresence, useObject, useOthers } from '$lib/liveblocks';
@@ -51,11 +51,9 @@
 	}
 	function onClose() {
 		showModal = false;
-		console.log('close Modal');
 	}
 
 	function onPaint() {
-		console.log('onPaint');
 		generateImage();
 		showModal = false;
 	}
@@ -74,10 +72,9 @@
 
 		const payload = {
 			fn_index: 0,
-			data: [base64Crop, prompt, 0.75, 7.5, 40, 'patchmatch'],
+			data: [base64Crop, prompt, 0.75, 7.5, 35, 'patchmatch'],
 			session_hash: sessionHash
 		};
-		console.log('payload', payload);
 
 		const websocket = new WebSocket(PUBLIC_WS_INPAINTING);
 		// websocket.onopen = async function (event) {
@@ -137,15 +134,18 @@
 							setTimeout(() => {
 								$loadingState = '';
 							}, 2000);
+							myPresence.update({
+								status: Status.ready,
+								currentPrompt: ''
+							});
 						} catch (err) {
 							const tError = err as Error;
 							$loadingState = tError?.message;
+							myPresence.update({
+								status: Status.ready
+							});
 						}
 						websocket.close();
-						myPresence.update({
-							status: Status.ready,
-							currentPrompt: ''
-						});
 						return;
 					case 'process_starts':
 						$loadingState = 'Processing';

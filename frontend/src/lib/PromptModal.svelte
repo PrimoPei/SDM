@@ -7,25 +7,29 @@
 	export let initPrompt = '';
 	let prompt: string;
 	let inputEl: HTMLInputElement;
+	let boxEl: HTMLDivElement;
 	const myPresence = useMyPresence();
 
 	const onKeyup = (e: KeyboardEvent) => {
 		if (e.key === 'Escape') {
-			cancel(e);
+			myPresence.update({
+				status: Status.ready
+			});
+			dispatch('close');
 		}
 	};
 
 	onMount(() => {
 		inputEl.focus();
-		inputEl.addEventListener('focusout', cancel);
 		prompt = initPrompt;
 		window.addEventListener('keyup', onKeyup);
+		window.addEventListener('click', cancelHandler, true);
+
 		return () => {
 			window.removeEventListener('keyup', onKeyup);
-			inputEl.removeEventListener('focusout', cancel);
+			window.removeEventListener('click', cancelHandler, true);
 		};
 	});
-
 	let timer: NodeJS.Timeout;
 	function debouce(newPrompt: string) {
 		clearTimeout(timer);
@@ -39,7 +43,6 @@
 	}
 	function onPrompt() {
 		if (prompt.trim() !== '') {
-			console.log('Prompting with: ', prompt);
 			dispatch('paint');
 			dispatch('close');
 		}
@@ -48,9 +51,10 @@
 		const target = event.target as HTMLInputElement;
 		debouce(target.value);
 	}
-	function cancel(event?: Event) {
-		if (!(event instanceof KeyboardEvent) && event?.relatedTarget !== null) return;
-
+	function cancelHandler(event: Event) {
+		if (boxEl.contains(event.target as Node)) {
+			return;
+		}
 		myPresence.update({
 			status: Status.ready
 		});
@@ -62,7 +66,7 @@
 	class="fixed w-screen top-0 left-0 bottom-0 right-0 max-h-screen z-50 flex items-center justify-center bg-black bg-opacity-80 px-3"
 	on:submit|preventDefault={onPrompt}
 >
-	<div class="flex bg-white rounded-2xl px-2 w-full max-w-md">
+	<div class="flex bg-white rounded-2xl px-2 w-full max-w-md" bind:this={boxEl}>
 		<input
 			value={prompt}
 			bind:this={inputEl}
