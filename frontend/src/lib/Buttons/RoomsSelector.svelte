@@ -7,13 +7,9 @@
 	export let isLoading = false;
 	let boxEl: HTMLElement;
 
-	let rooms = [
-		{ label: 'room 1', total: 11, capacity: 20 },
-		{ label: 'room 2', total: 11, capacity: 20 },
-		{ label: 'room 3', total: 11, capacity: 20 },
-		{ label: 'room 4', total: 11, capacity: 20 },
-		{ label: 'room 5', total: 11, capacity: 20 }
-	];
+	let rooms = Array(20)
+		.fill(0)
+		.map((_, i) => ({ label: `room ${i}`, total: ~~Math.random() * 20, capacity: 20 }));
 
 	let selectedRoomID = 0;
 	let collapsed = true;
@@ -40,9 +36,9 @@
 	bind:this={boxEl}
 >
 	{#if !collapsed}
-		<div class="absolute z-10 left-0 right-0 bottom-full rounded-t-xl bg-violet-100 px-3 py-1">
-			<ul>
-				<li class="grid-row gap-2 pb-3">
+		<div class="absolute z-20 left-0 right-0 bottom-full rounded-t-xl bg-violet-100 px-1 py-1 overflow-y-scroll max-h-80">
+			<ul class="relative">
+				<li class="grid-row gap-2 pb-3 sticky top-0 bg-violet-100">
 					<Room />
 					<span> room </span>
 					<People />
