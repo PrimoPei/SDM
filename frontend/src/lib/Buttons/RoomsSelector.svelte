@@ -12,7 +12,7 @@
 		.map((_, i) => ({ label: `room ${i}`, total: ~~Math.random() * 20, capacity: 20 }));
 
 	let selectedRoomID = 0;
-	let collapsed = true;
+	let collapsed = false;
 	$: selectedRoom = rooms[selectedRoomID];
 
 	function clickHandler(event: Event) {
@@ -30,15 +30,17 @@
 
 <!-- svelte-ignore a11y-click-events-have-key-events -->
 <div
-	class="bg-violet-100 text-violet-900 px-3 py-1 font-mono font-medium tracking-tight relative z-0 
+	class="text-xs md:text-sm bg-violet-100 text-violet-900 px-3 py-1 font-mono font-medium tracking-tight relative z-0 min-w-[25ch] 
 	{isLoading ? 'opacity-50' : ''}
 	{collapsed ? 'rounded-xl' : 'rounded-b-xl'}"
 	bind:this={boxEl}
 >
 	{#if !collapsed}
-		<div class="absolute z-20 left-0 right-0 bottom-full rounded-t-xl bg-violet-100 px-1 py-1 overflow-y-scroll max-h-80">
+		<div
+			class="absolute z-20 left-0 right-0 bottom-full rounded-t-xl bg-violet-100 px-1 overflow-y-scroll max-h-80"
+		>
 			<ul class="relative">
-				<li class="grid-row gap-2 pb-3 sticky top-0 bg-violet-100">
+				<li class="grid-row gap-2 pb-3 sticky top-0 bg-violet-100 py-2">
 					<Room />
 					<span> room </span>
 					<People />
@@ -49,7 +51,10 @@
 						<!-- svelte-ignore a11y-invalid-attribute -->
 						<a
 							href="#"
-							on:click|preventDefault={() => (selectedRoomID = i)}
+							on:click|preventDefault={() => {
+								selectedRoomID = i;
+								collapsed = true;
+							}}
 							class="grid-row gap-2 hover:bg-gray-300
 						   {i === selectedRoomID ? 'text-green-600' : ''}"
 						>

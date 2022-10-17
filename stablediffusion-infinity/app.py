@@ -1,47 +1,57 @@
 import io
-import base64
 import os
 from random import sample
-from sched import scheduler
 
+from pathlib import Path
 import uvicorn
-from fastapi import FastAPI, Response, BackgroundTasks, HTTPException, UploadFile, File, status
+from fastapi import FastAPI, BackgroundTasks, HTTPException, UploadFile, Depends, status
 from fastapi.staticfiles import StaticFiles
 from fastapi.middleware.cors import CORSMiddleware
-
-import httpx
-from urllib.parse import urljoin
-
+from fastapi_utils.tasks import repeat_every
 
 import numpy as np
 import torch
 from torch import autocast
 from diffusers import StableDiffusionPipeline, StableDiffusionInpaintPipeline
 from PIL import Image
-from PIL import ImageOps
 import gradio as gr
-import base64
 import skimage
 import skimage.measure
 from utils import *
 import boto3
 import magic
+import sqlite3
+import requests
 
 AWS_ACCESS_KEY_ID = os.getenv('AWS_ACCESS_KEY_ID')
 AWS_SECRET_KEY = os.getenv('AWS_SECRET_KEY')
 AWS_S3_BUCKET_NAME = os.getenv('AWS_S3_BUCKET_NAME')
+LIVEBLOCKS_SECRET = os.environ.get("LIVEBLOCKS_SECRET")
+HF_TOKEN = os.environ.get("API_TOKEN") or True
+
+if (AWS_ACCESS_KEY_ID == None or AWS_SECRET_KEY == None or AWS_S3_BUCKET_NAME == None or LIVEBLOCKS_SECRET == None):
+    raise Exception("Missing environment variables")
 
 FILE_TYPES = {
     'image/png': 'png',
     'image/jpeg': 'jpg',
 }
-
-WHITES = 66846720
-MASK = Image.open("mask.png")
-
+DB_PATH = Path("rooms.db")
 app = FastAPI()
 
-auth_token = os.environ.get("API_TOKEN") or True
+print("DB_PATH", DB_PATH)
+
+
+def get_db():
+    db = sqlite3.connect(DB_PATH, check_same_thread=False)
+    db.execute("CREATE TABLE IF NOT EXISTS rooms (id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, room_id TEXT NOT NULL, users_count INTEGER NOT NULL DEFAULT 0)")
+    print("Connected to database")
+    db.commit()
+    db.row_factory = sqlite3.Row
+    try:
+        yield db
+    finally:
+        db.close()
 
 
 s3 = boto3.client(service_name='s3',
@@ -63,7 +73,7 @@ def get_model():
             "CompVis/stable-diffusion-v1-4",
             revision="fp16",
             torch_dtype=torch.float16,
-            use_auth_token=auth_token,
+            use_auth_token=HF_TOKEN,
         ).to("cuda")
         inpaint = StableDiffusionInpaintPipeline(
             vae=text2img.vae,
@@ -103,7 +113,7 @@ def get_model():
     # model["img2img"]
 
 
-get_model()
+# get_model()
 
 
 def run_outpaint(
@@ -226,20 +236,56 @@ with blocks as demo:
 
 blocks.config['dev_mode'] = False
 
-# S3_HOST = "https://s3.amazonaws.com"
+
+def generateAuthToken():
+    response = requests.get(f"https://liveblocks.io/api/authorize",
+                            headers={"Authorization": f"Bearer {LIVEBLOCKS_SECRET}"})
+    if response.status_code == 200:
+        data = response.json()
+        return data["token"]
+    else:
+        raise Exception(response.status_code, response.text)
 
 
-# @app.get("/uploads/{path:path}")
-# async def uploads(path: str, response: Response):
-#     async with httpx.AsyncClient() as client:
-#         proxy = await client.get(f"{S3_HOST}/{path}")
-#     response.body = proxy.content
-#     response.status_code = proxy.status_code
-#     response.headers['Access-Control-Allow-Origin'] = '*'
-#     response.headers['Access-Control-Allow-Methods'] = 'POST, GET, DELETE, OPTIONS'
-#     response.headers['Access-Control-Allow-Headers'] = 'Authorization, Content-Type'
-#     response.headers['Cache-Control'] = 'max-age=31536000'
-#     return response
+def get_room_count(room_id: str, jwtToken: str = ''):
+    print("Getting room count" + room_id)
+    response = requests.get(
+        f"https://liveblocks.net/api/v1/room/{room_id}/users", headers={"Authorization": f"Bearer {jwtToken}", "Content-Type": "application/json"})
+    if response.status_code == 200:
+        res = response.json()
+        if "data" in res:
+            return len(res["data"])
+        else:
+            return 0
+    raise Exception("Error getting room count")
+
+
+app = gr.mount_gradio_app(app, blocks, "/gradio",
+                          gradio_api_url="http://0.0.0.0:7860/gradio/")
+
+app.on_event("startup")
+
+
+@repeat_every(seconds=10)
+async def sync_rooms(db: sqlite3.Connection = Depends(get_db)):
+    try:
+        jwtToken = generateAuthToken()
+        rooms = db.execute("SELECT * FROM rooms").fetchall()
+        print(rooms)
+        for row in rooms:
+            room_id = row["room_id"]
+            users_count = get_room_count(room_id, jwtToken)
+            print("Updating room", room_id, "with", users_count, "users")
+            cursor = db.cursor()
+            cursor.execute(
+                "UPDATE rooms SET users_count = ? WHERE room_id = ?", (users_count, room_id))
+            db.commit()
+        data = db.execute("SELECT * FROM rooms").fetchall()
+        print("Rooms updated", data)
+    except Exception as e:
+        print(e)
+        print("Rooms update failed")
+
 
 @app.post('/uploadfile/')
 async def create_upload_file(background_tasks: BackgroundTasks, file: UploadFile):
@@ -265,9 +311,6 @@ async def create_upload_file(background_tasks: BackgroundTasks, file: UploadFile
 
     return {"url": f'https://d26smi9133w0oo.cloudfront.net/uploads/{file.filename}', "filename": file.filename}
 
-
-app = gr.mount_gradio_app(app, blocks, "/gradio",
-                          gradio_api_url="http://0.0.0.0:7860/gradio/")
 
 app.mount("/", StaticFiles(directory="../static", html=True), name="static")
 

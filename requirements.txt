@@ -12,3 +12,4 @@ httpx
 gradio
 boto3
 python-magic
+fastapi-utils

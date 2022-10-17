@@ -32,15 +32,12 @@ export async function uploadImage(imagBlob: Blob, prompt: string, key: string): 
 	const formData = new FormData()
 	formData.append('file', file)
 
-	console.log('uploading image', file);
-
 	const response = await fetch(PUBLIC_UPLOAD_URL, {
 		method: 'POST',
 		body: formData
 	});
 	const res = await response.json();
 
-	console.log('uploaded images', res);
 	return res.filename;
 }
 const MAX = 512 * 5 - 512

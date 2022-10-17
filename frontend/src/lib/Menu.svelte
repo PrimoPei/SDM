@@ -1,7 +1,8 @@
 <script lang="ts">
 	import { onMount, createEventDispatcher } from 'svelte';
 	import PPButton from '$lib/Buttons/PPButton.svelte';
-	import RoomsSelector from './Buttons/RoomsSelector.svelte';
+	import RoomsSelector from '$lib/Buttons/RoomsSelector.svelte';
+	import LiveBlocks from '$lib/Icons/LiveBlocks.svelte';
 	const dispatch = createEventDispatcher();
 	export let isLoading = false;
 	const onKeyup = (e: KeyboardEvent) => {
@@ -17,7 +18,10 @@
 	});
 </script>
 
-<div class="grid grid-cols-1 gap-1 w-max mx-auto">
+<div class="grid grid-cols-1 gap-1 w-max mx-auto place-items-center">
 	<PPButton {isLoading} on:click={() => dispatch('prompt')} />
 	<RoomsSelector {isLoading} />
+	<a href="https://liveblocks.io" target="_blank" rel="noopener noreferrer">
+		<LiveBlocks />
+	</a>
 </div>

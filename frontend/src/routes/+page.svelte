@@ -25,7 +25,7 @@
 
 		// Add random id to room param if not set, and return the id string
 		// e.g. /?room=758df70b5e94c13289df6
-		roomId = 'multiplayer-SD';
+		roomId = 'sd-multiplayer-room-0';
 
 		// Connect to the authentication API for Liveblocks
 		client = createClient({
