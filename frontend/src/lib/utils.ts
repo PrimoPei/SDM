@@ -1,4 +1,4 @@
-import { dev } from '$app/environment';
+import { PUBLIC_UPLOAD_URL } from '$env/static/public';
 
 export function base64ToBlob(base64image: string): Promise<Blob> {
 	return new Promise((resolve) => {
@@ -23,7 +23,6 @@ export function base64ToBlob(base64image: string): Promise<Blob> {
 export async function uploadImage(imagBlob: Blob, prompt: string, key: string): Promise<string> {
 	// simple regex slugify string	for file name
 	const promptSlug = slugify(prompt);
-	const UPLOAD_URL = dev ? '/server/uploadfile/' : '/embed/huggingface-projects/stable-diffusion-multiplayer/uploadfile/';
 
 	const hash = crypto.randomUUID().split('-')[0];
 	const fileName = `color-palette-${hash}-${promptSlug}-${key}.jpeg`;
@@ -35,7 +34,7 @@ export async function uploadImage(imagBlob: Blob, prompt: string, key: string): 
 
 	console.log('uploading image', file);
 
-	const response = await fetch(UPLOAD_URL, {
+	const response = await fetch(PUBLIC_UPLOAD_URL, {
 		method: 'POST',
 		body: formData
 	});
