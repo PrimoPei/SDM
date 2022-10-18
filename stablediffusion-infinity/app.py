@@ -3,7 +3,7 @@ import os
 
 from pathlib import Path
 import uvicorn
-from fastapi import FastAPI, BackgroundTasks, HTTPException, UploadFile, Depends, status
+from fastapi import FastAPI, BackgroundTasks, HTTPException, UploadFile, Depends, status, Request
 from fastapi.staticfiles import StaticFiles
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi_utils.tasks import repeat_every
@@ -21,6 +21,7 @@ import boto3
 import magic
 import sqlite3
 import requests
+import uuid
 
 AWS_ACCESS_KEY_ID = os.getenv('AWS_ACCESS_KEY_ID')
 AWS_SECRET_KEY = os.getenv('AWS_SECRET_KEY')
@@ -36,6 +37,7 @@ FILE_TYPES = {
     'image/jpeg': 'jpg',
 }
 DB_PATH = Path("rooms.db")
+
 app = FastAPI()
 
 print("DB_PATH", DB_PATH)
@@ -53,7 +55,6 @@ def get_db():
         db.rollback()
     finally:
         db.close()
-
 
 
 s3 = boto3.client(service_name='s3',
@@ -115,6 +116,7 @@ def get_model():
     # model["img2img"]
 
 
+# init model on startup
 # get_model()
 
 
@@ -280,13 +282,32 @@ async def sync_rooms():
         print(e)
         print("Rooms update failed")
 
-@app.get('/rooms')
+
+@app.get('/api/rooms')
 async def get_rooms(db: sqlite3.Connection = Depends(get_db)):
     rooms = db.execute("SELECT * FROM rooms").fetchall()
     return rooms
 
 
-@app.post('/uploadfile/')
+@app.post('/api/auth')
+async def autorize(request: Request):
+    data = await request.json()
+    room = data["room"]
+    payload = {
+        "userId": str(uuid.uuid4()),
+        "userInfo": {
+            "name": "Anon"
+        }}
+
+    response = requests.post(f"https://api.liveblocks.io/v2/rooms/{room}/authorize",
+                             headers={"Authorization": f"Bearer {LIVEBLOCKS_SECRET}"}, json=payload)
+    if response.status_code == 200:
+        return response.json()
+    else:
+        raise Exception(response.status_code, response.text)
+
+
+@ app.post('/api/uploadfile/')
 async def create_upload_file(background_tasks: BackgroundTasks, file: UploadFile):
     contents = await file.read()
     file_size = len(contents)

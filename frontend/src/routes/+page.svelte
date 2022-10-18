@@ -15,11 +15,18 @@
 	import LiveblocksProvider from '$lib/liveblocks/LiveblocksProvider.svelte';
 	import RoomProvider from '$lib/liveblocks/RoomProvider.svelte';
 	import App from '$lib/App.svelte';
+	import type { PageData } from './$types';
+	import { PUBLIC_API_BASE } from '$env/static/public';
+
+	export let data: PageData;
 
 	let roomId: string;
 	let loaded = false;
 	let client: Client;
 
+	$: {
+		console.log('data changed', data);
+	}
 	onMount(() => {
 		document.addEventListener('wheel', (e) => e.preventDefault(), { passive: false });
 
@@ -29,7 +36,8 @@
 
 		// Connect to the authentication API for Liveblocks
 		client = createClient({
-			publicApiKey: 'pk_test_JlUZGH3kQmhmZQiqU2l8eIi5'
+			// publicApiKey: 'pk_test_JlUZGH3kQmhmZQiqU2l8eIi5'
+			authEndpoint: PUBLIC_API_BASE + '/auth'
 		});
 
 		loaded = true;

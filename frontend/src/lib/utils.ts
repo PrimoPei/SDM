@@ -1,4 +1,4 @@
-import { PUBLIC_UPLOAD_URL } from '$env/static/public';
+import { PUBLIC_API_BASE } from '$env/static/public';
 
 export function base64ToBlob(base64image: string): Promise<Blob> {
 	return new Promise((resolve) => {
@@ -32,7 +32,7 @@ export async function uploadImage(imagBlob: Blob, prompt: string, key: string): 
 	const formData = new FormData()
 	formData.append('file', file)
 
-	const response = await fetch(PUBLIC_UPLOAD_URL, {
+	const response = await fetch(PUBLIC_API_BASE + "/uploadfile", {
 		method: 'POST',
 		body: formData
 	});
