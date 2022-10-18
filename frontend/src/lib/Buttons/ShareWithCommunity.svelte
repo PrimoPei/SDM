@@ -44,7 +44,7 @@ ${canvasImage}
 	title="Share with community"
 >
 	{#if isUploading}
-		<LoadingIcon classList="animate-spin max-w-[25px]" />
+		<LoadingIcon classList={"animate-spin max-w-[25px]"} />
 	{:else}
 		<IconCommunity />
 	{/if}
