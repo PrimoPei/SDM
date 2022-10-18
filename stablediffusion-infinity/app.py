@@ -117,7 +117,7 @@ def get_model():
 
 
 # init model on startup
-# get_model()
+get_model()
 
 
 def run_outpaint(
@@ -240,7 +240,8 @@ with blocks as demo:
 
 blocks.config['dev_mode'] = False
 
-
+app = gr.mount_gradio_app(app, blocks, "/gradio",
+                          gradio_api_url="http://0.0.0.0:7860/gradio/")
 def generateAuthToken():
     response = requests.get(f"https://liveblocks.io/api/authorize",
                             headers={"Authorization": f"Bearer {LIVEBLOCKS_SECRET}"})
@@ -313,7 +314,7 @@ async def autorize(request: Request, db: sqlite3.Connection = Depends(get_db)):
         raise Exception(response.status_code, response.text)
 
 
-@ app.post('/api/uploadfile')
+@app.post('/api/uploadfile')
 async def create_upload_file(background_tasks: BackgroundTasks, file: UploadFile):
     contents = await file.read()
     file_size = len(contents)
@@ -349,9 +350,6 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
-
-app = gr.mount_gradio_app(app, blocks, "/gradio",
-                          gradio_api_url="http://0.0.0.0:7860/gradio/")
 
 
 if __name__ == "__main__":
