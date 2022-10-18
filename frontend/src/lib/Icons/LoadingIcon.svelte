@@ -1,5 +1,9 @@
+<script lang="ts">
+	export let classList = '';
+</script>
+
 <svg
-	class="animate-spin"
+	class={classList}
 	width="51"
 	height="51"
 	viewBox="0 0 21 21"
