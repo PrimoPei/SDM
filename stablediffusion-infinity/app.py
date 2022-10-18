@@ -264,7 +264,7 @@ def get_room_count(room_id: str, jwtToken: str = ''):
 
 
 @app.on_event("startup")
-@repeat_every(seconds=60*5)
+@repeat_every(seconds=60)
 async def sync_rooms():
     print("Syncing rooms")
     try:
@@ -290,7 +290,7 @@ async def get_rooms(db: sqlite3.Connection = Depends(get_db)):
 
 
 @app.post('/api/auth')
-async def autorize(request: Request):
+async def autorize(request: Request, db: sqlite3.Connection = Depends(get_db)):
     data = await request.json()
     room = data["room"]
     payload = {
@@ -302,6 +302,12 @@ async def autorize(request: Request):
     response = requests.post(f"https://api.liveblocks.io/v2/rooms/{room}/authorize",
                              headers={"Authorization": f"Bearer {LIVEBLOCKS_SECRET}"}, json=payload)
     if response.status_code == 200:
+        # user in, incremente room count
+        # cursor = db.cursor()
+        # cursor.execute(
+        #     "UPDATE rooms SET users_count = users_count + 1 WHERE room_id = ?", (room,))
+        # db.commit()
+        sync_rooms()
         return response.json()
     else:
         raise Exception(response.status_code, response.text)

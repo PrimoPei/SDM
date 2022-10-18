@@ -4,7 +4,9 @@
 	import RoomsSelector from '$lib/Buttons/RoomsSelector.svelte';
 	import LiveBlocks from '$lib/Icons/LiveBlocks.svelte';
 	const dispatch = createEventDispatcher();
+	
 	export let isLoading = false;
+
 	const onKeyup = (e: KeyboardEvent) => {
 		if (e.key === 'Enter') {
 			dispatch('prompt');

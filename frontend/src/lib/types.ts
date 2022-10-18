@@ -34,3 +34,9 @@ export type PromptImgObject = {
 };
 
 export type PromptImgKey = string;
+
+export interface RoomResponse {
+	id: number;
+	room_id: string;
+	users_count: number;
+}

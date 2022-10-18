@@ -17,26 +17,21 @@
 	import App from '$lib/App.svelte';
 	import type { PageData } from './$types';
 	import { PUBLIC_API_BASE } from '$env/static/public';
-
+	import { selectedRoomID } from '$lib/store';
 	export let data: PageData;
 
-	let roomId: string;
+	let rooms = data.rooms;
 	let loaded = false;
 	let client: Client;
 
-	$: {
-		console.log('data changed', data);
+	$: roomId = rooms.find((room) => room.id === $selectedRoomID)?.room_id;
+
+	$:{
+		console.log("ROOM ID", $selectedRoomID);
 	}
 	onMount(() => {
-		document.addEventListener('wheel', (e) => e.preventDefault(), { passive: false });
-
-		// Add random id to room param if not set, and return the id string
-		// e.g. /?room=758df70b5e94c13289df6
-		roomId = 'sd-multiplayer-room-0';
-
-		// Connect to the authentication API for Liveblocks
+		// document.addEventListener('wheel', (e) => e.preventDefault(), { passive: false });
 		client = createClient({
-			// publicApiKey: 'pk_test_JlUZGH3kQmhmZQiqU2l8eIi5'
 			authEndpoint: PUBLIC_API_BASE + '/auth'
 		});
 
@@ -45,12 +40,16 @@
 </script>
 
 {#if loaded}
-	<!-- Provides Liveblocks hooks to children -->
 	<LiveblocksProvider {client}>
-		<!-- Create a room from id e.g. `sveltekit-pixel-art-758df70b5e94c13289df6` -->
-		<RoomProvider id={roomId}>
-			<!-- Main app component -->
-			<App />
-		</RoomProvider>
+		{#if roomId}
+			<RoomProvider id={roomId}>
+				<App />
+			</RoomProvider>
+		{:else}
+			<div class="flex flex-col items-center justify-center h-full">
+				<h1 class="text-2xl font-bold">No room selected</h1>
+				<p class="text-gray-500">Please select a room in the URL</p>
+			</div>
+		{/if}
 	</LiveblocksProvider>
 {/if}
