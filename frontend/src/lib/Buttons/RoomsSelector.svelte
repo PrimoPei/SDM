@@ -1,4 +1,6 @@
 <script lang="ts">
+	import { page } from '$app/stores';
+
 	import Room from '$lib/Icons/Room.svelte';
 	import Pin from '$lib/Icons/Pin.svelte';
 	import People from '$lib/Icons/People.svelte';
@@ -34,6 +36,12 @@
 	async function refreshRooms() {
 		rooms = await fetch(PUBLIC_API_BASE + '/rooms').then((res) => res.json());
 	}
+	function changeRoom(room: RoomResponse) {
+		$selectedRoomID = room.id;
+		collapsed = true;
+		$page.url.searchParams.set('roomid', room.room_id);
+		window.location.search = `?${$page.url.searchParams.toString()}`;
+	}
 </script>
 
 <!-- svelte-ignore a11y-click-events-have-key-events -->
@@ -59,10 +67,7 @@
 							<!-- svelte-ignore a11y-invalid-attribute -->
 							<a
 								href="#"
-								on:click|preventDefault={() => {
-									$selectedRoomID = room.id;
-									collapsed = true;
-								}}
+								on:click|preventDefault={() => changeRoom(room)}
 								class="grid-row gap-2 hover:bg-gray-300
 						   {room.id === $selectedRoomID ? 'text-green-600' : ''}"
 							>
