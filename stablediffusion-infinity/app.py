@@ -1,6 +1,5 @@
 import io
 import os
-from random import sample
 
 from pathlib import Path
 import uvicorn
@@ -50,8 +49,11 @@ def get_db():
     db.row_factory = sqlite3.Row
     try:
         yield db
+    except Exception:
+        db.rollback()
     finally:
         db.close()
+
 
 
 s3 = boto3.client(service_name='s3',
@@ -248,7 +250,6 @@ def generateAuthToken():
 
 
 def get_room_count(room_id: str, jwtToken: str = ''):
-    print("Getting room count" + room_id)
     response = requests.get(
         f"https://liveblocks.net/api/v1/room/{room_id}/users", headers={"Authorization": f"Bearer {jwtToken}", "Content-Type": "application/json"})
     if response.status_code == 200:
@@ -260,31 +261,29 @@ def get_room_count(room_id: str, jwtToken: str = ''):
     raise Exception("Error getting room count")
 
 
-app = gr.mount_gradio_app(app, blocks, "/gradio",
-                          gradio_api_url="http://0.0.0.0:7860/gradio/")
-
-app.on_event("startup")
-
-
-@repeat_every(seconds=10)
-async def sync_rooms(db: sqlite3.Connection = Depends(get_db)):
+@app.on_event("startup")
+@repeat_every(seconds=60*5)
+async def sync_rooms():
+    print("Syncing rooms")
     try:
         jwtToken = generateAuthToken()
-        rooms = db.execute("SELECT * FROM rooms").fetchall()
-        print(rooms)
-        for row in rooms:
-            room_id = row["room_id"]
-            users_count = get_room_count(room_id, jwtToken)
-            print("Updating room", room_id, "with", users_count, "users")
-            cursor = db.cursor()
-            cursor.execute(
-                "UPDATE rooms SET users_count = ? WHERE room_id = ?", (users_count, room_id))
-            db.commit()
-        data = db.execute("SELECT * FROM rooms").fetchall()
-        print("Rooms updated", data)
+        for db in get_db():
+            rooms = db.execute("SELECT * FROM rooms").fetchall()
+            for row in rooms:
+                room_id = row["room_id"]
+                users_count = get_room_count(room_id, jwtToken)
+                cursor = db.cursor()
+                cursor.execute(
+                    "UPDATE rooms SET users_count = ? WHERE room_id = ?", (users_count, room_id))
+                db.commit()
     except Exception as e:
         print(e)
         print("Rooms update failed")
+
+@app.get('/rooms')
+async def get_rooms(db: sqlite3.Connection = Depends(get_db)):
+    rooms = db.execute("SELECT * FROM rooms").fetchall()
+    return rooms
 
 
 @app.post('/uploadfile/')
@@ -323,6 +322,10 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+app = gr.mount_gradio_app(app, blocks, "/gradio",
+                          gradio_api_url="http://0.0.0.0:7860/gradio/")
+
 
 if __name__ == "__main__":
     uvicorn.run(app, host="0.0.0.0", port=7860,
