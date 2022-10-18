@@ -1,16 +1,39 @@
 <script lang="ts">
-	import { createEventDispatcher } from 'svelte';
 	import IconCommunity from '$lib/Icons/IconCommunity.svelte';
 	import LoadingIcon from '$lib/Icons/LoadingIcon.svelte';
+	import { uploadImage } from '$lib/utils';
+	import { canvasEl } from '$lib/store';
 
-	export let isUploading: boolean = false;
+	let isUploading: boolean = false;
 
-	const dispatch = createEventDispatcher();
-	function handleClick() {
+	async function handleClick() {
 		if (isUploading) {
 			return;
 		}
-		dispatch('createCommunityPost');
+		const blob: Blob = await new Promise((resolve) => {
+			$canvasEl.toBlob(resolve as BlobCallback, 'image/jpeg', 0.95);
+		});
+		isUploading = true;
+		await createCommunityPost(blob);
+		isUploading = false;
+	}
+
+	async function createCommunityPost(canvasBlob: Blob) {
+		const canvasURL = await uploadImage(canvasBlob, 'canvas', 'canvas');
+		const canvasImage = `<img src="${canvasURL.url}" style="width:100%" width="1000" height="1000">`;
+		const descriptionMd = `#### Stable Diffusion Multiplayer:
+<div style="display: flex; overflow: scroll; column-gap: 0.75rem;">
+${canvasImage}
+</div>`;
+
+		const params = new URLSearchParams({
+			description: descriptionMd
+		});
+		const paramsStr = params.toString();
+		window.open(
+			`https://huggingface.co/spaces/huggingface-projects/diffuse-the-rest/discussions/new?${paramsStr}`,
+			'_blank'
+		);
 	}
 </script>
 
@@ -21,7 +44,7 @@
 	title="Share with community"
 >
 	{#if isUploading}
-		<LoadingIcon classList="animate-spin max-w-[20px]" />
+		<LoadingIcon classList="animate-spin max-w-[25px]" />
 	{:else}
 		<IconCommunity />
 	{/if}

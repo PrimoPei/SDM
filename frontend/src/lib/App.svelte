@@ -124,7 +124,7 @@
 							const imgURL = await uploadImage(imgBlob, prompt, key);
 							const promptImg = {
 								prompt,
-								imgURL: imgURL,
+								imgURL: imgURL.filename,
 								position,
 								date: new Date().getTime(),
 								id: nanoid()

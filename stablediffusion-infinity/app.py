@@ -313,7 +313,7 @@ async def autorize(request: Request, db: sqlite3.Connection = Depends(get_db)):
         raise Exception(response.status_code, response.text)
 
 
-@ app.post('/api/uploadfile/')
+@ app.post('/api/uploadfile')
 async def create_upload_file(background_tasks: BackgroundTasks, file: UploadFile):
     contents = await file.read()
     file_size = len(contents)

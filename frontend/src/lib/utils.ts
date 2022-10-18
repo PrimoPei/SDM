@@ -20,7 +20,10 @@ export function base64ToBlob(base64image: string): Promise<Blob> {
 		img.src = base64image;
 	});
 }
-export async function uploadImage(imagBlob: Blob, prompt: string, key: string): Promise<string> {
+export async function uploadImage(imagBlob: Blob, prompt: string, key: string): Promise<{
+	url: string;
+	filename: string;
+}> {
 	// simple regex slugify string	for file name
 	const promptSlug = slugify(prompt);
 
@@ -38,7 +41,7 @@ export async function uploadImage(imagBlob: Blob, prompt: string, key: string): 
 	});
 	const res = await response.json();
 
-	return res.filename;
+	return res;
 }
 const MAX = 512 * 5 - 512
 
