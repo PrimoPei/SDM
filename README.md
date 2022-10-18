@@ -1,5 +1,5 @@
 ---
-title: Stable Diffusion Multiplayer Outpainting 
+title: Stable Diffusion Multiplayer 
 emoji: 👥⚙️🎨
 colorFrom: yellow
 colorTo: gray

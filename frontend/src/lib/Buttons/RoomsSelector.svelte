@@ -55,7 +55,7 @@
 	>
 		{#if !collapsed}
 			<div class="absolute left-0 right-0 bottom-full rounded-t-xl bg-violet-100 px-1">
-				<ul class="relative overflow-scroll max-h-72">
+				<ul class="relative overflow-y-scroll max-h-72">
 					<li class="grid-row gap-2 pb-3 sticky top-0 bg-violet-100 py-2">
 						<Room />
 						<span> room </span>
