@@ -6,7 +6,7 @@
 	on:click
 	disabled={isLoading}
 	class="button-paint {isLoading ? 'cursor-wait' : 'cursor-pointer'}"
-	title="New Paint Frame"
+	title="Prompt and Paint"
 >
 	{#if isLoading}
 		<span>paiting... </span>{:else}

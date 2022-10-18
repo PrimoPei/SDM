@@ -11,7 +11,7 @@
 	class="{className} shadow-lg bg-white rounded-full disabled:opacity-50 {isActive
 		? 'text-blue-700'
 		: 'text-gray-800'}"
-	title="Enable Dragging"
+	title="Drag to Move"
 >
 	<Move />
 </button>

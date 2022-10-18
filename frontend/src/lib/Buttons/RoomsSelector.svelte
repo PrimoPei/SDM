@@ -12,7 +12,7 @@
 		.map((_, i) => ({ label: `room ${i}`, total: ~~Math.random() * 20, capacity: 20 }));
 
 	let selectedRoomID = 0;
-	let collapsed = false;
+	let collapsed = true;
 	$: selectedRoom = rooms[selectedRoomID];
 
 	function clickHandler(event: Event) {
@@ -33,6 +33,7 @@
 	class="text-xs md:text-sm bg-violet-100 text-violet-900 px-3 py-1 font-mono font-medium tracking-tight relative z-0 min-w-[25ch] 
 	{isLoading ? 'opacity-50' : ''}
 	{collapsed ? 'rounded-xl' : 'rounded-b-xl'}"
+	title="Choose a different room"
 	bind:this={boxEl}
 >
 	{#if !collapsed}

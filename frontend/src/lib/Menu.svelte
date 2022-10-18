@@ -21,7 +21,12 @@
 <div class="grid grid-cols-1 gap-1 w-max mx-auto place-items-center">
 	<PPButton {isLoading} on:click={() => dispatch('prompt')} />
 	<RoomsSelector {isLoading} />
-	<a href="https://liveblocks.io" target="_blank" rel="noopener noreferrer">
-		<LiveBlocks />
+	<a
+		href="https://liveblocks.io"
+		target="_blank"
+		rel="noopener noreferrer"
+		title="Multiplayer backend by LiveBlocks.io"
+	>
+		<LiveBlocks classList="max-h-8 md:max-h-fit" />
 	</a>
 </div>

@@ -11,7 +11,7 @@
 	class="{className} rounded-full disabled:opacity-50  {isActive
 		? 'text-blue-700'
 		: 'text-gray-800'}"
-	title="Enable Masking"
+	title="Draw to Mask"
 >
 	<Mask />
 </button>
