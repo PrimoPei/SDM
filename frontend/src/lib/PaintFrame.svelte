@@ -25,8 +25,8 @@
 	let maskCtx: CanvasRenderingContext2D;
 
 	let position = {
-		x: 768,
-		y: 768
+		x: 1024,
+		y: 1024
 	};
 
 	let frameElement: HTMLDivElement;

@@ -26,7 +26,10 @@
 	// Set a default value for presence
 	const initialPresence: Presence = {
 		cursor: null,
-		frame: null,
+		frame: {
+			x: 1024,
+			y: 1024
+		},
 		status: Status.dragging,
 		currentPrompt: ''
 	};
@@ -78,7 +81,7 @@
 
 		const datapayload = {
 			data: [base64Crop, prompt, 0.75, 7.5, 35, 'patchmatch']
-		}
+		};
 
 		const websocket = new WebSocket(PUBLIC_WS_INPAINTING);
 		// websocket.onopen = async function (event) {
@@ -102,7 +105,7 @@
 						break;
 					case 'send_data':
 						$loadingState = 'Sending Data';
-						websocket.send(JSON.stringify({...hashpayload, ...datapayload}));
+						websocket.send(JSON.stringify({ ...hashpayload, ...datapayload }));
 						break;
 					case 'queue_full':
 						$loadingState = 'Queue full';
