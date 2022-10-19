@@ -25,10 +25,10 @@
 	}
 	onMount(() => {
 		refreshRooms();
-		window.addEventListener('click', clickHandler, true);
+		window.addEventListener('pointerdown', clickHandler, true);
 		const interval = setInterval(refreshRooms, 3000);
 		return () => {
-			window.removeEventListener('click', clickHandler, true);
+			window.removeEventListener('pointerdown', clickHandler, true);
 			clearInterval(interval);
 		};
 	});

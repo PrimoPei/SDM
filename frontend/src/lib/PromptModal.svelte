@@ -23,11 +23,12 @@
 		inputEl.focus();
 		prompt = initPrompt;
 		window.addEventListener('keyup', onKeyup);
-		window.addEventListener('click', cancelHandler, true);
+		window.addEventListener('pointerdown', cancelHandler, true);
+
 
 		return () => {
 			window.removeEventListener('keyup', onKeyup);
-			window.removeEventListener('click', cancelHandler, true);
+			window.removeEventListener('pointerdown', cancelHandler, true);
 		};
 	});
 	let timer: NodeJS.Timeout;

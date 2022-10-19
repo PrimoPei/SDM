@@ -71,21 +71,11 @@ model = {}
 
 
 def get_model():
-    if "text2img" not in model:
-        text2img = StableDiffusionPipeline.from_pretrained(
-            "CompVis/stable-diffusion-v1-4",
+    if "inpaint" not in model:
+        inpaint = StableDiffusionInpaintPipeline.from_pretrained(
+            "runwayml/stable-diffusion-inpainting",
             revision="fp16",
-            torch_dtype=torch.float16,
-            use_auth_token=HF_TOKEN,
-        ).to("cuda")
-        inpaint = StableDiffusionInpaintPipeline(
-            vae=text2img.vae,
-            text_encoder=text2img.text_encoder,
-            tokenizer=text2img.tokenizer,
-            unet=text2img.unet,
-            scheduler=text2img.scheduler,
-            safety_checker=text2img.safety_checker,
-            feature_extractor=text2img.feature_extractor,
+            torch_dtype=torch.float16
         ).to("cuda")
 
         # lms = LMSDiscreteScheduler(
@@ -108,11 +98,10 @@ def get_model():
         #         inpaint.enable_attention_slicing()
         # except:
         #     pass
-        model["text2img"] = text2img
         model["inpaint"] = inpaint
         # model["img2img"] = img2img
 
-    return model["text2img"], model["inpaint"]
+    return model["inpaint"]
     # model["img2img"]
 
 
@@ -127,8 +116,10 @@ def run_outpaint(
     guidance,
     step,
     fill_mode,
+
+
 ):
-    text2img, inpaint = get_model()
+    inpaint = get_model()
     sel_buffer = np.array(input_image)
     img = sel_buffer[:, :, 0:3]
     mask = sel_buffer[:, :, -1]
@@ -167,25 +158,30 @@ def run_outpaint(
         mask_image = Image.fromarray(mask)
 
         # mask_image=mask_image.filter(ImageFilter.GaussianBlur(radius = 8))
-        with autocast("cuda"):
-            images = inpaint(
-                prompt=prompt_text,
-                init_image=init_image.resize(
-                    (process_size, process_size), resample=SAMPLING_MODE
-                ),
-                mask_image=mask_image.resize((process_size, process_size)),
-                strength=strength,
-                num_inference_steps=step,
-                guidance_scale=guidance,
-            )
+
     else:
         print("text2image")
-        with autocast("cuda"):
-            images = text2img(
-                prompt=prompt_text, height=process_size, width=process_size,
-            )
+        print("inpainting")
+        img, mask = functbl[fill_mode](img, mask)
+        init_image = Image.fromarray(img)
+        mask = 255 - mask
+        mask = skimage.measure.block_reduce(mask, (8, 8), np.max)
+        mask = mask.repeat(8, axis=0).repeat(8, axis=1)
+        mask_image = Image.fromarray(mask)
 
-    return images['sample'][0], images["nsfw_content_detected"][0]
+        # mask_image=mask_image.filter(ImageFilter.GaussianBlur(radius = 8))
+    with autocast("cuda"):
+        output = inpaint(
+            prompt=prompt_text,
+            image=init_image.resize(
+                (process_size, process_size), resample=SAMPLING_MODE
+            ),
+            mask_image=mask_image.resize((process_size, process_size)),
+            strength=strength,
+            num_inference_steps=step,
+            guidance_scale=guidance,
+        )
+    return output['images'][0], output["nsfw_content_detected"][0]
 
 
 with blocks as demo:
@@ -242,6 +238,8 @@ blocks.config['dev_mode'] = False
 
 app = gr.mount_gradio_app(app, blocks, "/gradio",
                           gradio_api_url="http://0.0.0.0:7860/gradio/")
+
+
 def generateAuthToken():
     response = requests.get(f"https://liveblocks.io/api/authorize",
                             headers={"Authorization": f"Bearer {LIVEBLOCKS_SECRET}"})

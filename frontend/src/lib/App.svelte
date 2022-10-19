@@ -71,11 +71,14 @@
 		const sessionHash = crypto.randomUUID();
 		const base64Crop = $maskEl.toDataURL('image/png');
 
-		const payload = {
+		const hashpayload = {
 			fn_index: 0,
-			data: [base64Crop, prompt, 0.75, 7.5, 35, 'patchmatch'],
 			session_hash: sessionHash
 		};
+
+		const datapayload = {
+			data: [base64Crop, prompt, 0.75, 7.5, 35, 'patchmatch']
+		}
 
 		const websocket = new WebSocket(PUBLIC_WS_INPAINTING);
 		// websocket.onopen = async function (event) {
@@ -94,9 +97,12 @@
 				const data = JSON.parse(event.data);
 				$loadingState = '';
 				switch (data.msg) {
+					case 'send_hash':
+						websocket.send(JSON.stringify(hashpayload));
+						break;
 					case 'send_data':
 						$loadingState = 'Sending Data';
-						websocket.send(JSON.stringify(payload));
+						websocket.send(JSON.stringify({...hashpayload, ...datapayload}));
 						break;
 					case 'queue_full':
 						$loadingState = 'Queue full';
