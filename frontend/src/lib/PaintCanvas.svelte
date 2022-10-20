@@ -7,12 +7,13 @@
 
 	import { useMyPresence, useObject } from '$lib/liveblocks';
 	import type { PromptImgObject } from '$lib/types';
+	import { CANVAS_SIZE } from '$lib/constants';
 
 	const myPresence = useMyPresence();
 	const promptImgStorage = useObject('promptImgStorage');
 
-	const height = 512 * 5;
-	const width = 512 * 5;
+	const height = CANVAS_SIZE.height;
+	const width = CANVAS_SIZE.width;
 
 	let containerEl: HTMLDivElement;
 	let canvasCtx: CanvasRenderingContext2D;

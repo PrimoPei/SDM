@@ -14,6 +14,8 @@
 	import { useMyPresence, useObject, useOthers } from '$lib/liveblocks';
 	import { base64ToBlob, uploadImage } from '$lib/utils';
 	import { nanoid } from 'nanoid';
+	import LiveBlocks from '$lib/Icons/LiveBlocks.svelte';
+	import { CANVAS_SIZE } from '$lib/constants';
 
 	/**
 	 * The main Liveblocks code for the example.
@@ -27,8 +29,8 @@
 	const initialPresence: Presence = {
 		cursor: null,
 		frame: {
-			x: 1024,
-			y: 1024
+			x: CANVAS_SIZE.width / 2 - 512 / 2,
+			y: CANVAS_SIZE.height / 2 - 512 / 2
 		},
 		status: Status.dragging,
 		currentPrompt: ''
@@ -167,11 +169,26 @@
 			}
 		};
 	}
+	let showAbout = false;
 </script>
 
 <!-- Show the current user's cursor location -->
 <div class="text touch-none pointer-events-none">
 	{$loadingState}
+</div>
+<!-- svelte-ignore a11y-click-events-have-key-events -->
+<div
+	class="fixed w-screen top-0 left-0 bottom-0 right-0 max-h-screen z-50 items-center justify-center bg-black text-white bg-opacity-80 px-3 overflow-y-scroll
+	{showAbout ? 'flex' : 'hidden'}"
+	on:click={() => (showAbout = false)}
+>
+	<div class="max-w-md">
+		<h2 class="font-bold text-xl font-mono">Stable Difussion Multiplayer</h2>
+		<p class="text-base">
+			Multiplayer API backed by Liveblocks
+			<LiveBlocks />
+		</p>
+	</div>
 </div>
 {#if showModal}
 	<PromptModal on:paint={onPaint} on:close={onClose} initPrompt={$myPresence?.currentPrompt} />
@@ -209,7 +226,7 @@
 	<ShareWithCommunity />
 </div>
 <div class="fixed bottom-0 left-0 right-0 z-10 my-2">
-	<Menu on:prompt={onPrompt} {isLoading} />
+	<Menu on:prompt={onPrompt} {isLoading} on:toggleAbout={() => (showAbout = !showAbout)} />
 </div>
 
 <style lang="postcss" scoped>

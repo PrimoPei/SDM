@@ -2,9 +2,10 @@
 	import { onMount, createEventDispatcher } from 'svelte';
 	import PPButton from '$lib/Buttons/PPButton.svelte';
 	import RoomsSelector from '$lib/Buttons/RoomsSelector.svelte';
-	import LiveBlocks from '$lib/Icons/LiveBlocks.svelte';
+	import AboutButton from '$lib/Buttons/AboutButton.svelte';
+
 	const dispatch = createEventDispatcher();
-	
+
 	export let isLoading = false;
 
 	const onKeyup = (e: KeyboardEvent) => {
@@ -23,12 +24,5 @@
 <div class="grid grid-cols-1 gap-1 w-max mx-auto place-items-center">
 	<PPButton {isLoading} on:click={() => dispatch('prompt')} />
 	<RoomsSelector {isLoading} />
-	<a
-		href="https://liveblocks.io"
-		target="_blank"
-		rel="noopener noreferrer"
-		title="Multiplayer backend by LiveBlocks.io"
-	>
-		<LiveBlocks classList="max-h-8 md:max-h-fit" />
-	</a>
+	<AboutButton on:click={() => dispatch('toggleAbout')} />
 </div>

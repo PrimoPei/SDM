@@ -4,6 +4,7 @@
 	import MaskButton from '$lib/Buttons/MaskButton.svelte';
 	import UndoButton from '$lib/Buttons/UndoButton.svelte';
 	import LoadingIcon from '$lib/Icons/LoadingIcon.svelte';
+	import { CANVAS_SIZE } from '$lib/constants';
 
 	import { drag } from 'd3-drag';
 	import { select } from 'd3-selection';
@@ -25,8 +26,8 @@
 	let maskCtx: CanvasRenderingContext2D;
 
 	let position = {
-		x: 1024,
-		y: 1024
+		x: CANVAS_SIZE.width / 2 - 512 / 2,
+		y: CANVAS_SIZE.height / 2 - 512 / 2
 	};
 
 	let frameElement: HTMLDivElement;
@@ -213,7 +214,7 @@
 			{#if !isDragging}
 				<div
 					class="absolute top-full"
-					style={`transform: scale(${Math.max(2 - transform.k, 1)}); transform-origin: 0 0;`}
+					style={`transform: scale(${Math.max(2.5 - transform.k, 1)}); transform-origin: 0 0;`}
 				>
 					<div class="py-3">
 						<PPButton {isLoading} on:click={() => dispatch('prompt')} />
@@ -232,7 +233,7 @@
 				</div>
 				<div
 					class="absolute left-full"
-					style={`transform: scale(${Math.max(2 - transform.k, 1)}); transform-origin: 0 0;`}
+					style={`transform: scale(${Math.max(2.5 - transform.k, 1)}); transform-origin: 0 0;`}
 				>
 					<div class="mx-4">
 						<DragButton
