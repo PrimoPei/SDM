@@ -29,9 +29,6 @@ AWS_S3_BUCKET_NAME = os.getenv('AWS_S3_BUCKET_NAME')
 LIVEBLOCKS_SECRET = os.environ.get("LIVEBLOCKS_SECRET")
 HF_TOKEN = os.environ.get("API_TOKEN") or True
 
-if (AWS_ACCESS_KEY_ID == None or AWS_SECRET_KEY == None or AWS_S3_BUCKET_NAME == None or LIVEBLOCKS_SECRET == None):
-    raise Exception("Missing environment variables")
-
 FILE_TYPES = {
     'image/png': 'png',
     'image/jpeg': 'jpg',

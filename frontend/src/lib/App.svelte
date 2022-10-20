@@ -184,8 +184,41 @@
 >
 	<div class="max-w-md">
 		<h2 class="font-bold text-xl font-mono">Stable Difussion Multiplayer</h2>
+		<p>
+			Hugging Face face GPU Spaces https://huggingface.co/docs/hub/spaces-gpus Diffusers
+			https://huggingface.co/docs/diffusers/index
+		</p>
+		<p>
+			Thanks to <a
+				href="https://twitter.com/lkwq007"
+				target="_blank"
+				rel="noopener noreferrer"
+				class="text-blue-400 underline hover:no-underline"
+			>
+				Lnyan</a
+			>
+			for the original outpaiting technique implemented on
+			<a
+				href="https://github.com/lkwq007/stablediffusion-infinity"
+				target="_blank"
+				rel="noopener noreferrer"
+				class="text-blue-400 underline hover:no-underline"
+				>Stable Diffusion Infinity
+			</a>.
+		</p>
+		<h2 class="font-bold text-lg font-mono" />
+		<p>
+			Runwayml Inpaiting Stable Diffusion
+			<a
+				href="https://github.com/runwayml/stable-diffusion"
+				target="_blank"
+				rel="noopener noreferrer"
+			>
+				https://github.com/runwayml/stable-diffusion</a
+			>
+		</p>
 		<p class="text-base">
-			Multiplayer API backed by Liveblocks
+			Multiplayer API by
 			<LiveBlocks />
 		</p>
 	</div>
