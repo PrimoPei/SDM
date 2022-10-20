@@ -47,16 +47,16 @@
 <!-- svelte-ignore a11y-click-events-have-key-events -->
 {#if loadingRooms}
 	<div
-		class="text-xs md:text-sm bg-violet-100 text-violet-900 px-3 py-1 font-mono font-medium tracking-tight relative z-0 min-w-[25ch] 
+		class="text-xs md:text-sm bg-blue-600 text-blue-900 px-3 py-1 font-mono font-medium tracking-tight relative z-0 min-w-[25ch] 
 	{isLoading ? 'opacity-50' : ''}
 	{collapsed ? 'rounded-xl' : 'rounded-b-xl'}"
 		title="Choose a different room"
 		bind:this={boxEl}
 	>
 		{#if !collapsed}
-			<div class="absolute left-0 right-0 bottom-full rounded-t-xl bg-violet-100 px-1">
+			<div class="absolute left-0 right-0 bottom-full rounded-t-xl bg-blue-100 px-1">
 				<ul class="relative overflow-y-scroll max-h-72">
-					<li class="grid-row gap-2 pb-3 sticky top-0 bg-violet-100 py-2">
+					<li class="grid-row gap-2 pb-3 sticky top-0 bg-blue-100 py-2">
 						<Room />
 						<span> room </span>
 						<People />

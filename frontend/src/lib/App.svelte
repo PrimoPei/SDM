@@ -183,7 +183,7 @@
 	on:click={() => (showAbout = false)}
 >
 	<div class="max-w-md">
-		<h2 class="font-bold text-xl font-mono">Stable Difussion Multiplayer</h2>
+		<h2 class="font-bold text-xl font-mono mb-8">Stable Difussion Multiplayer</h2>
 		<p>
 			Hugging Face face GPU Spaces https://huggingface.co/docs/hub/spaces-gpus Diffusers
 			https://huggingface.co/docs/diffusers/index
@@ -207,7 +207,7 @@
 			</a>.
 		</p>
 		<h2 class="font-bold text-lg font-mono" />
-		<p>
+		<p class="mb-6">
 			Runwayml Inpaiting Stable Diffusion
 			<a
 				href="https://github.com/runwayml/stable-diffusion"
@@ -217,9 +217,9 @@
 				https://github.com/runwayml/stable-diffusion</a
 			>
 		</p>
-		<p class="text-base">
+		<p class="text-base flex items-center">
 			Multiplayer API by
-			<LiveBlocks />
+			<LiveBlocks classList="ml-2" />
 		</p>
 	</div>
 </div>
@@ -258,7 +258,7 @@
 <div class="fixed top-0 right-0 z-10 p-2">
 	<ShareWithCommunity />
 </div>
-<div class="fixed bottom-0 left-0 right-0 z-10 my-2">
+<div class="fixed bottom-32 left-0 right-0 z-10 my-2">
 	<Menu on:prompt={onPrompt} {isLoading} on:toggleAbout={() => (showAbout = !showAbout)} />
 </div>
 

@@ -14,18 +14,19 @@
 </script>
 
 <div
-	class="frame @apply absolute top-0 left-0 ring-8 ring-[#EC8E65] w-[512px] h-[512px]"
+	class="frame absolute top-0 left-0 ring-8 ring-black w-[512px] h-[512px] flex items-center justify-center bg-black/60"
 	style={`transform: translateX(${coord.x}px) translateY(${coord.y}px) scale(${transform.k}); transform-origin: 0 0;`}
 >
 	<div class="pointer-events-none touch-none">
-		<div class="font-bold text-xl text-[#EC8E65] text-center px-2 line-clamp-4">{prompt}</div>
-	</div>
-	{#if isLoading}
-		<div class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2">
-			<LoadingIcon classList={'animate-spin'} />
-		</div>
-	{/if}
-</div>
+		{#if isLoading}
+			<LoadingIcon classList={'animate-spin text-4xl inline mr-2 mx-auto text-white mb-4'} />
+		{/if}
+		<div
+			class="font-bold !text-4xl text-white bg-black/60 rounded-2xl text-center p-10 line-clamp-4 flex"
+		>
+			<p class="text-4xl">Someone is painting:</p>
 
-<style lang="postcss" scoped>
-</style>
+			<span class="italic font-normal">"{prompt}"</span>
+		</div>
+	</div>
+</div>

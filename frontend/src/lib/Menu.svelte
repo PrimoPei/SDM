@@ -21,8 +21,13 @@
 	});
 </script>
 
-<div class="grid grid-cols-1 gap-1 w-max mx-auto place-items-center">
-	<PPButton {isLoading} on:click={() => dispatch('prompt')} />
+<div class="flex justify-center">
+	<button
+		on:click={() => dispatch('prompt')}
+		class="text-3xl bg-blue-600 text-white px-6 py-2 rounded-xl ring ring-blue-500 font-semibold shadow-2xl"
+		>🖍 Paint</button
+	>
+	<!-- <PPButton {isLoading} on:click={() => dispatch('prompt')} /> -->
 	<RoomsSelector {isLoading} />
 	<AboutButton on:click={() => dispatch('toggleAbout')} />
 </div>

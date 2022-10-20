@@ -195,7 +195,13 @@
 		class="absolute top-0 left-0 pen"
 		style={`transform: translateX(${coord.x}px) translateY(${coord.y}px) scale(${transform.k}); transform-origin: 0 0;`}
 	>
-		<div class="frame">
+		<div class="frame relative">
+			{#if isLoading}
+				<LoadingIcon classList={'absolute inset-0 m-auto animate-spin text-6xl text-black'} />
+			{/if}
+			{#if $myPresence?.status !== 'masking'}
+				<div class="absolute inset-0 bg-gradient-to-t from-blue-500/60 to-blue-500/10" />
+			{/if}
 			<canvas class={dragEnabled ? '' : 'bg-white'} bind:this={$maskEl} width="512" height="512" />
 			<div class="pointer-events-none touch-none">
 				{#if prompt}
@@ -206,21 +212,14 @@
 					</div>
 				{/if}
 			</div>
-			{#if isLoading}
-				<div class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2">
-					<LoadingIcon classList={'animate-spin'} />
-				</div>
-			{/if}
-			{#if !isDragging}
-				<div
-					class="absolute top-full"
-					style={`transform: scale(${Math.max(2.5 - transform.k, 1)}); transform-origin: 0 0;`}
-				>
-					<div class="py-3">
-						<PPButton {isLoading} on:click={() => dispatch('prompt')} />
-					</div>
+			<div
+				class="absolute top-full"
+				style={`transform: scale(${Math.max(2.5 - transform.k, 1)}); transform-origin: 0 0;`}
+			>
+				<div class="px-3 py-1 bg-blue-600 text-white text-lg xl:text-2xl rounded-b-xl">
+					<!-- <PPButton {isLoading} on:click={() => dispatch('prompt')} /> -->
 					{#if $loadingState !== ''}
-						<div class="p-3 bg-white rounded-lg font-mono">
+						<div class="">
 							{#if $loadingState === 'NFSW'}
 								<h2 class="text-red-500 text-2xl font-bold">NSFW Alert</h2>
 								<h3 class="text-red-500 text-lg">
@@ -229,34 +228,31 @@
 							{/if}
 							<p>{$loadingState}</p>
 						</div>
+					{:else}
+						🤚 Drag me
 					{/if}
 				</div>
-				<div
-					class="absolute left-full"
-					style={`transform: scale(${Math.max(2.5 - transform.k, 1)}); transform-origin: 0 0;`}
-				>
-					<div class="mx-4">
-						<DragButton
-							className={'p-1'}
+			</div>
+			<div
+				class="absolute left-full"
+				style={`transform: scale(${Math.max(2.5 - transform.k, 1)}); transform-origin: 0 0;`}
+			>
+				<div class="mx-4">
+					<!-- <DragButton className={'p-1'} {isLoading} isActive={dragEnabled} on:click={toggleDrag} /> -->
+					<div class="flex bg-blue-600 rounded-lg shadow-lg">
+						<MaskButton
 							{isLoading}
-							isActive={dragEnabled}
-							on:click={toggleDrag}
+							className={'p-1'}
+							isActive={!dragEnabled}
+							on:click={toggleDrawMask}
 						/>
-						<div class="flex bg-white rounded-full mt-3 shadow-lg">
-							<MaskButton
-								{isLoading}
-								className={'p-1'}
-								isActive={!dragEnabled}
-								on:click={toggleDrawMask}
-							/>
-							{#if !dragEnabled}
-								<span class="border-gray-800 border-opacity-50 border-r-2 my-2" />
-								<UndoButton className={'p-1'} {isLoading} on:click={cleanMask} />
-							{/if}
-						</div>
+						{#if !dragEnabled}
+							<span class="border-gray-800 border-opacity-50 border-r-2 my-2" />
+							<UndoButton className={'p-1'} {isLoading} on:click={cleanMask} />
+						{/if}
 					</div>
 				</div>
-			{/if}
+			</div>
 		</div>
 	</div>
 	<div
@@ -269,7 +265,7 @@
 
 <style lang="postcss" scoped>
 	.frame {
-		@apply relative grid grid-cols-3 grid-rows-3 ring-8 ring-[#387CFF] w-[512px] h-[512px];
+		@apply relative grid grid-cols-3 grid-rows-3 ring-8 ring-blue-600 w-[512px] h-[512px];
 	}
 	.hand {
 		cursor: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABMAAAAUCAYAAABvVQZ0AAAACXBIWXMAAAsTAAALEwEAmpwYAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAHSSURBVHgBzVQ9LENRFD4VozZWP4ku/jqJAYNoEQaWNpEwIYJFBINY6UCn6mKTKhYNSTuwVFBiaEgai9bP4CWKUftqv845vU+k7evr2C/5cu6799zvnHvOvQ+gUmEqNimEsKLZQ3YgA0j6TiNXeJPJlIZygEK1yFAmo4rj0Kkg0Jj4DyHyMxKyIt/I+zH5LJrau8V76lPMLa6KjU2vyKhZsbHl1YTX8/dX5X071eyPdX5xDRrr68BiNsNJ+AxsrS1sCf6DIEQub2hoNxJjxO7ivHnMNZqzzlHAIJBIvkBPV6cm7JC11RULWMw1LELRhwf6IPXxxSSRyMU1ztk5mKpmyX9aV0x2KUoitMHW1sxHjd3HWYQyGh7sY1+Z3ZTRMfcpCxLxHwZhZnIc63TEC3TU3iEXj2XdqGGOomKyBhxNq1fi6ZVF3J5tyK+rPGqHXmZX6OAgR61eVCc9UBDE332rzlu3uj0+WRs7GKGxoY5MWi8zZWZygp1KZUSg6yIR1RNzYQeV2/MQLC/MQqmM5HoYb8CDNl/w0GUTlpFLVDPfzi5myZ0DW3szX5Ex5whYLGYFp/pRTAEjyHcaFoX4RvqKPXRTOaJoHJDrmoKMlv0Lqhj8AlEeE/77ZUZMAAAAAElFTkSuQmCC')

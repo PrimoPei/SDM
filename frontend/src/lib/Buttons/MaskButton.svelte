@@ -8,12 +8,10 @@
 <button
 	on:click
 	disabled={isLoading}
-	class="{className} rounded-full disabled:opacity-50  {isActive
-		? 'text-blue-700'
-		: 'text-gray-800'}"
+	class="{className} rounded-full disabled:opacity-50  {isActive ? 'text-white' : 'text-blue-200'}"
 	title="Draw to Mask"
 >
-	<Mask />
+	<Mask classList="text-3xl" />
 </button>
 
 <style lang="postcss" scoped>
