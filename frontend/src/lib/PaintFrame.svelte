@@ -209,8 +209,8 @@
 			<canvas
 				class={dragEnabled ? '' : 'bg-white'}
 				bind:this={$maskEl}
-				width="FRAME_SIZE"
-				height="FRAME_SIZE"
+				width={FRAME_SIZE}
+				height={FRAME_SIZE}
 			/>
 			<div class="pointer-events-none touch-none">
 				{#if prompt}
