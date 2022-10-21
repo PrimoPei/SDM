@@ -4,7 +4,7 @@
 	import MaskButton from '$lib/Buttons/MaskButton.svelte';
 	import UndoButton from '$lib/Buttons/UndoButton.svelte';
 	import LoadingIcon from '$lib/Icons/LoadingIcon.svelte';
-	import { CANVAS_SIZE } from '$lib/constants';
+	import { CANVAS_SIZE, FRAME_SIZE } from '$lib/constants';
 
 	import { drag } from 'd3-drag';
 	import { select } from 'd3-selection';
@@ -26,8 +26,8 @@
 	let maskCtx: CanvasRenderingContext2D;
 
 	let position = {
-		x: CANVAS_SIZE.width / 2 - 512 / 2,
-		y: CANVAS_SIZE.height / 2 - 512 / 2
+		x: CANVAS_SIZE.width / 2 - FRAME_SIZE / 2,
+		y: CANVAS_SIZE.height / 2 - FRAME_SIZE / 2
 	};
 
 	let frameElement: HTMLDivElement;
@@ -52,9 +52,19 @@
 
 	function cropCanvas(cursor: { x: number; y: number }) {
 		maskCtx.save();
-		maskCtx.clearRect(0, 0, 512, 512);
+		maskCtx.clearRect(0, 0, FRAME_SIZE, FRAME_SIZE);
 		maskCtx.globalCompositeOperation = 'source-over';
-		maskCtx.drawImage($canvasEl, cursor.x, cursor.y, 512, 512, 0, 0, 512, 512);
+		maskCtx.drawImage(
+			$canvasEl,
+			cursor.x,
+			cursor.y,
+			FRAME_SIZE,
+			FRAME_SIZE,
+			0,
+			0,
+			FRAME_SIZE,
+			FRAME_SIZE
+		);
 		maskCtx.restore();
 	}
 	function drawLine(points: { x: number; y: number; lastx: number; lasty: number }) {
@@ -195,8 +205,13 @@
 		class="absolute top-0 left-0 pen"
 		style={`transform: translateX(${coord.x}px) translateY(${coord.y}px) scale(${transform.k}); transform-origin: 0 0;`}
 	>
-		<div class="frame">
-			<canvas class={dragEnabled ? '' : 'bg-white'} bind:this={$maskEl} width="512" height="512" />
+		<div class="frame" style={`width: ${FRAME_SIZE}px;height: ${FRAME_SIZE}px;`}>
+			<canvas
+				class={dragEnabled ? '' : 'bg-white'}
+				bind:this={$maskEl}
+				width="FRAME_SIZE"
+				height="FRAME_SIZE"
+			/>
 			<div class="pointer-events-none touch-none">
 				{#if prompt}
 					<div class="pointer-events-none touch-none">
@@ -261,15 +276,15 @@
 	</div>
 	<div
 		bind:this={frameElement}
-		class="absolute top-0 left-0 w-[512px] h-[512px] ring-8 hand
+		class="absolute top-0 left-0 ring-8 hand
 		{dragEnabled ? 'block' : 'hidden'}"
-		style={`transform: translateX(${coord.x}px) translateY(${coord.y}px) scale(${transform.k}); transform-origin: 0 0;`}
+		style={`width: ${FRAME_SIZE}px;height: ${FRAME_SIZE}px;transform: translateX(${coord.x}px) translateY(${coord.y}px) scale(${transform.k}); transform-origin: 0 0;`}
 	/>
 </div>
 
 <style lang="postcss" scoped>
 	.frame {
-		@apply relative grid grid-cols-3 grid-rows-3 ring-8 ring-[#387CFF] w-[512px] h-[512px];
+		@apply relative grid grid-cols-3 grid-rows-3 ring-8 ring-[#387CFF];
 	}
 	.hand {
 		cursor: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABMAAAAUCAYAAABvVQZ0AAAACXBIWXMAAAsTAAALEwEAmpwYAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAHSSURBVHgBzVQ9LENRFD4VozZWP4ku/jqJAYNoEQaWNpEwIYJFBINY6UCn6mKTKhYNSTuwVFBiaEgai9bP4CWKUftqv845vU+k7evr2C/5cu6799zvnHvOvQ+gUmEqNimEsKLZQ3YgA0j6TiNXeJPJlIZygEK1yFAmo4rj0Kkg0Jj4DyHyMxKyIt/I+zH5LJrau8V76lPMLa6KjU2vyKhZsbHl1YTX8/dX5X071eyPdX5xDRrr68BiNsNJ+AxsrS1sCf6DIEQub2hoNxJjxO7ivHnMNZqzzlHAIJBIvkBPV6cm7JC11RULWMw1LELRhwf6IPXxxSSRyMU1ztk5mKpmyX9aV0x2KUoitMHW1sxHjd3HWYQyGh7sY1+Z3ZTRMfcpCxLxHwZhZnIc63TEC3TU3iEXj2XdqGGOomKyBhxNq1fi6ZVF3J5tyK+rPGqHXmZX6OAgR61eVCc9UBDE332rzlu3uj0+WRs7GKGxoY5MWi8zZWZygp1KZUSg6yIR1RNzYQeV2/MQLC/MQqmM5HoYb8CDNl/w0GUTlpFLVDPfzi5myZ0DW3szX5Ex5whYLGYFp/pRTAEjyHcaFoX4RvqKPXRTOaJoHJDrmoKMlv0Lqhj8AlEeE/77ZUZMAAAAAElFTkSuQmCC')

@@ -14,3 +14,6 @@ export const CANVAS_SIZE = {
 	width: 512 * 6,
 	height: 512 * 6,
 }
+export const GRID_SIZE = 32
+
+export const FRAME_SIZE = 512

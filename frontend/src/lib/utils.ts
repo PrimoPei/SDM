@@ -1,5 +1,5 @@
 import { PUBLIC_API_BASE } from '$env/static/public';
-import { CANVAS_SIZE } from '$lib/constants';
+import { CANVAS_SIZE, GRID_SIZE, FRAME_SIZE } from '$lib/constants';
 
 export function base64ToBlob(base64image: string): Promise<Blob> {
 	return new Promise((resolve) => {
@@ -44,10 +44,9 @@ export async function uploadImage(imagBlob: Blob, prompt: string, key: string): 
 
 	return res;
 }
-const MAX = CANVAS_SIZE.width - 512
-
-export function round(pos: number, size = 32) {
-	const value = pos % size < size / 2 ? pos - (pos % size) : pos + size - (pos % size);
+const MAX = CANVAS_SIZE.width - FRAME_SIZE
+export function round(pos: number) {
+	const value = pos % GRID_SIZE < GRID_SIZE / 2 ? pos - (pos % GRID_SIZE) : pos + GRID_SIZE - (pos % GRID_SIZE);
 	return Math.max(0, Math.min(Math.round(value), MAX))
 }
 

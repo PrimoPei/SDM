@@ -15,7 +15,7 @@
 	import { base64ToBlob, uploadImage } from '$lib/utils';
 	import { nanoid } from 'nanoid';
 	import LiveBlocks from '$lib/Icons/LiveBlocks.svelte';
-	import { CANVAS_SIZE } from '$lib/constants';
+	import { CANVAS_SIZE, FRAME_SIZE} from '$lib/constants';
 
 	/**
 	 * The main Liveblocks code for the example.
@@ -29,8 +29,8 @@
 	const initialPresence: Presence = {
 		cursor: null,
 		frame: {
-			x: CANVAS_SIZE.width / 2 - 512 / 2,
-			y: CANVAS_SIZE.height / 2 - 512 / 2
+			x: CANVAS_SIZE.width / 2 - FRAME_SIZE / 2,
+			y: CANVAS_SIZE.height / 2 - FRAME_SIZE / 2
 		},
 		status: Status.dragging,
 		currentPrompt: ''
