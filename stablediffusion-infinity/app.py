@@ -45,6 +45,8 @@ if not DB_PATH.exists():
     db = sqlite3.connect(DB_PATH)
     with open(Path("schema.sql"), "r") as f:
         db.executescript(f.read())
+    db.commit()
+    db.close()
 
 
 def get_db():
