@@ -235,8 +235,10 @@
 				class="absolute bottom-0 origin-bottom-left"
 				style={`transform: scale(${Math.max(2.5 - transform.k, 1)});`}
 			>
+				<!-- svelte-ignore a11y-click-events-have-key-events -->
 				<div
-					class="pl-3 pr-5 py-1 bg-blue-700/90 text-white text-lg xl:text-2xl rounded-tr-xl font-medium tracking-wide"
+					class="pl-3 pr-5 py-1 bg-blue-700/90 text-white text-lg xl:text-2xl rounded-tr-xl font-medium tracking-wide cursor-pointer"
+					on:click={() => toggleDrag()}
 				>
 					{#if $loadingState !== ''}
 						<div class="">
@@ -249,7 +251,7 @@
 							<p>{$loadingState}...</p>
 						</div>
 					{:else}
-						🤚 Drag me
+						<span class="select-none"> {dragEnabled ? '🤚 Drag me' : '🤚 Enable Drag'}</span>
 					{/if}
 				</div>
 			</div>
@@ -301,7 +303,7 @@
 	<div
 		bind:this={frameElement}
 		class="absolute top-0 left-0 ring-8 hand
-		{dragEnabled ? 'block' : 'hidden'}"
+		{dragEnabled ? 'block cursor-move' : 'hidden cursor-pointer'}"
 		style={`width: ${FRAME_SIZE}px;height: ${FRAME_SIZE}px;transform: translateX(${coord.x}px) translateY(${coord.y}px) scale(${transform.k}); transform-origin: 0 0;`}
 	/>
 </div>

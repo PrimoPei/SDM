@@ -6,3 +6,4 @@ export const currZoomTransform = writable<ZoomTransform>(zoomIdentity);
 export const canvasEl = writable<HTMLCanvasElement>();
 export const maskEl = writable<HTMLCanvasElement>();
 export const selectedRoomID = writable<string | null>();
+export const toggleAbout = writable<boolean>(false);

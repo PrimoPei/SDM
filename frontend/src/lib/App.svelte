@@ -14,7 +14,6 @@
 	import { useMyPresence, useObject, useOthers } from '$lib/liveblocks';
 	import { base64ToBlob, uploadImage } from '$lib/utils';
 	import { nanoid } from 'nanoid';
-	import LiveBlocks from '$lib/Icons/LiveBlocks.svelte';
 	import { CANVAS_SIZE, FRAME_SIZE } from '$lib/constants';
 
 	/**
@@ -169,67 +168,11 @@
 			}
 		};
 	}
-	let showAbout = false;
 </script>
 
 <!-- Show the current user's cursor location -->
 <div class="text touch-none pointer-events-none">
 	{$loadingState}
-</div>
-<!-- svelte-ignore a11y-click-events-have-key-events -->
-<div
-	class="fixed w-screen top-0 left-0 bottom-0 right-0 max-h-screen z-50 items-center justify-center bg-black text-white bg-opacity-90 px-3 overflow-y-scroll
-	{showAbout ? 'flex' : 'hidden'}"
-	on:click={() => (showAbout = false)}
->
-	<div class="max-w-md">
-		<h2 class="font-bold text-xl font-mono mb-8">Stable Difussion Multiplayer</h2>
-		<p>
-			Hugging Face face GPU Spaces <a
-				href="https://huggingface.co/docs/hub/spaces-gpus"
-				class="text-blue-400 hover:text-blue-600 underline"
-				>https://huggingface.co/docs/hub/spaces-gpus</a
-			>
-			Diffusers
-			<a
-				href="https://huggingface.co/docs/diffusers/index"
-				class="text-blue-400 hover:text-blue-600 underline"
-				>https://huggingface.co/docs/diffusers/index</a
-			>
-		</p>
-		<p>
-			Thanks to <a
-				href="https://twitter.com/lkwq007"
-				target="_blank"
-				rel="noopener noreferrer"
-				class="text-blue-400 hover:text-blue-600 underline"
-			>
-				Lnyan</a
-			>
-			for the original outpaiting technique implemented on
-			<a
-				href="https://github.com/lkwq007/stablediffusion-infinity"
-				target="_blank"
-				rel="noopener noreferrer"
-				class="text-blue-400 hover:text-blue-600 underline"
-				>Stable Diffusion Infinity
-			</a>.
-		</p>
-		<p class="mb-6">
-			Runwayml Inpaiting Stable Diffusion
-			<a
-				href="https://github.com/runwayml/stable-diffusion"
-				target="_blank"
-				rel="noopener noreferrer"
-			>
-				https://github.com/runwayml/stable-diffusion</a
-			>
-		</p>
-		<p class="text-base flex items-center">
-			Multiplayer API by
-			<LiveBlocks classList="ml-2" />
-		</p>
-	</div>
 </div>
 {#if showModal}
 	<PromptModal on:paint={onPaint} on:close={onClose} initPrompt={$myPresence?.currentPrompt} />
@@ -266,7 +209,7 @@
 	<ShareWithCommunity />
 </div> -->
 <div class="fixed bottom-32 left-0 right-0 z-10 my-2">
-	<Menu on:prompt={onPrompt} {isLoading} on:toggleAbout={() => (showAbout = !showAbout)} />
+	<Menu on:prompt={onPrompt} {isLoading} />
 </div>
 
 <style lang="postcss" scoped>

@@ -3,6 +3,7 @@
 	import PPButton from '$lib/Buttons/PPButton.svelte';
 	import RoomsSelector from '$lib/Buttons/RoomsSelector.svelte';
 	import AboutButton from '$lib/Buttons/AboutButton.svelte';
+	import { toggleAbout } from '$lib/store';
 
 	const dispatch = createEventDispatcher();
 
@@ -22,7 +23,7 @@
 </script>
 
 <div class="flex items-center justify-between px-12">
-	<AboutButton on:click={() => dispatch('toggleAbout')} />
+	<AboutButton on:click={() => ($toggleAbout = !$toggleAbout)} />
 
 	<button
 		on:click={() => dispatch('prompt')}
