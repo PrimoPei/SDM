@@ -83,9 +83,15 @@
 		maskCtx = $maskEl.getContext('2d') as CanvasRenderingContext2D;
 
 		select(frameElement)
+			.on('wheel', (event: WheelEvent) => {
+				$canvasEl.dispatchEvent(new WheelEvent('wheel', event));
+			})
 			.call(dragMoveHandler() as any)
 			.call(cursorUpdate);
 		select($maskEl)
+			.on('wheel', (event: WheelEvent) => {
+				$canvasEl.dispatchEvent(new WheelEvent('wheel', event));
+			})
 			.call(maskingHandler() as any)
 			.call(cursorUpdate);
 	});
