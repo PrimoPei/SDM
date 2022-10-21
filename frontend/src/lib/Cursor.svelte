@@ -33,7 +33,7 @@
 		classList={'block z-0 col-span-2 row-span-2 text-8xl'}
 		fill={colors[Math.floor(Math.random() * colors.length)]}
 	/>
-
+	<!-- 
 	{#if emoji}
 		<div
 			class="absolute right-0 col-start-2 row-start-2 text-8xl"
@@ -41,7 +41,7 @@
 		>
 			{emoji}
 		</div>
-	{/if}
+	{/if} -->
 </div>
 
 <style lang="postcss" scoped>

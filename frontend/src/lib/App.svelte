@@ -178,22 +178,31 @@
 </div>
 <!-- svelte-ignore a11y-click-events-have-key-events -->
 <div
-	class="fixed w-screen top-0 left-0 bottom-0 right-0 max-h-screen z-50 items-center justify-center bg-black text-white bg-opacity-80 px-3 overflow-y-scroll
+	class="fixed w-screen top-0 left-0 bottom-0 right-0 max-h-screen z-50 items-center justify-center bg-black text-white bg-opacity-90 px-3 overflow-y-scroll
 	{showAbout ? 'flex' : 'hidden'}"
 	on:click={() => (showAbout = false)}
 >
 	<div class="max-w-md">
 		<h2 class="font-bold text-xl font-mono mb-8">Stable Difussion Multiplayer</h2>
 		<p>
-			Hugging Face face GPU Spaces https://huggingface.co/docs/hub/spaces-gpus Diffusers
-			https://huggingface.co/docs/diffusers/index
+			Hugging Face face GPU Spaces <a
+				href="https://huggingface.co/docs/hub/spaces-gpus"
+				class="text-blue-400 hover:text-blue-600 underline"
+				>https://huggingface.co/docs/hub/spaces-gpus</a
+			>
+			Diffusers
+			<a
+				href="https://huggingface.co/docs/diffusers/index"
+				class="text-blue-400 hover:text-blue-600 underline"
+				>https://huggingface.co/docs/diffusers/index</a
+			>
 		</p>
 		<p>
 			Thanks to <a
 				href="https://twitter.com/lkwq007"
 				target="_blank"
 				rel="noopener noreferrer"
-				class="text-blue-400 underline hover:no-underline"
+				class="text-blue-400 hover:text-blue-600 underline"
 			>
 				Lnyan</a
 			>
@@ -202,11 +211,10 @@
 				href="https://github.com/lkwq007/stablediffusion-infinity"
 				target="_blank"
 				rel="noopener noreferrer"
-				class="text-blue-400 underline hover:no-underline"
+				class="text-blue-400 hover:text-blue-600 underline"
 				>Stable Diffusion Infinity
 			</a>.
 		</p>
-		<h2 class="font-bold text-lg font-mono" />
 		<p class="mb-6">
 			Runwayml Inpaiting Stable Diffusion
 			<a
@@ -255,9 +263,9 @@
 		{/if}
 	</main>
 </div>
-<div class="fixed top-0 right-0 z-10 p-2">
+<!-- <div class="fixed top-0 right-0 z-10 p-2">
 	<ShareWithCommunity />
-</div>
+</div> -->
 <div class="fixed bottom-32 left-0 right-0 z-10 my-2">
 	<Menu on:prompt={onPrompt} {isLoading} on:toggleAbout={() => (showAbout = !showAbout)} />
 </div>

@@ -21,13 +21,13 @@
 	});
 </script>
 
-<div class="flex justify-center">
+<div class="flex items-center justify-between px-12">
+	<AboutButton on:click={() => dispatch('toggleAbout')} />
+
 	<button
 		on:click={() => dispatch('prompt')}
-		class="text-3xl bg-blue-600 text-white px-6 py-2 rounded-xl ring ring-blue-500 font-semibold shadow-2xl"
+		class="text-3xl bg-blue-600 text-white px-6 py-2 rounded-2xl ring ring-blue-500 font-semibold shadow-2xl self-center"
 		>🖍 Paint</button
-	>
+	><RoomsSelector {isLoading} />
 	<!-- <PPButton {isLoading} on:click={() => dispatch('prompt')} /> -->
-	<RoomsSelector {isLoading} />
-	<AboutButton on:click={() => dispatch('toggleAbout')} />
 </div>
