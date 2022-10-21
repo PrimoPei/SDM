@@ -14,7 +14,7 @@
 </script>
 
 <div
-	class="frame absolute top-0 left-0 ring-8 ring-black w-[512px] h-[512px] flex items-center justify-center bg-black/60"
+	class="frame absolute top-0 left-0 border-8 border-dashed border-black w-[512px] h-[512px] flex items-center justify-center bg-black/60"
 	style={`transform: translateX(${coord.x}px) translateY(${coord.y}px) scale(${transform.k}); transform-origin: 0 0;`}
 >
 	<div class="pointer-events-none touch-none">

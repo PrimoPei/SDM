@@ -200,7 +200,11 @@
 				<LoadingIcon classList={'absolute inset-0 m-auto animate-spin text-6xl text-black'} />
 			{/if}
 			{#if $myPresence?.status !== 'masking'}
-				<div class="absolute inset-0 bg-gradient-to-t from-blue-500/60 to-blue-500/10" />
+				<div
+					class="absolute inset-0 bg-gradient-to-t {isDragging
+						? 'from-blue-700/40'
+						: 'from-blue-700/90'} to-blue-500/10"
+				/>
 			{/if}
 			<canvas class={dragEnabled ? '' : 'bg-white'} bind:this={$maskEl} width="512" height="512" />
 			<div class="pointer-events-none touch-none">
@@ -213,11 +217,11 @@
 				{/if}
 			</div>
 			<div
-				class="absolute top-full"
-				style={`transform: scale(${Math.max(2.5 - transform.k, 1)}); transform-origin: 0 0;`}
+				class="absolute bottom-0 origin-bottom-left"
+				style={`transform: scale(${Math.max(2.5 - transform.k, 1)});`}
 			>
 				<div
-					class="px-3 py-1 bg-blue-700 text-white text-lg xl:text-2xl rounded-b-xl font-semibold"
+					class="pl-3 pr-5 py-1 bg-blue-700/90 text-white text-lg xl:text-2xl rounded-tr-xl font-medium tracking-wide"
 				>
 					{#if $loadingState !== ''}
 						<div class="">
@@ -242,13 +246,13 @@
 					<div class="mx-4 flex flex-col gap-2">
 						<button
 							on:click={() => dispatch('prompt')}
-							class="w-10 h-10 bg-blue-600 shadow-2xl shadow-blue-500 rounded-lg flex items-center justify-center text-3xl"
+							class="w-10 h-10 bg-blue-600 hover:saturate-150 shadow-2xl shadow-blue-500 rounded-lg flex items-center justify-center text-3xl"
 						>
 							🖍
 						</button>
 						<button
 							on:click={toggleDrawMask}
-							class="w-10 h-10 bg-blue-600 shadow-2xl shadow-blue-500 rounded-lg flex items-center justify-center text-3xl"
+							class="w-10 h-10 bg-blue-600 hover:saturate-150 shadow-2xl shadow-blue-500 rounded-lg flex items-center justify-center text-3xl"
 						>
 							<svg class="text-white" width="1em" height="1em" viewBox="0 0 100 100"
 								><path
