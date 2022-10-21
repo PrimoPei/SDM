@@ -2,7 +2,7 @@
 	import IconCommunity from '$lib/Icons/IconCommunity.svelte';
 	import LoadingIcon from '$lib/Icons/LoadingIcon.svelte';
 	import { uploadImage } from '$lib/utils';
-	import { canvasEl } from '$lib/store';
+	import { canvasEl, selectedRoomID } from '$lib/store';
 
 	let isUploading: boolean = false;
 
@@ -22,16 +22,18 @@
 		const canvasURL = await uploadImage(canvasBlob, 'canvas', 'canvas');
 		const canvasImage = `<img src="${canvasURL.url}" style="width:100%" width="1000" height="1000">`;
 		const descriptionMd = `#### Stable Diffusion Multiplayer:
+		### Room ${$selectedRoomID}
 <div style="display: flex; overflow: scroll; column-gap: 0.75rem;">
 ${canvasImage}
 </div>`;
 
 		const params = new URLSearchParams({
+			title: `Room ${$selectedRoomID}`,
 			description: descriptionMd
 		});
 		const paramsStr = params.toString();
 		window.open(
-			`https://huggingface.co/spaces/huggingface-projects/diffuse-the-rest/discussions/new?${paramsStr}`,
+			`https://huggingface.co/spaces/huggingface-projects/stable-diffusion-multiplayer/discussions/new?${paramsStr}`,
 			'_blank'
 		);
 	}
@@ -44,7 +46,7 @@ ${canvasImage}
 	title="Share with community"
 >
 	{#if isUploading}
-		<LoadingIcon classList={"animate-spin max-w-[25px]"} />
+		<LoadingIcon classList={'animate-spin max-w-[25px]'} />
 	{:else}
 		<IconCommunity />
 	{/if}

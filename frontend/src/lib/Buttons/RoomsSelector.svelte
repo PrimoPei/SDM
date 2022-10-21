@@ -15,7 +15,7 @@
 	let rooms: RoomResponse[] = [];
 
 	let collapsed = true;
-	$: selectedRoom = rooms.find((room) => room.id === $selectedRoomID);
+	$: selectedRoom = rooms.find((room) => room.room_id === $selectedRoomID);
 	$: loadingRooms = rooms.length > 0;
 
 	function clickHandler(event: Event) {
@@ -37,7 +37,7 @@
 		rooms = await fetch(PUBLIC_API_BASE + '/rooms').then((res) => res.json());
 	}
 	function changeRoom(room: RoomResponse) {
-		$selectedRoomID = room.id;
+		$selectedRoomID = room.room_id;
 		collapsed = true;
 		$page.url.searchParams.set('roomid', room.room_id);
 		window.location.search = `?${$page.url.searchParams.toString()}`;
@@ -69,10 +69,10 @@
 								href="#"
 								on:click|preventDefault={() => changeRoom(room)}
 								class="grid-row gap-2 hover:bg-gray-300
-						   {room.id === $selectedRoomID ? 'text-green-600' : ''}"
+						   {room.room_id === $selectedRoomID ? 'text-green-600' : ''}"
 							>
 								<span>
-									{#if room.id === $selectedRoomID}
+									{#if room.room_id === $selectedRoomID}
 										<Pin />
 									{/if}
 								</span>

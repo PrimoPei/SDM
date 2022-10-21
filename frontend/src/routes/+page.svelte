@@ -20,15 +20,11 @@
 	import { selectedRoomID } from '$lib/store';
 	export let data: PageData;
 
-	let rooms = data.rooms;
 	let loaded = false;
 	let client: Client;
 
-	$: roomId = rooms.find((room) => room.id === $selectedRoomID)?.room_id;
+	$: roomId = $selectedRoomID;
 
-	$:{
-		console.log("ROOM ID", $selectedRoomID);
-	}
 	onMount(() => {
 		// document.addEventListener('wheel', (e) => e.preventDefault(), { passive: false });
 		client = createClient({

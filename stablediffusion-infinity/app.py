@@ -313,7 +313,7 @@ async def autorize(request: Request, db: sqlite3.Connection = Depends(get_db)):
 async def create_upload_file(background_tasks: BackgroundTasks, file: UploadFile):
     contents = await file.read()
     file_size = len(contents)
-    if not 0 < file_size < 2E+06:
+    if not 0 < file_size < 20E+06:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail='Supported file size is less than 2 MB'

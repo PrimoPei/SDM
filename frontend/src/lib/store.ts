@@ -5,4 +5,4 @@ export const loadingState = writable<string>('');
 export const currZoomTransform = writable<ZoomTransform>(zoomIdentity);
 export const canvasEl = writable<HTMLCanvasElement>();
 export const maskEl = writable<HTMLCanvasElement>();
-export const selectedRoomID = writable<number | null>();
+export const selectedRoomID = writable<string | null>();

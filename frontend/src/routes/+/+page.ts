@@ -14,11 +14,11 @@ export const load: PageLoad = async ({ url }) => {
     if (roomidParam) {
         const room = rooms.find(room => room.room_id === roomidParam);
         if (room) {
-            selectedRoomID.set(room.id);
+            selectedRoomID.set(roomidParam);
         }
     } else {
         const room = rooms.find(room => room.users_count < MAX_CAPACITY) || null;
-        selectedRoomID.set(room ? room.id : null);
+        selectedRoomID.set(room ? room.room_id : null);
     }
     return { rooms };
 }
