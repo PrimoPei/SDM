@@ -37,15 +37,18 @@ DB_PATH = Path("rooms.db")
 
 app = FastAPI()
 
-print("DB_PATH", DB_PATH)
+if not DB_PATH.exists():
+    print("Creating database")
+    print("DB_PATH", DB_PATH)
+    db = sqlite3.connect(DB_PATH)
+    with open(Path("schema.sql"), "r") as f:
+        db.executescript(f.read())
 
 
 def get_db():
     db = sqlite3.connect(DB_PATH, check_same_thread=False)
-    db.execute("CREATE TABLE IF NOT EXISTS rooms (id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, room_id TEXT NOT NULL, users_count INTEGER NOT NULL DEFAULT 0)")
-    print("Connected to database")
-    db.commit()
     db.row_factory = sqlite3.Row
+    print("Connected to database")
     try:
         yield db
     except Exception:
