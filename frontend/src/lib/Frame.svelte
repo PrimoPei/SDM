@@ -14,20 +14,21 @@
 </script>
 
 <div
-	class="frame @apply absolute top-0 left-0 ring-8 ring-[#EC8E65]"
+	class="absolute top-0 left-0 border-8 border-dashed border-black flex items-center justify-center bg-black/60"
 	style={`width: ${FRAME_SIZE}px;
-			height: ${FRAME_SIZE}px;transform:
-			translateX(${coord.x}px) translateY(${coord.y}px) scale(${transform.k}); transform-origin: 0 0;`}
+			height: ${FRAME_SIZE}px;
+			transform: translateX(${coord.x}px) translateY(${coord.y}px) scale(${transform.k}); transform-origin: 0 0;`}
 >
 	<div class="pointer-events-none touch-none">
-		<div class="font-bold text-xl text-[#EC8E65] text-center px-2 line-clamp-4">{prompt}</div>
-	</div>
-	{#if isLoading}
-		<div class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2">
-			<LoadingIcon classList={'animate-spin'} />
-		</div>
-	{/if}
-</div>
+		<div class="font-bold !text-4xl text-white rounded-2xl text-center p-10 line-clamp-4 flex">
+			{#if isLoading}
+				<LoadingIcon classList={'animate-spin text-4xl inline mr-2 mx-auto text-white mb-4'} />
+				<p class="text-4xl">Someone is painting:</p>
+			{:else}
+				<p class="text-4xl">Someone is typing:</p>
+			{/if}
 
-<style lang="postcss" scoped>
-</style>
+			<span class="italic font-normal">"{prompt}"</span>
+		</div>
+	</div>
+</div>

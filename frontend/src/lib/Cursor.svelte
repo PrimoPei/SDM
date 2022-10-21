@@ -3,7 +3,6 @@
 	import Cursor from '$lib/Icons/Cursor.svelte';
 	export let transform: ZoomTransform;
 	export let color = '';
-	export let emoji: string;
 	export let position = { x: 0, y: 0 };
 
 	$: coord = {
@@ -13,19 +12,19 @@
 </script>
 
 <div
-	class="cursor"
+	class="cursor text-4xl"
 	style={`transform: translateX(${coord.x}px) translateY(${coord.y}px) scale(${transform.k});`}
 >
-	<Cursor classList={'block z-0 col-span-2 row-span-2'} />
-
+	<Cursor classList={'block z-0 col-span-2 row-span-2 text-8xl'} fill={color} />
+	<!-- 
 	{#if emoji}
 		<div
-			class="absolute right-0 text-4xl col-start-2 row-start-2"
+			class="absolute right-0 col-start-2 row-start-2 text-8xl"
 			style={`text-shadow: 0px 5px 5px ${color}`}
 		>
 			{emoji}
 		</div>
-	{/if}
+	{/if} -->
 </div>
 
 <style lang="postcss" scoped>
