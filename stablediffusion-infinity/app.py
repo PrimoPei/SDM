@@ -12,6 +12,8 @@ import numpy as np
 import torch
 from torch import autocast
 from diffusers import StableDiffusionPipeline, StableDiffusionInpaintPipeline
+from diffusers.models import AutoencoderKL
+
 from PIL import Image
 import gradio as gr
 import skimage
@@ -69,13 +71,19 @@ except Exception as e:
 blocks = gr.Blocks().queue()
 model = {}
 
+WHITES = 66846720
+STATIC_MASK = Image.open("mask.png")
+
 
 def get_model():
     if "inpaint" not in model:
+
+        vae = AutoencoderKL.from_pretrained(f"stabilityai/sd-vae-ft-ema")
         inpaint = StableDiffusionInpaintPipeline.from_pretrained(
             "runwayml/stable-diffusion-inpainting",
             revision="fp16",
-            torch_dtype=torch.float16
+            torch_dtype=torch.float16,
+            vae=vae,
         ).to("cuda")
 
         # lms = LMSDiscreteScheduler(
@@ -126,29 +134,16 @@ def run_outpaint(
     process_size = 512
 
     mask_sum = mask.sum()
-    # if mask_sum >= WHITES:
-    #     print("inpaiting with fixed Mask")
-    #     mask = np.array(MASK)[:, :, 0]
-    #     img, mask = functbl[fill_mode](img, mask)
-    #     init_image = Image.fromarray(img)
-    #     mask = 255 - mask
-    #     mask = skimage.measure.block_reduce(mask, (8, 8), np.max)
-    #     mask = mask.repeat(8, axis=0).repeat(8, axis=1)
-    #     mask_image = Image.fromarray(mask)
-
-    #     # mask_image=mask_image.filter(ImageFilter.GaussianBlur(radius = 8))
-    #     with autocast("cuda"):
-    #         images = inpaint(
-    #             prompt=prompt_text,
-    #             init_image=init_image.resize(
-    #                 (process_size, process_size), resample=SAMPLING_MODE
-    #             ),
-    #             mask_image=mask_image.resize((process_size, process_size)),
-    #             strength=strength,
-    #             num_inference_steps=step,
-    #             guidance_scale=guidance,
-    #         )
-    if mask_sum > 0:
+    if mask_sum >= WHITES:
+        print("inpaiting with fixed Mask")
+        mask = np.array(STATIC_MASK)[:, :, 0]
+        img, mask = functbl[fill_mode](img, mask)
+        init_image = Image.fromarray(img)
+        mask = 255 - mask
+        mask = skimage.measure.block_reduce(mask, (8, 8), np.max)
+        mask = mask.repeat(8, axis=0).repeat(8, axis=1)
+        mask_image = Image.fromarray(mask)
+    elif mask_sum > 0 and mask_sum < WHITES:
         print("inpainting")
         img, mask = functbl[fill_mode](img, mask)
         init_image = Image.fromarray(img)
@@ -158,7 +153,6 @@ def run_outpaint(
         mask_image = Image.fromarray(mask)
 
         # mask_image=mask_image.filter(ImageFilter.GaussianBlur(radius = 8))
-
     else:
         print("text2image")
         print("inpainting")

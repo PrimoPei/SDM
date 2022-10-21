@@ -6,3 +6,4 @@ travis.sh
 *.iml
 .token
 libpatchmatch.so
+rooms.db
