@@ -81,7 +81,7 @@
 		};
 
 		const datapayload = {
-			data: [base64Crop, prompt, 0.75, 7.5, 35, 'patchmatch']
+			data: [base64Crop, prompt, 0.75, 7.5, 40, 'patchmatch']
 		};
 
 		const websocket = new WebSocket(PUBLIC_WS_INPAINTING);

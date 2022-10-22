@@ -7,7 +7,7 @@
 
 	import { useMyPresence, useObject } from '$lib/liveblocks';
 	import type { PromptImgObject } from '$lib/types';
-	import { CANVAS_SIZE } from '$lib/constants';
+	import { CANVAS_SIZE, FRAME_SIZE, GRID_SIZE } from '$lib/constants';
 
 	const myPresence = useMyPresence();
 	const promptImgStorage = useObject('promptImgStorage');
@@ -18,13 +18,34 @@
 	let containerEl: HTMLDivElement;
 	let canvasCtx: CanvasRenderingContext2D;
 
-	// keep track of images already rendered
 	const imagesOnCanvas = new Set();
 
 	function getpromptImgList(promptImgList: PromptImgObject[]): PromptImgObject[] {
 		if (promptImgList) {
-			const list: PromptImgObject[] = Object.values(promptImgList).sort((a, b) => a.date - b.date);
-			return list.filter(({ id }) => !imagesOnCanvas.has(id));
+			//sorted by last updated
+			const canvasPixels = new Map();
+			for (const x of Array.from(Array(width / GRID_SIZE).keys())) {
+				for (const y of Array.from(Array(height / GRID_SIZE).keys())) {
+					canvasPixels.set(`${x * GRID_SIZE}_${y * GRID_SIZE}`, null);
+				}
+			}
+			const list: PromptImgObject[] = Object.values(promptImgList).sort((a, b) => b.date - a.date);
+			// init
+			for (const promptImg of list) {
+				const x = promptImg.position.x;
+				const y = promptImg.position.y;
+				for (const i of [...Array(FRAME_SIZE / GRID_SIZE).keys()]) {
+					for (const j of [...Array(FRAME_SIZE / GRID_SIZE).keys()]) {
+						const key = `${x + i * GRID_SIZE}_${y + j * GRID_SIZE}`;
+						if (!canvasPixels.get(key)) {
+							canvasPixels.set(key, promptImg.id);
+						}
+					}
+				}
+			}
+			const ids = new Set([...canvasPixels.values()]);
+			const filteredImages = list.filter((promptImg) => ids.has(promptImg.id));
+			return filteredImages.reverse().filter((promptImg) => !imagesOnCanvas.has(promptImg.id));
 		}
 		return [];
 	}
