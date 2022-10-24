@@ -7,11 +7,13 @@ declare global {
 	namespace App {
 		// interface Locals {}
 		// interface PageData {}
-		// interface Error {}
 		// interface Platform {}
 		interface Window {
 			parentIFrame: unknown;
 		}
+	}
+	interface Error {
+		code: number;
 	}
 	interface Event {
 		relatedTarget: EventTarget | null;

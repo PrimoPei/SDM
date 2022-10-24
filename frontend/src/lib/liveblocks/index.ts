@@ -10,7 +10,9 @@ export * from "./useUndo";
 export * from "./useRedo";
 export * from "./useBatch";
 export * from "./useHistory";
-
+export * from "./useErrorListener";
+export * from "./useEventListener";
+export * from "./useBroadcastEvent";
 /**
  * These components were built to (mostly) match the
  * liveblocks-react library
