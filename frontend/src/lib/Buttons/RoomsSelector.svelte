@@ -1,22 +1,22 @@
 <script lang="ts">
 	import { page } from '$app/stores';
-
 	import Room from '$lib/Icons/Room.svelte';
 	import Pin from '$lib/Icons/Pin.svelte';
 	import People from '$lib/Icons/People.svelte';
 	import { onMount } from 'svelte';
-	import { PUBLIC_API_BASE } from '$env/static/public';
-	import type { RoomResponse } from '$lib/types';
 	import { selectedRoomID } from '$lib/store';
 	import { MAX_CAPACITY } from '$lib/constants';
+	import { useRooms } from '$lib/liveblocks';
+	import type { RoomResponse } from '$lib/types';
+
 	export let isLoading = false;
 	let boxEl: HTMLElement;
 
-	let rooms: RoomResponse[] = [];
+	const rooms = useRooms();
 
 	let collapsed = true;
-	$: selectedRoom = rooms.find((room) => room.room_id === $selectedRoomID);
-	$: loadingRooms = rooms.length > 0;
+	$: selectedRoom = $rooms.find((room) => room.room_id === $selectedRoomID);
+	$: loadingRooms = $rooms.length > 0;
 
 	function clickHandler(event: Event) {
 		if (!boxEl.contains(event.target as Node)) {
@@ -24,18 +24,12 @@
 		}
 	}
 	onMount(() => {
-		refreshRooms();
 		window.addEventListener('pointerdown', clickHandler, true);
-		const interval = setInterval(refreshRooms, 3000);
 		return () => {
 			window.removeEventListener('pointerdown', clickHandler, true);
-			clearInterval(interval);
 		};
 	});
 
-	async function refreshRooms() {
-		rooms = await fetch(PUBLIC_API_BASE + '/rooms').then((res) => res.json());
-	}
 	function changeRoom(room: RoomResponse) {
 		$selectedRoomID = room.room_id;
 		collapsed = true;
@@ -62,7 +56,7 @@
 							<People />
 							<span> players </span>
 						</li>
-						{#each rooms as room}
+						{#each $rooms as room}
 							<li>
 								<!-- svelte-ignore a11y-invalid-attribute -->
 								<a

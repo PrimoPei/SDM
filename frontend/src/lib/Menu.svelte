@@ -4,6 +4,9 @@
 	import RoomsSelector from '$lib/Buttons/RoomsSelector.svelte';
 	import AboutButton from '$lib/Buttons/AboutButton.svelte';
 	import { toggleAbout } from '$lib/store';
+	// import { useBroadcastEvent } from '$lib/liveblocks';
+
+	// const broadcast = useBroadcastEvent();
 
 	const dispatch = createEventDispatcher();
 
@@ -23,7 +26,12 @@
 </script>
 
 <div class="flex items-center justify-between px-12">
-	<AboutButton on:click={() => ($toggleAbout = !$toggleAbout)} />
+	<AboutButton
+		on:click={() => {
+			$toggleAbout = !$toggleAbout;
+			// broadcast({ type: 'EMOJI', emoji: '🔥' });
+		}}
+	/>
 
 	<button
 		on:click={() => dispatch('prompt')}

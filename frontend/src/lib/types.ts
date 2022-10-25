@@ -40,3 +40,14 @@ export interface RoomResponse {
 	room_id: string;
 	users_count: number;
 }
+
+
+export enum ConnectionStatus {
+	"closed" = "closed",
+	"authenticating" = "authenticating",
+	"unavailable" = "unavailable",
+	"failed" = "failed",
+	"open" = "open",
+	"connecting" = "connecting",
+}
+export type TConnectionStatus = keyof typeof ConnectionStatus

@@ -9,8 +9,8 @@
 	aria-hidden="true"
 	focusable="false"
 	role="img"
-	width="25"
-	height="25"
+	width="1em"
+	height="1em"
 	preserveAspectRatio="xMidYMid meet"
 	viewBox="0 0 32 32"
 >
