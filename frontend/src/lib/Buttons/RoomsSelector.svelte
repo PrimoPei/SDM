@@ -3,6 +3,7 @@
 	import Room from '$lib/Icons/Room.svelte';
 	import Pin from '$lib/Icons/Pin.svelte';
 	import People from '$lib/Icons/People.svelte';
+	import LoadingIcon from '$lib/Icons/LoadingIcon.svelte';
 	import { onMount } from 'svelte';
 	import { selectedRoomID } from '$lib/store';
 	import { MAX_CAPACITY } from '$lib/constants';
@@ -42,8 +43,7 @@
 <div class="min-w-[25ch]">
 	{#if loadingRooms}
 		<div
-			class="text-xs rounded md:text-smtext-gray-700 py-1 font-medium tracking-tight relative z-0 
-	{isLoading ? 'opacity-50' : ''}"
+			class="text-sm rounded md:text-smtext-gray-700 py-1 font-medium tracking-tight relative"
 			title="Choose a different room"
 			bind:this={boxEl}
 		>
@@ -107,6 +107,12 @@
 					</div>
 				{/if}
 			</div>
+		</div>
+	{:else}
+		<div
+			class="bg-gradient-to-r from-transparent via-blue-900/20 to-transparent py-1.5 text-blue-700 rounded-full flex justify-center items-center"
+		>
+			<LoadingIcon classList="animate-spin mr-2 text-sm" /> loading rooms
 		</div>
 	{/if}
 </div>

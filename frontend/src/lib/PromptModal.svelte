@@ -64,10 +64,10 @@
 
 <form
 	class="fixed w-screen top-0 left-0 bottom-0 right-0 max-h-screen z-50 flex items-center justify-center bg-black bg-opacity-80"
-	on:submit|preventDefault={onPrompt}
+	on:submit|preventDefault|stopPropagation={onPrompt}
 >
 	<div
-		class="flex bg-white itemx-center overflow-hidden rounded-lg w-full max-w-lg 2xl:max-w-xl"
+		class="flex bg-white overflow-hidden rounded-2xl w-full max-w-lg 2xl:max-w-xl"
 		bind:this={boxEl}
 	>
 		<input
@@ -75,16 +75,16 @@
 			bind:this={inputEl}
 			on:click|stopPropagation
 			on:input={onInput}
-			class="flex-1 outline-none ring-0 border-none text-xl 2xl:text-2xl"
+			class="flex-1 outline-none ring-0 border-none text-xl 2xl:text-2xl py-3 px-3"
 			placeholder="Describe your prompt"
 			title="Input prompt to generate image and obtain palette"
 			type="text"
 			name="prompt"
 		/>
 		<button
-			on:click|preventDefault={onPrompt}
-			class="font-bold bg-blue-700 text-white border-l-2 px-5 text-xl 2xl:text-2xl spacing tracking-wide"
-			type="submit"><span class="mr-2">🖌</span> Paint</button
-		>
+			class="font-semibold bg-blue-700 text-white border-l-2 px-5 text-xl 2xl:text-2xl spacing tracking-wide hover:saturate-150"
+			type="submit"
+			><span class="mr-2">🖍</span> Paint
+		</button>
 	</div>
 </form>

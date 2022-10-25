@@ -1,8 +1,4 @@
 <script lang="ts">
-	import PPButton from '$lib/Buttons/PPButton.svelte';
-	import DragButton from '$lib/Buttons/DragButton.svelte';
-	import MaskButton from '$lib/Buttons/MaskButton.svelte';
-	import UndoButton from '$lib/Buttons/UndoButton.svelte';
 	import LoadingIcon from '$lib/Icons/LoadingIcon.svelte';
 	import { CANVAS_SIZE, FRAME_SIZE } from '$lib/constants';
 
@@ -285,22 +281,6 @@
 								/></svg
 							>
 						</button>
-						<!-- <PPButton {isLoading} on:click={() => dispatch('prompt')} /> -->
-
-						<!-- <DragButton className={'p-1'} {isLoading} isActive={dragEnabled} on:click={toggleDrag} /> -->
-						<!-- <div class="bg-blue-700 rounded-lg shadow-lg">
-						azeeza
-						<MaskButton
-							{isLoading}
-							className={'p-1'}
-							isActive={!dragEnabled}
-							on:click={toggleDrawMask}
-						/>
-						{#if !dragEnabled}
-							<span class="border-gray-800 border-opacity-50 border-r-2 my-2" />
-							<UndoButton className={'p-1'} {isLoading} on:click={cleanMask} />
-						{/if}
-					</div> -->
 					</div>
 				{/if}
 			</div>

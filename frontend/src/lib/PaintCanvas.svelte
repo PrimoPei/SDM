@@ -153,13 +153,13 @@
 
 <div
 	bind:this={containerEl}
-	class="absolute top-0 left-0 right-0 bottom-0 overflow-hidden z-0 bg-gray-200"
+	class="absolute top-0 left-0 right-0 bottom-0 overflow-hidden z-0 bg-blue-200/20"
 >
 	<canvas
 		bind:this={$canvasEl}
 		{width}
 		{height}
-		class="absolute top-0 left-0 bg-white shadow-2xl"
+		class="absolute top-0 left-0 bg-white shadow-2xl shadow-blue-500/20"
 	/>
 	<slot />
 </div>
