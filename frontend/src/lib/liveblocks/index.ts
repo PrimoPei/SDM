@@ -13,6 +13,8 @@ export * from "./useHistory";
 export * from "./useErrorListener";
 export * from "./useEventListener";
 export * from "./useBroadcastEvent";
+export * from "./useRooms";
+export * from "./useConnectionStatus"
 /**
  * These components were built to (mostly) match the
  * liveblocks-react library
