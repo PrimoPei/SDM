@@ -159,7 +159,7 @@
 {#if showModal}
 	<PromptModal on:paint={onPaint} on:close={onClose} initPrompt={$myPresence?.currentPrompt} />
 {/if}
-<div class="fixed top-0 left-0 z-0 w-screen h-screen">
+<div class="fixed top-0 left-0 z-0 w-screen h-screen min-h-[600px]">
 	<PaintCanvas />
 
 	<main class="z-10 relative">
