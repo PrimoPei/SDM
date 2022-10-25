@@ -4,6 +4,7 @@
 	import type { Client } from '@liveblocks/client';
 	import LiveblocksProvider from '$lib/liveblocks/LiveblocksProvider.svelte';
 	import RoomProvider from '$lib/liveblocks/RoomProvider.svelte';
+	import LoadingIcon from '$lib/Icons/LoadingIcon.svelte';
 	import App from '$lib/App.svelte';
 	import About from '$lib/About.svelte';
 	import { PUBLIC_API_BASE } from '$env/static/public';
@@ -55,13 +56,14 @@
 	};
 </script>
 
-<About
-	classList={$toggleAbout ? 'flex' : 'hidden'}
-	on:click={() => ($toggleAbout = false)}
-	{loading}
-/>
+<About classList={$toggleAbout ? 'flex' : 'hidden'} on:click={() => ($toggleAbout = false)} />
 
-{#if !loading}
+{#if loading}
+	<div class="text-4xl text-black flex justify-center items-center mb-4 w-screen h-screen">
+		<LoadingIcon classList={'inline-block animate-spin p-1 mr-2'} />
+		<h1 class="font-bold inline-block">Loading...</h1>
+	</div>
+{:else}
 	<LiveblocksProvider {client}>
 		{#if roomId}
 			<RoomProvider id={roomId} {initialPresence}>
