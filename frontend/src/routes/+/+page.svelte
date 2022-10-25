@@ -56,7 +56,7 @@
 </script>
 
 <About
-	classList={$toggleAbout || loading ? 'flex' : 'hidden'}
+	classList={$toggleAbout ? 'flex' : 'hidden'}
 	on:click={() => ($toggleAbout = false)}
 	{loading}
 />

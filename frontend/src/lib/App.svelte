@@ -190,7 +190,7 @@
 <!-- <div class="fixed top-0 right-0 z-10 p-2">
 	<ShareWithCommunity />
 </div> -->
-<div class="fixed bottom-32 left-0 right-0 z-10 my-2">
+<div class="fixed bottom-4 md:bottom-32 left-0 right-0 z-10 my-2">
 	<Menu on:prompt={onPrompt} {isLoading} />
 </div>
 
