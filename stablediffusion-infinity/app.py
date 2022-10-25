@@ -73,7 +73,6 @@ except Exception as e:
 blocks = gr.Blocks().queue()
 model = {}
 
-WHITES = 66846720
 STATIC_MASK = Image.open("mask.png")
 
 
@@ -133,10 +132,10 @@ def run_outpaint(
     sel_buffer = np.array(input_image)
     img = sel_buffer[:, :, 0:3]
     mask = sel_buffer[:, :, -1]
+    nmask = 255 - mask
     process_size = 512
 
-    mask_sum = mask.sum()
-    if mask_sum >= WHITES:
+    if nmask.sum() < 1:
         print("inpaiting with fixed Mask")
         mask = np.array(STATIC_MASK)[:, :, 0]
         img, mask = functbl[fill_mode](img, mask)
@@ -145,7 +144,7 @@ def run_outpaint(
         mask = skimage.measure.block_reduce(mask, (8, 8), np.max)
         mask = mask.repeat(8, axis=0).repeat(8, axis=1)
         mask_image = Image.fromarray(mask)
-    elif mask_sum > 0 and mask_sum < WHITES:
+    elif mask.sum() > 0:
         print("inpainting")
         img, mask = functbl[fill_mode](img, mask)
         init_image = Image.fromarray(img)
