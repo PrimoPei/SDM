@@ -14,27 +14,9 @@
 	import { useMyPresence, useObject, useOthers } from '$lib/liveblocks';
 	import { base64ToBlob, uploadImage } from '$lib/utils';
 	import { nanoid } from 'nanoid';
-	import { CANVAS_SIZE, FRAME_SIZE } from '$lib/constants';
-
-	/**
-	 * The main Liveblocks code for the example.
-	 * Check in src/routes/index.svelte to see the setup code.
-	 */
 
 	const myPresence = useMyPresence();
 	const others = useOthers();
-
-	// Set a default value for presence
-	const initialPresence: Presence = {
-		cursor: null,
-		frame: {
-			x: CANVAS_SIZE.width / 2 - FRAME_SIZE / 2,
-			y: CANVAS_SIZE.height / 2 - FRAME_SIZE / 2
-		},
-		status: Status.dragging,
-		currentPrompt: ''
-	};
-	myPresence.update(initialPresence);
 
 	function getKey(position: { x: number; y: number }): PromptImgKey {
 		return `${position.x}_${position.y}`;

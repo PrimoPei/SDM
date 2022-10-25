@@ -9,7 +9,8 @@
 	import { PUBLIC_API_BASE } from '$env/static/public';
 	import { selectedRoomID, toggleAbout } from '$lib/store';
 	import type { RoomResponse } from '$lib/types';
-	import { MAX_CAPACITY } from '$lib/constants';
+	import { MAX_CAPACITY, CANVAS_SIZE, FRAME_SIZE } from '$lib/constants';
+	import { Status } from '$lib/types';
 
 	let loading = true;
 	let client: Client;
@@ -24,6 +25,7 @@
 
 		updateRooms();
 	});
+
 	async function updateRooms() {
 		loading = true;
 		const roomidParam = new URLSearchParams(window.location.search).get('roomid');
@@ -42,14 +44,27 @@
 		loading = false;
 		return { rooms };
 	}
+	const initialPresence = {
+		cursor: null,
+		frame: {
+			x: CANVAS_SIZE.width / 2 - FRAME_SIZE / 2,
+			y: CANVAS_SIZE.height / 2 - FRAME_SIZE / 2
+		},
+		status: Status.dragging,
+		currentPrompt: ''
+	};
 </script>
 
-<About classList={$toggleAbout ? 'flex' : 'hidden'} on:click={() => ($toggleAbout = false)} />
+<About
+	classList={$toggleAbout || loading ? 'flex' : 'hidden'}
+	on:click={() => ($toggleAbout = false)}
+	{loading}
+/>
 
 {#if !loading}
 	<LiveblocksProvider {client}>
 		{#if roomId}
-			<RoomProvider id={roomId}>
+			<RoomProvider id={roomId} {initialPresence}>
 				<App />
 			</RoomProvider>
 		{:else}
@@ -59,8 +74,4 @@
 			</div>
 		{/if}
 	</LiveblocksProvider>
-{:else}
-	<div class="flex flex-col items-center justify-center h-full">
-		<h1 class="text-2xl font-bold">Loading...</h1>
-	</div>
 {/if}

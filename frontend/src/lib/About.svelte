@@ -1,6 +1,8 @@
 <script lang="ts">
 	import LiveBlocks from '$lib/Icons/LiveBlocks.svelte';
+	import LoadingIcon from './Icons/LoadingIcon.svelte';
 	export let classList = '';
+	export let loading = false;
 </script>
 
 <!-- svelte-ignore a11y-click-events-have-key-events -->
@@ -9,9 +11,15 @@
 	class="fixed {classList} w-screen top-0 left-0 bottom-0 right-0 max-h-screen z-50 items-center justify-center bg-black text-white bg-opacity-90 px-3 overflow-y-scroll"
 >
 	<div class="max-w-md">
+		{#if loading}
+			<div class="text-4xl text-white flex items-center mb-4">
+				<LoadingIcon classList={'inline-block animate-spin p-1 mr-2'} />
+				<h1 class="font-bold inline-block">Loading...</h1>
+			</div>
+		{/if}
 		<h2 class="font-bold text-xl font-mono mb-8">Stable Difussion Multiplayer</h2>
 		<p>
-			Hugging Face face GPU Spaces <a
+			Powered by Hugging Face face GPU Spaces <a
 				href="https://huggingface.co/docs/hub/spaces-gpus"
 				class="text-blue-400 hover:text-blue-600 underline"
 				>https://huggingface.co/docs/hub/spaces-gpus</a
