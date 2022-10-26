@@ -23,7 +23,10 @@
 
 	<button
 		on:click={() => dispatch('prompt')}
-		class="order-first md:order-none text-3xl bg-blue-600 text-white px-6 py-2 rounded-2xl ring ring-blue-500 font-semibold shadow-2xl self-center flex items-center hover:saturate-150"
+		disabled={isLoading}
+		class="{isLoading
+			? 'cursor-wait'
+			: 'cursor-pointer'} order-first md:order-none text-3xl bg-blue-600 text-white px-6 py-2 rounded-2xl ring ring-blue-500 font-semibold shadow-2xl self-center flex items-center hover:saturate-150"
 		><span class="mr-3">🖍</span>Paint
 		<span
 			class="bg-blue-800 text-gray-300 rounded-lg px-2 py-0.5 text-base ml-4 hidden sm:flex items-center translate-y-[2px]"

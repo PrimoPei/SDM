@@ -74,7 +74,7 @@
 		return zoomIdentity.translate(x, y).scale(k);
 	}
 	onMount(() => {
-		const padding = 100;
+		const padding = 50;
 		const scale =
 			(width + padding * 2) /
 			(containerEl.clientHeight > containerEl.clientWidth

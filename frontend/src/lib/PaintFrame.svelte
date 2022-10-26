@@ -43,6 +43,11 @@
 		y: transform.applyY(position.y)
 	};
 
+	$: if ($loadingState === 'Complete' && !dragEnabled) {
+		cleanMask();
+		toggleDrag();
+	}
+
 	let offsetX = 0;
 	let offsetY = 0;
 
@@ -192,6 +197,7 @@
 	function toggleDrawMask() {
 		dragEnabled = false;
 		cropCanvas(position);
+
 		myPresence.update({
 			status: Status.masking
 		});
@@ -219,17 +225,15 @@
 				/>
 			{/if}
 			<canvas
-				class={dragEnabled ? '' : 'bg-white'}
+				class="{dragEnabled ? 'hidden' : 'bg-white block'} absolute top-0 left-0 z-0"
 				bind:this={$maskEl}
 				width={FRAME_SIZE}
 				height={FRAME_SIZE}
 			/>
-			<div class="pointer-events-none touch-none">
+			<div class="pointer-events-none touch-none col-span-3 z-10">
 				{#if prompt}
-					<div class="pointer-events-none touch-none">
-						<div class="font-bold text-4xl text-[#387CFF] text-center px-2 line-clamp-4">
-							{prompt}
-						</div>
+					<div class="font-bold text-4xl text-[#387CFF] text-center px-2 line-clamp-4">
+						{prompt}
 					</div>
 				{/if}
 			</div>

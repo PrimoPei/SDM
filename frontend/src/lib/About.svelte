@@ -58,7 +58,7 @@
 				<p class="text-base flex items-center">
 					Multiplayer API by
 					<a href="https://liveblocks.io" target="_blank" rel="noopener noreferrer">
-						<LiveBlocks class="ml-2" />
+						<LiveBlocks classList={'ml-2'} />
 					</a>
 				</p>
 			</li>

@@ -20,7 +20,7 @@
 			transform: translateX(${coord.x}px) translateY(${coord.y}px) scale(${transform.k}); transform-origin: 0 0;`}
 >
 	<div class="pointer-events-none touch-none">
-		<div class="font-bold !text-4xl text-white rounded-2xl text-center p-10 line-clamp-4 flex">
+		<div class="font-bold !text-4xl text-white rounded-2xl text-center p-10">
 			{#if isLoading}
 				<LoadingIcon classList={'animate-spin text-4xl inline mr-2 mx-auto text-white mb-4'} />
 				<p class="text-4xl">Someone is painting:</p>
@@ -28,7 +28,7 @@
 				<p class="text-4xl">Someone is typing:</p>
 			{/if}
 
-			<span class="italic font-normal">"{prompt}"</span>
+			<span class="italic font-normal line-clamp-4">"{prompt}"</span>
 		</div>
 	</div>
 </div>

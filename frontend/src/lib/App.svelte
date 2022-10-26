@@ -137,6 +137,9 @@
 							myPresence.update({
 								status: Status.ready
 							});
+							setTimeout(() => {
+								$loadingState = '';
+							}, 2000);
 						}
 						websocket.close();
 						return;
