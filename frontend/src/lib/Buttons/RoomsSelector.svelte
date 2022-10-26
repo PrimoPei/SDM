@@ -20,7 +20,7 @@
 	$: loadingRooms = $rooms.length > 0;
 
 	function clickHandler(event: Event) {
-		if (!boxEl.contains(event.target as Node)) {
+		if (boxEl && !boxEl.contains(event.target as Node)) {
 			collapsed = true;
 		}
 	}
@@ -59,7 +59,7 @@
 							<People />
 							<span> players </span>
 						</li>
-						{#each $rooms as room}
+						{#each $rooms as room, i}
 							<li>
 								<!-- svelte-ignore a11y-invalid-attribute -->
 								<a
@@ -73,7 +73,7 @@
 											<Pin />
 										{/if}
 									</span>
-									<span>room {room.id} </span>
+									<span>room {room.room_id.split('-')[3]} </span>
 									<span />
 									<span />
 									<span>{room.users_count} / {MAX_CAPACITY}</span>
@@ -93,7 +93,7 @@
 					<div class="grid-row gap-2">
 						<Room />
 						<span>
-							room {selectedRoom?.id}
+							room {selectedRoom?.room_id.split('-')[3]}
 						</span>
 						<span />
 						<People />

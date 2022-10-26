@@ -13,7 +13,7 @@
 	import { canvasEl, maskEl, loadingState } from '$lib/store';
 
 	import { Status } from './types';
-	const myPresence = useMyPresence();
+	const myPresence = useMyPresence({ addToHistory: true });
 
 	const dispatch = createEventDispatcher();
 

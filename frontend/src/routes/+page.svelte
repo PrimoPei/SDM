@@ -32,15 +32,22 @@
 		const roomidParam = new URLSearchParams(window.location.search).get('roomid');
 		const res = await fetch(PUBLIC_API_BASE + '/rooms');
 		const rooms: RoomResponse[] = await res.json();
+		const emptyRoom = rooms.find((room) => room.users_count < MAX_CAPACITY) || null;
 
+		let roomAvailable = false;
 		if (roomidParam) {
-			const room = rooms.find((room) => room.room_id === roomidParam);
-			if (room) {
-				selectedRoomID.set(roomidParam);
+			const room = rooms.find((room) => room.room_id === roomidParam) || null;
+			roomAvailable = room ? room.users_count < MAX_CAPACITY : false;
+			if (room && roomAvailable) {
+				$selectedRoomID = room.room_id;
+				const state = { roomid: room.room_id };
+				window.history.replaceState(null, '', '?' + new URLSearchParams(state).toString());
 			}
-		} else {
-			const room = rooms.find((room) => room.users_count < MAX_CAPACITY) || null;
-			selectedRoomID.set(room ? room.room_id : null);
+		}
+		if (emptyRoom && !roomAvailable) {
+			selectedRoomID.set(emptyRoom.room_id);
+			const state = { roomid: emptyRoom.room_id };
+			window.history.replaceState(null, '', '?' + new URLSearchParams(state).toString());
 		}
 		loading = false;
 		return { rooms };

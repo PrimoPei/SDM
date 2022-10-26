@@ -15,7 +15,7 @@
 	import { base64ToBlob, uploadImage } from '$lib/utils';
 	import { nanoid } from 'nanoid';
 
-	const myPresence = useMyPresence();
+	const myPresence = useMyPresence({ addToHistory: true });
 	const others = useOthers();
 
 	function getKey(position: { x: number; y: number }): PromptImgKey {

@@ -8,7 +8,7 @@
 	let prompt: string;
 	let inputEl: HTMLInputElement;
 	let boxEl: HTMLDivElement;
-	const myPresence = useMyPresence();
+	const myPresence =  useMyPresence({ addToHistory: true });
 
 	const onKeyup = (e: KeyboardEvent) => {
 		if (e.key === 'Escape') {
