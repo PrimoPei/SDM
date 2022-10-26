@@ -8,7 +8,7 @@
 	import PromptModal from '$lib/PromptModal.svelte';
 	import { COLORS } from '$lib/constants';
 	import { PUBLIC_WS_INPAINTING } from '$env/static/public';
-	import type { PromptImgKey, Presence } from '$lib/types';
+	import type { PromptImgKey } from '$lib/types';
 	import { Status } from '$lib/types';
 	import { loadingState, currZoomTransform, maskEl } from '$lib/store';
 	import { useMyPresence, useObject, useOthers } from '$lib/liveblocks';

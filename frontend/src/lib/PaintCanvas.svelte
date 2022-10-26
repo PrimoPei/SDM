@@ -68,7 +68,7 @@
 		//https://bl.ocks.org/fabiovalse/b9224bfd64ca96c47f8cdcb57b35b8e2
 		const kw = (W - margin) / w;
 		const kh = (H - margin) / h;
-		const k = min([kw, kh]);
+		const k = min([kw, kh]) || 1;
 		const x = W / 2 - center.x * k;
 		const y = H / 2 - center.y * k;
 		return zoomIdentity.translate(x, y).scale(k);
@@ -113,6 +113,7 @@
 				(containerEl.clientHeight > containerEl.clientWidth
 					? containerEl.clientWidth
 					: containerEl.clientHeight);
+			zoomHandler.scaleExtent([1 / scale / 2, 3]);
 			selection.call(
 				zoomHandler.transform as any,
 				to_bbox(
@@ -189,7 +190,7 @@
 
 <div
 	bind:this={containerEl}
-	class="absolute top-0 left-0 right-0 bottom-0 overflow-hidden z-0 bg-blue-200/20"
+	class="absolute top-0 left-0 right-0 bottom-0 overflow-hidden z-0 bg-blue-200"
 >
 	<canvas
 		bind:this={$canvasEl}

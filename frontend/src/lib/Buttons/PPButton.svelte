@@ -9,7 +9,7 @@
 	title="Prompt and Paint"
 >
 	{#if isLoading}
-		<span>paiting... </span>{:else}
+		<span>painting... </span>{:else}
 		<span
 			class="rounded-sm h-4 w-4 flex justify-center items-center border-2 border-dashed border-violet-700 mr-2"
 		>
