@@ -40,7 +40,7 @@
 </script>
 
 <!-- svelte-ignore a11y-click-events-have-key-events -->
-<div class="min-w-[25ch]">
+<div class="min-w-[20ch]">
 	{#if loadingRooms}
 		<div
 			class="text-sm rounded md:text-smtext-gray-700 py-1 font-medium tracking-tight relative"
@@ -48,11 +48,14 @@
 			bind:this={boxEl}
 		>
 			{#if !collapsed}
-				<div class="absolute left-0 right-0 bottom-full rounded-xl  bg-blue-600 px-1">
-					<ul class="relative overflow-y-scroll max-h-72">
-						<li class="grid-row gap-2 pb-3 sticky top-0 py-2">
+				<div
+					class="absolute left-0 right-0 bottom-full rounded-xl bg-blue-600 px-1 overflow-hidden z-0"
+				>
+					<ul class="relative overflow-hidden overflow-y-scroll max-h-72 w-full x-scroll">
+						<li class="grid-row gap-2 pb-2 sticky top-0 py-2 bg-blue-600 font-semibold">
 							<Room />
 							<span> room </span>
+							<span />
 							<People />
 							<span> players </span>
 						</li>
@@ -71,6 +74,7 @@
 										{/if}
 									</span>
 									<span>room {room.id} </span>
+									<span />
 									<span />
 									<span>{room.users_count} / {MAX_CAPACITY}</span>
 								</a>
@@ -91,6 +95,7 @@
 						<span>
 							room {selectedRoom?.id}
 						</span>
+						<span />
 						<People />
 						<span>
 							{selectedRoom?.users_count} / {MAX_CAPACITY}
@@ -120,8 +125,11 @@
 <style lang="postcss" scoped>
 	.grid-row {
 		display: grid;
-		grid-template-columns: 0.5fr 2fr 0.5fr 2fr;
+		grid-template-columns: 0.5fr 2fr 1fr 0.5fr 2fr;
 		align-items: center;
 		justify-items: flex-start;
+	}
+	.grid-row span {
+		white-space: nowrap;
 	}
 </style>
