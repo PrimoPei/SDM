@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { zoom, zoomIdentity } from 'd3-zoom';
+	import { min } from 'd3-array';
 	import { select } from 'd3-selection';
 	import { onMount } from 'svelte';
 	import { PUBLIC_UPLOADS } from '$env/static/public';
@@ -56,8 +57,24 @@
 		renderImages(promptImgList);
 	}
 
+	function to_bbox(
+		W: number,
+		H: number,
+		center: { x: number; y: number },
+		w: number,
+		h: number,
+		margin: number
+	) {
+		//https://bl.ocks.org/fabiovalse/b9224bfd64ca96c47f8cdcb57b35b8e2
+		const kw = (W - margin) / w;
+		const kh = (H - margin) / h;
+		const k = min([kw, kh]);
+		const x = W / 2 - center.x * k;
+		const y = H / 2 - center.y * k;
+		return zoomIdentity.translate(x, y).scale(k);
+	}
 	onMount(() => {
-		const padding = 200;
+		const padding = 100;
 		const scale =
 			(width + padding * 2) /
 			(containerEl.clientHeight > containerEl.clientWidth
@@ -65,17 +82,27 @@
 				: containerEl.clientHeight);
 		const zoomHandler = zoom()
 			.scaleExtent([1 / scale / 2, 3])
-			.translateExtent([
-				[-padding, -padding],
-				[width + padding, height + padding]
-			])
+			// .translateExtent([
+			// 	[-padding, -padding],
+			// 	[width + padding, height + padding]
+			// ])
 			.tapDistance(10)
 			.on('zoom', zoomed);
 
 		const selection = select($canvasEl.parentElement)
 			.call(zoomHandler as any)
-			.call(zoomHandler.transform as any, zoomIdentity)
-			.call(zoomHandler.scaleTo as any, 1 / scale)
+			.call(
+				zoomHandler.transform as any,
+				to_bbox(
+					containerEl.clientWidth,
+					containerEl.clientHeight,
+					{ x: width / 2, y: height / 2 },
+					width,
+					height,
+					padding
+				)
+			)
+			// .call(zoomHandler.scaleTo as any, 1 / scale)
 			.on('pointermove', handlePointerMove)
 			.on('pointerleave', handlePointerLeave);
 
@@ -86,8 +113,17 @@
 				(containerEl.clientHeight > containerEl.clientWidth
 					? containerEl.clientWidth
 					: containerEl.clientHeight);
-			selection.call(zoomHandler.transform as any, zoomIdentity);
-			selection.call(zoomHandler.scaleTo as any, 1 / scale);
+			selection.call(
+				zoomHandler.transform as any,
+				to_bbox(
+					containerEl.clientWidth,
+					containerEl.clientHeight,
+					{ x: width / 2, y: height / 2 },
+					width,
+					height,
+					padding
+				)
+			);
 		}
 		window.addEventListener('resize', zoomReset);
 		return () => {
