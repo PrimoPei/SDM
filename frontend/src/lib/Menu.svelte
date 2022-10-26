@@ -14,7 +14,7 @@
 <svelte:window
 	on:keyup|preventDefault|stopPropagation={(e) => e.key === 'Enter' && dispatch('prompt')}
 />
-<div class="flex flex-col md:flex-row items-center justify-between px-12 gap-2 md:gap-0">
+<div class="flex flex-col md:flex-row items-center justify-between px-4 md:px-12 gap-2 md:gap-0">
 	<AboutButton
 		on:click={() => {
 			$toggleAbout = !$toggleAbout;
