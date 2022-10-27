@@ -141,7 +141,7 @@
 		$isRenderingCanvas = true;
 		Promise.allSettled(
 			promptImgList.map(
-				({ imgURL, position, id }) =>
+				({ imgURL, position, id, room }) =>
 					new Promise<ImageRendered>((resolve, reject) => {
 						const img = new Image();
 						img.crossOrigin = 'anonymous';
@@ -153,7 +153,7 @@
 						img.onerror = (err) => {
 							reject(err);
 						};
-						img.src = `${PUBLIC_UPLOADS}/${imgURL}`;
+						img.src = `${PUBLIC_UPLOADS}/${room}/${imgURL}`;
 					})
 			)
 		).then((values) => {

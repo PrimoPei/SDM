@@ -126,6 +126,7 @@ async def run_outpaint(
     guidance,
     step,
     fill_mode,
+    room_id
 ):
     inpaint = get_model()
     sel_buffer = np.array(input_image)
@@ -181,7 +182,7 @@ async def run_outpaint(
 
     if not is_nsfw:
         print("not nsfw, uploading")
-        image_url = await upload_file(image, prompt_text)
+        image_url = await upload_file(image, prompt_text, room_id)
 
     params = {
         "is_nsfw": is_nsfw,
@@ -222,6 +223,7 @@ with blocks as demo:
             )
 
     model_input = gr.Image(label="Input", type="pil", image_mode="RGBA")
+    room_id = gr.Textbox(label="Room ID")
     proceed_button = gr.Button("Proceed", elem_id="proceed")
     params = gr.JSON()
 
@@ -234,6 +236,7 @@ with blocks as demo:
             sd_guidance,
             sd_step,
             init_mode,
+            room_id,
         ],
         outputs=[params],
     )
@@ -323,8 +326,8 @@ def slugify(value):
     return out[:400]
 
 
-
-async def upload_file(image: Image.Image, prompt: str):
+async def upload_file(image: Image.Image, prompt: str, room_id: str):
+    room_id = room_id.strip() or "uploads"
     image = image.convert('RGB')
     print("Uploading file from predict")
     temp_file = io.BytesIO()
@@ -333,24 +336,18 @@ async def upload_file(image: Image.Image, prompt: str):
     id = shortuuid.uuid()
     prompt_slug = slugify(prompt)
     filename = f"{id}-{prompt_slug}.jpg"
-    s3.upload_fileobj(Fileobj=temp_file, Bucket=AWS_S3_BUCKET_NAME, Key="uploads/" +
+    s3.upload_fileobj(Fileobj=temp_file, Bucket=AWS_S3_BUCKET_NAME, Key=f"{room_id}/" +
                       filename, ExtraArgs={"ContentType": "image/jpeg", "CacheControl": "max-age=31536000"})
     temp_file.close()
 
-    out = {"url": f'https://d26smi9133w0oo.cloudfront.net/uploads/{filename}',
+    out = {"url": f'https://d26smi9133w0oo.cloudfront.net/{room_id}/{filename}',
            "filename": filename}
     print(out)
     return out
 
 
 @ app.post('/api/uploadfile')
-async def create_upload_file(background_tasks: BackgroundTasks,
-                             file: UploadFile,
-                             prompt: str = Form(),
-                             id: str = Form(),
-                             position: object = Form(),
-                             room: str = Form(),
-                             date: int = Form()):
+async def create_upload_file(file: UploadFile):
     contents = await file.read()
     file_size = len(contents)
     if not 0 < file_size < 20E+06:
@@ -367,13 +364,11 @@ async def create_upload_file(background_tasks: BackgroundTasks,
     temp_file = io.BytesIO()
     temp_file.write(contents)
     temp_file.seek(0)
-    s3.upload_fileobj(Fileobj=temp_file, Bucket=AWS_S3_BUCKET_NAME, Key="uploads/" +
+    s3.upload_fileobj(Fileobj=temp_file, Bucket=AWS_S3_BUCKET_NAME, Key="community/" +
                       file.filename, ExtraArgs={"ContentType": file.content_type, "CacheControl": "max-age=31536000"})
     temp_file.close()
 
-    print("File uploaded", prompt, id, position, room, date)
-
-    return {"url": f'https://d26smi9133w0oo.cloudfront.net/uploads/{file.filename}', "filename": file.filename}
+    return {"url": f'https://d26smi9133w0oo.cloudfront.net/community/{file.filename}', "filename": file.filename}
 
 
 app.mount("/", StaticFiles(directory="../static", html=True), name="static")
