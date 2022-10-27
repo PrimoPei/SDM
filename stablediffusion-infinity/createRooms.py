@@ -9,12 +9,20 @@ import json
 app = FastAPI()
 LIVEBLOCKS_SECRET = os.environ.get("LIVEBLOCKS_SECRET")
 
+DB_PATH = Path("rooms.db")
+if not DB_PATH.exists():
+    print("Creating database")
+    print("DB_PATH", DB_PATH)
+    db = sqlite3.connect(DB_PATH)
+    with open(Path("schema.sql"), "r") as f:
+        db.executescript(f.read())
+    db.commit()
+    db.close()
+
 
 def get_db():
     db = sqlite3.connect(Path("./rooms.db"), check_same_thread=False)
-    db.execute("CREATE TABLE IF NOT EXISTS rooms (id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, room_id TEXT NOT NULL, users_count INTEGER NOT NULL DEFAULT 0)")
     print("Connected to database")
-    db.commit()
     db.row_factory = sqlite3.Row
     try:
         yield db
@@ -26,7 +34,7 @@ def get_db():
 
 app = FastAPI()
 
-rooms = ["sd-multiplayer-room-" + str(i) for i in range(0, 20)]
+rooms = ["room-" + str(i) for i in range(0, 41)]
 
 
 @app.get("/")
@@ -109,4 +117,4 @@ async def sync_rooms(db: sqlite3.Connection = Depends(get_db)):
 
 
 if __name__ == "__main__":
-    uvicorn.run("api:app", host="0.0.0.0", log_level="debug", reload=True)
+    uvicorn.run("createRooms:app", host="0.0.0.0", log_level="debug", reload=True)
