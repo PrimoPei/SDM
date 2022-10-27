@@ -21,20 +21,31 @@ export function base64ToBlob(base64image: string): Promise<Blob> {
 		img.src = base64image;
 	});
 }
-export async function uploadImage(imagBlob: Blob, prompt: string, key: string): Promise<{
+
+export async function uploadImage(imagBlob: Blob, params: {
+	prompt: string;
+	position: { x: number; y: number };
+	date: number;
+	id: string;
+	room: string;
+}): Promise<{
 	url: string;
 	filename: string;
 }> {
 	// simple regex slugify string	for file name
-	const promptSlug = slugify(prompt);
-
-	const hash = crypto.randomUUID().split('-')[0];
-	const fileName = `color-palette-${hash}-${promptSlug}-${key}.jpeg`;
+	const promptSlug = slugify(params.prompt);
+	const key = `${params.position.x}_${params.position.y}`;
+	const fileName = `sd-${params.id}-${promptSlug}-${key}.jpeg`;
 
 	const file = new File([imagBlob], fileName, { type: 'image/jpeg' });
 
 	const formData = new FormData()
 	formData.append('file', file)
+	formData.append('prompt', params.prompt)
+	formData.append('id', params.id)
+	formData.append('position', JSON.stringify(params.position))
+	formData.append('room', params.room)
+	formData.append('date', JSON.stringify(params.date))
 
 	const response = await fetch(PUBLIC_API_BASE + "/uploadfile", {
 		method: 'POST',

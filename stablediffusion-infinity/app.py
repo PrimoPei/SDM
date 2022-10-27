@@ -3,7 +3,7 @@ import os
 
 from pathlib import Path
 import uvicorn
-from fastapi import FastAPI, BackgroundTasks, HTTPException, UploadFile, Depends, status, Request
+from fastapi import FastAPI, BackgroundTasks, HTTPException, UploadFile, Form, Depends, status, Request
 from fastapi.staticfiles import StaticFiles
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi_utils.tasks import repeat_every
@@ -23,7 +23,8 @@ import boto3
 import magic
 import sqlite3
 import requests
-import uuid
+import shortuuid
+import re
 
 AWS_ACCESS_KEY_ID = os.getenv('AWS_ACCESS_KEY_ID')
 AWS_SECRET_KEY = os.getenv('AWS_SECRET_KEY')
@@ -118,15 +119,13 @@ def get_model():
 get_model()
 
 
-def run_outpaint(
+async def run_outpaint(
     input_image,
     prompt_text,
     strength,
     guidance,
     step,
     fill_mode,
-
-
 ):
     inpaint = get_model()
     sel_buffer = np.array(input_image)
@@ -176,7 +175,19 @@ def run_outpaint(
             num_inference_steps=step,
             guidance_scale=guidance,
         )
-    return output['images'][0], output["nsfw_content_detected"][0]
+    image = output["images"][0]
+    is_nsfw = output["nsfw_content_detected"][0]
+    image_url = {}
+
+    if not is_nsfw:
+        print("not nsfw, uploading")
+        image_url = await upload_file(image, prompt_text)
+
+    params = {
+        "is_nsfw": is_nsfw,
+        "image": image_url
+    }
+    return params
 
 
 with blocks as demo:
@@ -212,8 +223,7 @@ with blocks as demo:
 
     model_input = gr.Image(label="Input", type="pil", image_mode="RGBA")
     proceed_button = gr.Button("Proceed", elem_id="proceed")
-    model_output = gr.Image(label="Output")
-    is_nsfw = gr.JSON()
+    params = gr.JSON()
 
     proceed_button.click(
         fn=run_outpaint,
@@ -225,7 +235,7 @@ with blocks as demo:
             sd_step,
             init_mode,
         ],
-        outputs=[model_output, is_nsfw],
+        outputs=[params],
     )
 
 
@@ -257,8 +267,8 @@ def get_room_count(room_id: str, jwtToken: str = ''):
     raise Exception("Error getting room count")
 
 
-@app.on_event("startup")
-@repeat_every(seconds=60)
+@ app.on_event("startup")
+@ repeat_every(seconds=60)
 async def sync_rooms():
     print("Syncing rooms")
     try:
@@ -277,18 +287,18 @@ async def sync_rooms():
         print("Rooms update failed")
 
 
-@app.get('/api/rooms')
+@ app.get('/api/rooms')
 async def get_rooms(db: sqlite3.Connection = Depends(get_db)):
     rooms = db.execute("SELECT * FROM rooms").fetchall()
     return rooms
 
 
-@app.post('/api/auth')
+@ app.post('/api/auth')
 async def autorize(request: Request, db: sqlite3.Connection = Depends(get_db)):
     data = await request.json()
     room = data["room"]
     payload = {
-        "userId": str(uuid.uuid4()),
+        "userId": str(shortuuid.uuid()),
         "userInfo": {
             "name": "Anon"
         }}
@@ -307,8 +317,40 @@ async def autorize(request: Request, db: sqlite3.Connection = Depends(get_db)):
         raise Exception(response.status_code, response.text)
 
 
-@app.post('/api/uploadfile')
-async def create_upload_file(background_tasks: BackgroundTasks, file: UploadFile):
+def slugify(value):
+    value = re.sub(r'[^\w\s-]', '', value).strip().lower()
+    out = re.sub(r'[-\s]+', '-', value)
+    return out[:400]
+
+
+
+async def upload_file(image: Image.Image, prompt: str):
+    image = image.convert('RGB')
+    print("Uploading file from predict")
+    temp_file = io.BytesIO()
+    image.save(temp_file, format="JPEG")
+    temp_file.seek(0)
+    id = shortuuid.uuid()
+    prompt_slug = slugify(prompt)
+    filename = f"{id}-{prompt_slug}.jpg"
+    s3.upload_fileobj(Fileobj=temp_file, Bucket=AWS_S3_BUCKET_NAME, Key="uploads/" +
+                      filename, ExtraArgs={"ContentType": "image/jpeg", "CacheControl": "max-age=31536000"})
+    temp_file.close()
+
+    out = {"url": f'https://d26smi9133w0oo.cloudfront.net/uploads/{filename}',
+           "filename": filename}
+    print(out)
+    return out
+
+
+@ app.post('/api/uploadfile')
+async def create_upload_file(background_tasks: BackgroundTasks,
+                             file: UploadFile,
+                             prompt: str = Form(),
+                             id: str = Form(),
+                             position: object = Form(),
+                             room: str = Form(),
+                             date: int = Form()):
     contents = await file.read()
     file_size = len(contents)
     if not 0 < file_size < 20E+06:
@@ -328,6 +370,8 @@ async def create_upload_file(background_tasks: BackgroundTasks, file: UploadFile
     s3.upload_fileobj(Fileobj=temp_file, Bucket=AWS_S3_BUCKET_NAME, Key="uploads/" +
                       file.filename, ExtraArgs={"ContentType": file.content_type, "CacheControl": "max-age=31536000"})
     temp_file.close()
+
+    print("File uploaded", prompt, id, position, room, date)
 
     return {"url": f'https://d26smi9133w0oo.cloudfront.net/uploads/{file.filename}', "filename": file.filename}
 

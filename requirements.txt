@@ -13,3 +13,4 @@ gradio==3.6
 boto3==1.24.93
 python-magic==0.4.27
 fastapi-utils==0.2.1
+shortuuid==1.0.9

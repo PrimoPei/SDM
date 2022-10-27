@@ -10,7 +10,7 @@
 	import { PUBLIC_WS_INPAINTING } from '$env/static/public';
 	import type { PromptImgKey } from '$lib/types';
 	import { Status } from '$lib/types';
-	import { loadingState, currZoomTransform, maskEl } from '$lib/store';
+	import { loadingState, currZoomTransform, maskEl, selectedRoomID } from '$lib/store';
 	import { useMyPresence, useObject, useOthers } from '$lib/liveblocks';
 	import { base64ToBlob, uploadImage } from '$lib/utils';
 	import { nanoid } from 'nanoid';
@@ -50,6 +50,7 @@
 		$loadingState = 'Pending';
 		const prompt = $myPresence.currentPrompt;
 		const position = $myPresence.frame;
+		const room = $selectedRoomID || 'default';
 		console.log('Generating...', prompt, position);
 		myPresence.update({
 			status: Status.loading
@@ -106,23 +107,31 @@
 						break;
 					case 'process_completed':
 						try {
-							const imgBase64 = data.output.data[0] as string;
-							const isNSWF = data.output.data[1] as boolean;
+							const params = data.output.data[0] as {
+								is_nsfw: boolean;
+								image: {
+									url: string;
+									filename: string;
+								};
+							};
+							const isNSWF = params.is_nsfw;
 							if (isNSWF) {
 								throw new Error('NFSW');
 							}
 							const key = getKey(position);
-							const imgBlob = await base64ToBlob(imgBase64);
-							const imgURL = await uploadImage(imgBlob, prompt, key);
-							const promptImg = {
+							// const imgBlob = await base64ToBlob(imgBase64);
+							const promptImgParams = {
 								prompt,
-								imgURL: imgURL.filename,
+								imgURL: params.image.filename,
 								position,
 								date: new Date().getTime(),
-								id: nanoid()
+								id: nanoid(),
+								room: room
 							};
-							$promptImgStorage.set(key, promptImg);
-							console.log(imgURL);
+							// const imgURL = await uploadImage(imgBlob, promptImgParams);
+
+							$promptImgStorage.set(key, promptImgParams);
+							console.log(params.image.url);
 							$loadingState = data.success ? 'Complete' : 'Error';
 							setTimeout(() => {
 								$loadingState = '';
@@ -139,7 +148,7 @@
 							});
 							setTimeout(() => {
 								$loadingState = '';
-							}, 2000);
+							}, 10000);
 						}
 						websocket.close();
 						return;
