@@ -4,7 +4,6 @@
 	import type { Client } from '@liveblocks/client';
 	import LiveblocksProvider from '$lib/liveblocks/LiveblocksProvider.svelte';
 	import RoomProvider from '$lib/liveblocks/RoomProvider.svelte';
-	import LoadingIcon from '$lib/Icons/LoadingIcon.svelte';
 	import App from '$lib/App.svelte';
 	import About from '$lib/About.svelte';
 	import { PUBLIC_API_BASE } from '$env/static/public';

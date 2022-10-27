@@ -3,7 +3,6 @@
 	import RoomsSelector from '$lib/Buttons/RoomsSelector.svelte';
 	import AboutButton from '$lib/Buttons/AboutButton.svelte';
 	import { toggleAbout } from '$lib/store';
-	import ShareWithCommunity from '$lib/Buttons/ShareWithCommunity.svelte';
 	// const broadcast = useBroadcastEvent();
 
 	const dispatch = createEventDispatcher();
@@ -15,16 +14,11 @@
 	on:keyup|preventDefault|stopPropagation={(e) => e.key === 'Enter' && dispatch('prompt')}
 />
 <div class="flex flex-col md:flex-row items-center justify-between px-4 md:px-12 gap-3 md:gap-0">
-	<div class="flex flex-col justify-center items-center">
-		<AboutButton
-			on:click={() => {
-				$toggleAbout = !$toggleAbout;
-			}}
-		/>
-		<div class="order-last max-w-[20ch]">
-			<ShareWithCommunity />
-		</div>
-	</div>
+	<AboutButton
+		on:click={() => {
+			$toggleAbout = !$toggleAbout;
+		}}
+	/>
 
 	<button
 		on:click={() => dispatch('prompt')}
@@ -32,7 +26,7 @@
 		disabled={isLoading}
 		class="{isLoading
 			? 'cursor-wait'
-			: 'cursor-pointer'} order-first md:order-none text-xl md:text-3xl bg-blue-600 text-white px-6 py-2 rounded-2xl ring ring-blue-500 font-semibold shadow-2xl shadow-blue-500 self-center flex items-center hover:saturate-150"
+			: 'cursor-pointer'} order-first md:order-none text-xl md:text-3xl bg-blue-600 text-white px-4 py-1 md:px-6 md:py-2 rounded-2xl ring ring-blue-500 font-semibold shadow-2xl shadow-blue-500 self-center flex items-center hover:saturate-150"
 		><span class="mr-3">🖍</span>Paint
 		<span
 			class="bg-blue-800 text-gray-300 rounded-lg px-2 py-0.5 text-base ml-4 hidden sm:flex items-center translate-y-[2px]"

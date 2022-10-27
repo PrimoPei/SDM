@@ -5,8 +5,9 @@
 	import { canvasEl, selectedRoomID } from '$lib/store';
 	import { nanoid } from 'nanoid';
 
-	let isUploading: boolean = false;
+	export let classList = '';
 
+	let isUploading: boolean = false;
 	async function handleClick() {
 		if (isUploading) {
 			return;
@@ -49,7 +50,7 @@ ${canvasImage}
 
 <!-- svelte-ignore a11y-click-events-have-key-events -->
 <div
-	class="text-xs font-mono flex items-center justify-center bg-black gap-x-1 rounded-xl cursor-pointer px-2 py-1"
+	class="{classList} text-xs font-mono flex items-center justify-center bg-black gap-x-1 rounded-xl cursor-pointer px-2 py-1 whitespace-nowrap"
 	on:click={handleClick}
 	title="Share with community"
 >

@@ -7,7 +7,7 @@
 	import PromptModal from '$lib/PromptModal.svelte';
 	import { COLORS } from '$lib/constants';
 	import { PUBLIC_WS_INPAINTING } from '$env/static/public';
-	import type { PromptImgKey, PromptImgObject } from '$lib/types';
+	import type { PromptImgKey } from '$lib/types';
 	import { Status } from '$lib/types';
 	import {
 		loadingState,
@@ -203,7 +203,7 @@
 		{/if}
 	</main>
 </div>
-<div class="fixed bottom-2 md:bottom-16 left-0 right-0 z-10 my-2">
+<div class="fixed bottom-0 md:bottom-16 left-0 right-0 z-10 my-2">
 	<Menu on:prompt={onPrompt} {isLoading} />
 </div>
 
