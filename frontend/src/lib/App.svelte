@@ -10,7 +10,13 @@
 	import { PUBLIC_WS_INPAINTING } from '$env/static/public';
 	import type { PromptImgKey } from '$lib/types';
 	import { Status } from '$lib/types';
-	import { loadingState, currZoomTransform, maskEl, selectedRoomID } from '$lib/store';
+	import {
+		loadingState,
+		currZoomTransform,
+		maskEl,
+		selectedRoomID,
+		isRenderingCanvas
+	} from '$lib/store';
 	import { useMyPresence, useObject, useOthers } from '$lib/liveblocks';
 	import { base64ToBlob, uploadImage } from '$lib/utils';
 	import { nanoid } from 'nanoid';
@@ -26,7 +32,7 @@
 
 	let showModal = false;
 
-	$: isLoading = $myPresence?.status === Status.loading || false;
+	$: isLoading = $myPresence?.status === Status.loading || $isRenderingCanvas || false;
 
 	function onPrompt() {
 		if (!isLoading && !showModal) {

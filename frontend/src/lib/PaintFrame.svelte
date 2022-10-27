@@ -10,7 +10,7 @@
 	import { onMount, createEventDispatcher } from 'svelte';
 
 	import { useMyPresence } from '$lib/liveblocks';
-	import { canvasEl, maskEl, loadingState } from '$lib/store';
+	import { canvasEl, maskEl, loadingState, isRenderingCanvas } from '$lib/store';
 
 	import { Status } from './types';
 	const myPresence = useMyPresence({ addToHistory: true });
@@ -42,6 +42,9 @@
 		x: transform.applyX(position.x),
 		y: transform.applyY(position.y)
 	};
+	$: if (!$isRenderingCanvas) {
+		cleanMask();
+	}
 
 	$: if ($loadingState === 'Complete' && !dragEnabled) {
 		cleanMask();
@@ -293,7 +296,8 @@
 	<div
 		bind:this={frameElement}
 		class="absolute top-0 left-0 ring-8 hand
-		{dragEnabled ? 'block cursor-move' : 'hidden cursor-pointer'}"
+		{dragEnabled ? 'block' : 'hidden'}
+		{isLoading ? 'cursor-wait' : dragEnabled ? 'block cursor-move' : 'hidden cursor-pointer'}"
 		style={`width: ${FRAME_SIZE}px;height: ${FRAME_SIZE}px;transform: translateX(${coord.x}px) translateY(${coord.y}px) scale(${transform.k}); transform-origin: 0 0;`}
 	/>
 </div>

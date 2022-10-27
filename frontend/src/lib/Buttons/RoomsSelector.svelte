@@ -59,7 +59,7 @@
 							<People />
 							<span> players </span>
 						</li>
-						{#each $rooms as room, i}
+						{#each $rooms as room}
 							<li>
 								<!-- svelte-ignore a11y-invalid-attribute -->
 								<a
@@ -73,7 +73,7 @@
 											<Pin />
 										{/if}
 									</span>
-									<span>room {room.room_id.split('-')[3]} </span>
+									<span>{room.room_id} </span>
 									<span />
 									<span />
 									<span>{room.users_count} / {MAX_CAPACITY}</span>
@@ -93,7 +93,7 @@
 					<div class="grid-row gap-2">
 						<Room />
 						<span>
-							room {selectedRoom?.room_id.split('-')[3]}
+							{selectedRoom?.room_id}
 						</span>
 						<span />
 						<People />

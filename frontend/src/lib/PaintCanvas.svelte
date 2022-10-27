@@ -4,7 +4,7 @@
 	import { select } from 'd3-selection';
 	import { onMount } from 'svelte';
 	import { PUBLIC_UPLOADS } from '$env/static/public';
-	import { currZoomTransform, canvasEl } from '$lib/store';
+	import { currZoomTransform, canvasEl, isRenderingCanvas } from '$lib/store';
 
 	import { useMyPresence, useObject } from '$lib/liveblocks';
 	import type { PromptImgObject } from '$lib/types';
@@ -138,10 +138,11 @@
 		id: string;
 	};
 	function renderImages(promptImgList: PromptImgObject[]) {
-		Promise.all(
+		$isRenderingCanvas = true;
+		Promise.allSettled(
 			promptImgList.map(
 				({ imgURL, position, id }) =>
-					new Promise<ImageRendered>((resolve) => {
+					new Promise<ImageRendered>((resolve, reject) => {
 						const img = new Image();
 						img.crossOrigin = 'anonymous';
 						img.onload = () => {
@@ -149,16 +150,23 @@
 							canvasCtx.drawImage(img, position.x, position.y, img.width, img.height);
 							resolve(res);
 						};
+						img.onerror = (err) => {
+							reject(err);
+						};
 						img.src = `${PUBLIC_UPLOADS}/${imgURL}`;
 					})
 			)
-		).then((images) => {
+		).then((values) => {
+			const images = values
+				.filter((v) => v.status === 'fulfilled')
+				.map((v) => (v as PromiseFulfilledResult<ImageRendered>).value);
 			images.forEach(({ img, position, id }) => {
 				// keep track of images already rendered
 				//re draw in order
 				imagesOnCanvas.add(id);
 				canvasCtx.drawImage(img, position.x, position.y, img.width, img.height);
 			});
+			$isRenderingCanvas = false;
 		});
 	}
 	function zoomed(e: Event) {
