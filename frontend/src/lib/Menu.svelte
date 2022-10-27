@@ -23,6 +23,7 @@
 
 	<button
 		on:click={() => dispatch('prompt')}
+		title="Click to prompt, and paint. The generated image will show up in the frame."
 		disabled={isLoading}
 		class="{isLoading
 			? 'cursor-wait'

@@ -228,6 +228,7 @@
 				/>
 			{/if}
 			<canvas
+				title="Draw your mask here. The masked area will be inpainted by Stable Diffusion"
 				class="{dragEnabled ? 'hidden' : 'bg-white block'} absolute top-0 left-0 z-0"
 				bind:this={$maskEl}
 				width={FRAME_SIZE}
@@ -248,6 +249,7 @@
 				<div
 					class="pl-3 pr-5 py-1 bg-blue-700/90 text-white text-lg xl:text-2xl rounded-tr-xl font-medium tracking-wide cursor-pointer"
 					on:click={() => toggleDrag()}
+					title="Enable dragging to move the frame"
 				>
 					{#if $loadingState !== ''}
 						<div class="">
@@ -270,13 +272,14 @@
 			>
 				{#if !isLoading}
 					<div class="mx-4 flex flex-col gap-2">
-						<button
+						<!-- <button
 							on:click={() => dispatch('prompt')}
 							class="w-10 h-10 bg-blue-600 hover:saturate-150 shadow-2xl shadow-blue-500 rounded-lg flex items-center justify-center text-3xl"
 						>
 							🖍
-						</button>
+						</button> -->
 						<button
+							title="Draw your custom mask on the frame"
 							on:click={toggleDrawMask}
 							class="w-10 h-10 bg-blue-600 hover:saturate-150 shadow-2xl shadow-blue-500 rounded-lg flex items-center justify-center text-3xl"
 						>
@@ -295,6 +298,7 @@
 	</div>
 	<div
 		bind:this={frameElement}
+		title={dragEnabled ? 'Drag the frame around, prompt, and paint' : 'Enable dragging'}
 		class="absolute top-0 left-0 ring-8 hand
 		{dragEnabled ? 'block' : 'hidden'}
 		{isLoading ? 'cursor-wait' : dragEnabled ? 'block cursor-move' : 'hidden cursor-pointer'}"
