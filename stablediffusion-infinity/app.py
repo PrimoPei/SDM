@@ -126,7 +126,8 @@ async def run_outpaint(
     guidance,
     step,
     fill_mode,
-    room_id
+    room_id,
+    image_key
 ):
     inpaint = get_model()
     sel_buffer = np.array(input_image)
@@ -182,7 +183,7 @@ async def run_outpaint(
 
     if not is_nsfw:
         print("not nsfw, uploading")
-        image_url = await upload_file(image, prompt_text, room_id)
+        image_url = await upload_file(image, prompt_text, room_id, image_key)
 
     params = {
         "is_nsfw": is_nsfw,
@@ -224,6 +225,7 @@ with blocks as demo:
 
     model_input = gr.Image(label="Input", type="pil", image_mode="RGBA")
     room_id = gr.Textbox(label="Room ID")
+    image_key = gr.Textbox(label="image_key")
     proceed_button = gr.Button("Proceed", elem_id="proceed")
     params = gr.JSON()
 
@@ -237,6 +239,7 @@ with blocks as demo:
             sd_step,
             init_mode,
             room_id,
+            image_key
         ],
         outputs=[params],
     )
@@ -326,8 +329,9 @@ def slugify(value):
     return out[:400]
 
 
-async def upload_file(image: Image.Image, prompt: str, room_id: str):
+async def upload_file(image: Image.Image, prompt: str, room_id: str, image_key: str):
     room_id = room_id.strip() or "uploads"
+    image_key = image_key.strip() or ""
     image = image.convert('RGB')
     print("Uploading file from predict")
     temp_file = io.BytesIO()
@@ -335,7 +339,7 @@ async def upload_file(image: Image.Image, prompt: str, room_id: str):
     temp_file.seek(0)
     id = shortuuid.uuid()
     prompt_slug = slugify(prompt)
-    filename = f"{id}-{prompt_slug}.jpg"
+    filename = f"{id}-{image_key}-{prompt_slug}.jpg"
     s3.upload_fileobj(Fileobj=temp_file, Bucket=AWS_S3_BUCKET_NAME, Key=f"{room_id}/" +
                       filename, ExtraArgs={"ContentType": "image/jpeg", "CacheControl": "max-age=31536000"})
     temp_file.close()

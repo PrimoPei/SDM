@@ -54,6 +54,7 @@
 		$loadingState = 'Pending';
 		const prompt = $myPresence.currentPrompt;
 		const position = $myPresence.frame;
+		const imageKey = getKey(position);
 		const room = $selectedRoomID || 'default';
 		console.log('Generating...', prompt, position);
 		myPresence.update({
@@ -68,7 +69,7 @@
 		};
 
 		const datapayload = {
-			data: [base64Crop, prompt, 0.75, 7.5, 40, 'patchmatch', room]
+			data: [base64Crop, prompt, 0.75, 7.5, 40, 'patchmatch', room, imageKey]
 		};
 
 		const websocket = new WebSocket(PUBLIC_WS_INPAINTING);
@@ -122,7 +123,6 @@
 							if (isNSWF) {
 								throw new Error('NFSW');
 							}
-							const key = getKey(position);
 							// const imgBlob = await base64ToBlob(imgBase64);
 							const promptImgParams = {
 								prompt,
@@ -134,7 +134,7 @@
 							};
 							// const imgURL = await uploadImage(imgBlob, promptImgParams);
 
-							$promptImgStorage.set(key, promptImgParams);
+							$promptImgStorage.set(imageKey, promptImgParams);
 							console.log(params.image.url);
 							$loadingState = data.success ? 'Complete' : 'Error';
 							setTimeout(() => {
