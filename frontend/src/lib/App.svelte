@@ -3,12 +3,11 @@
 	import Frame from '$lib/Frame.svelte';
 	import PaintFrame from '$lib/PaintFrame.svelte';
 	import PaintCanvas from '$lib/PaintCanvas.svelte';
-	import ShareWithCommunity from '$lib/Buttons/ShareWithCommunity.svelte';
 	import Menu from '$lib/Menu.svelte';
 	import PromptModal from '$lib/PromptModal.svelte';
 	import { COLORS } from '$lib/constants';
 	import { PUBLIC_WS_INPAINTING } from '$env/static/public';
-	import type { PromptImgKey } from '$lib/types';
+	import type { PromptImgKey, PromptImgObject } from '$lib/types';
 	import { Status } from '$lib/types';
 	import {
 		loadingState,
@@ -18,7 +17,6 @@
 		isRenderingCanvas
 	} from '$lib/store';
 	import { useMyPresence, useObject, useOthers } from '$lib/liveblocks';
-	import { base64ToBlob, uploadImage } from '$lib/utils';
 	import { nanoid } from 'nanoid';
 
 	const myPresence = useMyPresence({ addToHistory: true });
@@ -70,7 +68,7 @@
 		};
 
 		const datapayload = {
-			data: [base64Crop, prompt, 0.75, 7.5, 40, 'patchmatch']
+			data: [base64Crop, prompt, 0.75, 7.5, 40, 'patchmatch', room]
 		};
 
 		const websocket = new WebSocket(PUBLIC_WS_INPAINTING);
@@ -205,9 +203,6 @@
 		{/if}
 	</main>
 </div>
-<!-- <div class="fixed top-0 right-0 z-10 p-2">
-	<ShareWithCommunity />
-</div> -->
 <div class="fixed bottom-2 md:bottom-16 left-0 right-0 z-10 my-2">
 	<Menu on:prompt={onPrompt} {isLoading} />
 </div>

@@ -1,7 +1,7 @@
-<div class="md:w-[210px] text-sm md:flex flex-col order-last md:order-none">
-	<p class="mb-4 inline">
+<div class="md:w-[210px] text-sm md:flex flex-col order-last md:order-none py-4">
+	<p class="inline pb-3">
 		Instructions: move the <span class="text-blue-700 bg-blue-300/60 px-0.5">blue square</span>,
-		click "🖍 Paint", and prompt.
+		click "🖍 Paint".
 	</p>
 	<button on:click class="items-center inline-flex">
 		<svg width=".9em" height=".9em" viewBox="0 0 24 24" class="mr-1"

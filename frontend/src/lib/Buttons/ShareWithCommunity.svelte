@@ -3,6 +3,7 @@
 	import LoadingIcon from '$lib/Icons/LoadingIcon.svelte';
 	import { uploadImage } from '$lib/utils';
 	import { canvasEl, selectedRoomID } from '$lib/store';
+	import { nanoid } from 'nanoid';
 
 	let isUploading: boolean = false;
 
@@ -19,10 +20,17 @@
 	}
 
 	async function createCommunityPost(canvasBlob: Blob) {
-		const canvasURL = await uploadImage(canvasBlob, 'canvas', 'canvas');
+		const canvasURL = await uploadImage(canvasBlob, {
+			prompt: 'canvas',
+			position: { x: 0, y: 0 },
+			date: new Date().getTime(),
+			id: nanoid(),
+			room: $selectedRoomID || 'default'
+		});
 		const canvasImage = `<img src="${canvasURL.url}" style="width:100%" width="1000" height="1000">`;
 		const descriptionMd = `#### Stable Diffusion Multiplayer:
-		### Room ${$selectedRoomID}
+### [${$selectedRoomID}](https://huggingface.co/spaces/huggingface-projects/stable-diffusion-multiplayer?roomid=${$selectedRoomID})
+		
 <div style="display: flex; overflow: scroll; column-gap: 0.75rem;">
 ${canvasImage}
 </div>`;
@@ -41,12 +49,12 @@ ${canvasImage}
 
 <!-- svelte-ignore a11y-click-events-have-key-events -->
 <div
-	class="text-sm font-mono flex items-center justify-center bg-black gap-x-1 rounded-xl cursor-pointer px-2 py-1"
+	class="text-xs font-mono flex items-center justify-center bg-black gap-x-1 rounded-xl cursor-pointer px-2 py-1"
 	on:click={handleClick}
 	title="Share with community"
 >
 	{#if isUploading}
-		<LoadingIcon classList={'animate-spin max-w-[25px]'} />
+		<LoadingIcon classList={'animate-spin max-w-[25px] text-white'} />
 	{:else}
 		<IconCommunity />
 	{/if}

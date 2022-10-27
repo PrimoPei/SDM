@@ -41,11 +41,6 @@ export async function uploadImage(imagBlob: Blob, params: {
 
 	const formData = new FormData()
 	formData.append('file', file)
-	formData.append('prompt', params.prompt)
-	formData.append('id', params.id)
-	formData.append('position', JSON.stringify(params.position))
-	formData.append('room', params.room)
-	formData.append('date', JSON.stringify(params.date))
 
 	const response = await fetch(PUBLIC_API_BASE + "/uploadfile", {
 		method: 'POST',

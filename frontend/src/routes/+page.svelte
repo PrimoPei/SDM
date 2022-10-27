@@ -41,13 +41,17 @@
 			if (room && roomAvailable) {
 				$selectedRoomID = room.room_id;
 				const state = { roomid: room.room_id };
-				window.history.replaceState(null, '', '?' + new URLSearchParams(state).toString());
+				const queryString = '?' + new URLSearchParams(state).toString();
+				window.history.replaceState(null, '', queryString);
+				window.parent.postMessage({ queryString: queryString }, '*');
 			}
 		}
 		if (emptyRoom && !roomAvailable) {
 			selectedRoomID.set(emptyRoom.room_id);
 			const state = { roomid: emptyRoom.room_id };
-			window.history.replaceState(null, '', '?' + new URLSearchParams(state).toString());
+			const queryString = '?' + new URLSearchParams(state).toString();
+			window.history.replaceState(null, '', queryString);
+			window.parent.postMessage({ queryString: queryString }, '*');
 		}
 		loading = false;
 		return { rooms };

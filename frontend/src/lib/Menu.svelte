@@ -3,7 +3,7 @@
 	import RoomsSelector from '$lib/Buttons/RoomsSelector.svelte';
 	import AboutButton from '$lib/Buttons/AboutButton.svelte';
 	import { toggleAbout } from '$lib/store';
-
+	import ShareWithCommunity from '$lib/Buttons/ShareWithCommunity.svelte';
 	// const broadcast = useBroadcastEvent();
 
 	const dispatch = createEventDispatcher();
@@ -14,12 +14,17 @@
 <svelte:window
 	on:keyup|preventDefault|stopPropagation={(e) => e.key === 'Enter' && dispatch('prompt')}
 />
-<div class="flex flex-col md:flex-row items-center justify-between px-4 md:px-12 gap-2 md:gap-0">
-	<AboutButton
-		on:click={() => {
-			$toggleAbout = !$toggleAbout;
-		}}
-	/>
+<div class="flex flex-col md:flex-row items-center justify-between px-4 md:px-12 gap-3 md:gap-0">
+	<div class="flex flex-col justify-center items-center">
+		<AboutButton
+			on:click={() => {
+				$toggleAbout = !$toggleAbout;
+			}}
+		/>
+		<div class="order-last max-w-[20ch]">
+			<ShareWithCommunity />
+		</div>
+	</div>
 
 	<button
 		on:click={() => dispatch('prompt')}

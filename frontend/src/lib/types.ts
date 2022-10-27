@@ -31,7 +31,7 @@ export type PromptImgObject = {
 	}
 	date: number;
 	id: string;
-	roomid: string;
+	room: string;
 };
 
 export type PromptImgKey = string;

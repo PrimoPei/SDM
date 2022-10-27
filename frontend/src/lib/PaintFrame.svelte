@@ -7,7 +7,7 @@
 	import { round } from '$lib/utils';
 
 	import type { ZoomTransform } from 'd3-zoom';
-	import { onMount, createEventDispatcher } from 'svelte';
+	import { onMount , createEventDispatcher} from 'svelte';
 
 	import { useMyPresence } from '$lib/liveblocks';
 	import { canvasEl, maskEl, loadingState, isRenderingCanvas } from '$lib/store';
@@ -272,16 +272,17 @@
 			>
 				{#if !isLoading}
 					<div class="mx-4 flex flex-col gap-2">
-						<!-- <button
+						<button
+							title="Click to prompt and paint"
 							on:click={() => dispatch('prompt')}
 							class="w-10 h-10 bg-blue-600 hover:saturate-150 shadow-2xl shadow-blue-500 rounded-lg flex items-center justify-center text-3xl"
 						>
 							🖍
-						</button> -->
+						</button>
 						<button
 							title="Draw your custom mask on the frame"
 							on:click={toggleDrawMask}
-							class="w-10 h-10 bg-blue-600 hover:saturate-150 shadow-2xl shadow-blue-500 rounded-lg flex items-center justify-center text-3xl"
+							class="w-10 h-10 bg-blue-600 hover:saturate-200 shadow-2xl shadow-blue-500 rounded-lg flex items-center justify-center text-3xl"
 						>
 							<svg class="text-white" width="1em" height="1em" viewBox="0 0 100 100"
 								><path
