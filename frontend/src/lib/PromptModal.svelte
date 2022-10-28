@@ -15,7 +15,6 @@
 	const onKeyup = (e: KeyboardEvent) => {
 		if (e.key === 'Escape') {
 			dispatch('showModal', { showModal: false });
-			console.log('Escape');
 		}
 	};
 

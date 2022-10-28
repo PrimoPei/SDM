@@ -49,7 +49,6 @@
 	}
 	function canPaint(position: { x: number; y: number }): boolean {
 		if (!$others) return true;
-		console.log('P', position);
 		let canPaint = true;
 		for (const { presence } of $others) {
 			if (
