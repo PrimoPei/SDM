@@ -60,6 +60,7 @@
 				// can paint if presence is only  dragging
 				if (presence.status === Status.ready || presence.status === Status.dragging) {
 					canPaint = true;
+					continue;
 				}
 				canPaint = false;
 				break;
