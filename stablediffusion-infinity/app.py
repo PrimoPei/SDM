@@ -25,6 +25,7 @@ import sqlite3
 import requests
 import shortuuid
 import re
+import time
 
 AWS_ACCESS_KEY_ID = os.getenv('AWS_ACCESS_KEY_ID')
 AWS_SECRET_KEY = os.getenv('AWS_SECRET_KEY')
@@ -53,7 +54,6 @@ if not DB_PATH.exists():
 def get_db():
     db = sqlite3.connect(DB_PATH, check_same_thread=False)
     db.row_factory = sqlite3.Row
-    print("Connected to database")
     try:
         yield db
     except Exception:
@@ -182,7 +182,7 @@ async def run_outpaint(
     image_url = {}
 
     if not is_nsfw:
-        print("not nsfw, uploading")
+        # print("not nsfw, uploading")
         image_url = await upload_file(image, prompt_text, room_id, image_key)
 
     params = {
@@ -274,7 +274,7 @@ def get_room_count(room_id: str, jwtToken: str = ''):
 
 
 @ app.on_event("startup")
-@ repeat_every(seconds=60)
+@ repeat_every(seconds=120)
 async def sync_rooms():
     print("Syncing rooms")
     try:
@@ -338,15 +338,15 @@ async def upload_file(image: Image.Image, prompt: str, room_id: str, image_key: 
     image.save(temp_file, format="JPEG")
     temp_file.seek(0)
     id = shortuuid.uuid()
+    date = int(time.time())
     prompt_slug = slugify(prompt)
-    filename = f"{id}-{image_key}-{prompt_slug}.jpg"
+    filename = f"{date}-{id}-{image_key}-{prompt_slug}.jpg"
     s3.upload_fileobj(Fileobj=temp_file, Bucket=AWS_S3_BUCKET_NAME, Key=f"{room_id}/" +
                       filename, ExtraArgs={"ContentType": "image/jpeg", "CacheControl": "max-age=31536000"})
     temp_file.close()
 
     out = {"url": f'https://d26smi9133w0oo.cloudfront.net/{room_id}/{filename}',
            "filename": filename}
-    print(out)
     return out
 
 
