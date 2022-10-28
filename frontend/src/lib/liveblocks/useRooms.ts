@@ -12,7 +12,7 @@ export function useRooms(): Writable<RoomResponse[]> {
     () => {
       refreshRooms().then((rooms) => roomsStorage.set(rooms))
     }, INTERVAL);
-
+  refreshRooms().then((rooms) => roomsStorage.set(rooms))
   onDestroy(() => {
     clearInterval(interval);
   });

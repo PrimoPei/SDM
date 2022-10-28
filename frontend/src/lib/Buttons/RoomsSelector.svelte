@@ -44,7 +44,7 @@
 <div class="min-w-[20ch]">
 	{#if loadingRooms}
 		<div
-			class="text-sm rounded md:text-smtext-gray-700 py-1 font-medium tracking-tight relative"
+			class="text-sm rounded-2xl md:text-smtext-gray-700 py-1 font-medium tracking-tight relative ring-1 ring-blue-500 px-2"
 			title="Choose a different room"
 			bind:this={boxEl}
 		>
