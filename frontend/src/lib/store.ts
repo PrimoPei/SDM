@@ -8,3 +8,4 @@ export const maskEl = writable<HTMLCanvasElement>();
 export const selectedRoomID = writable<string | null>();
 export const toggleAbout = writable<boolean>(false);
 export const isRenderingCanvas = writable<boolean>(true);
+export const showModal = writable<boolean>(false);

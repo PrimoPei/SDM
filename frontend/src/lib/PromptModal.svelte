@@ -4,18 +4,18 @@
 	import { Status } from '$lib/types';
 
 	const dispatch = createEventDispatcher();
+
 	export let initPrompt = '';
+
 	let prompt: string;
 	let inputEl: HTMLInputElement;
 	let boxEl: HTMLDivElement;
-	const myPresence =  useMyPresence({ addToHistory: true });
+	const myPresence = useMyPresence({ addToHistory: true });
 
 	const onKeyup = (e: KeyboardEvent) => {
 		if (e.key === 'Escape') {
-			myPresence.update({
-				status: Status.ready
-			});
-			dispatch('close');
+			dispatch('showModal', { showModal: false });
+			console.log('Escape');
 		}
 	};
 
@@ -41,10 +41,13 @@
 			});
 		}, 100);
 	}
-	function onPrompt() {
+	function onPrompt(event: Event) {
+		event.stopPropagation();
+		event.preventDefault();
+		event.stopImmediatePropagation();
+
 		if (prompt.trim() !== '') {
 			dispatch('paint');
-			dispatch('close');
 		}
 	}
 	function onInput(event: Event) {
@@ -58,13 +61,13 @@
 		myPresence.update({
 			status: Status.ready
 		});
-		dispatch('close');
+		dispatch('showModal', { showModal: false });
 	}
 </script>
 
 <form
 	class="fixed w-screen top-0 left-0 bottom-0 right-0 h-screen z-50 flex items-center justify-center bg-black bg-opacity-80"
-	on:submit|preventDefault|stopPropagation={onPrompt}
+	on:submit={onPrompt}
 >
 	<div
 		class="flex bg-white overflow-hidden rounded-2xl w-full max-w-lg 2xl:max-w-xl"

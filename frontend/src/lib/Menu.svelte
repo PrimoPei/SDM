@@ -1,17 +1,21 @@
 <script lang="ts">
-	import { createEventDispatcher } from 'svelte';
 	import RoomsSelector from '$lib/Buttons/RoomsSelector.svelte';
 	import AboutButton from '$lib/Buttons/AboutButton.svelte';
 	import { toggleAbout } from '$lib/store';
-	// const broadcast = useBroadcastEvent();
+	import { createEventDispatcher } from 'svelte';
 
 	const dispatch = createEventDispatcher();
+	// const broadcast = useBroadcastEvent();
 
 	export let isLoading = false;
 </script>
 
 <svelte:window
-	on:keyup|preventDefault|stopPropagation={(e) => e.key === 'Enter' && dispatch('prompt')}
+	on:keypress={(e) => {
+		if (e.key === 'Enter') {
+			dispatch('showModal', { showModal: true });
+		}
+	}}
 />
 <div class="flex flex-col md:flex-row items-center justify-between px-4 md:px-12 gap-3 md:gap-0">
 	<AboutButton
@@ -21,7 +25,7 @@
 	/>
 
 	<button
-		on:click={() => dispatch('prompt')}
+		on:click={() => dispatch('showModal', { showModal: true })}
 		title="Click to prompt, and paint. The generated image will show up in the frame."
 		disabled={isLoading}
 		class="{isLoading
@@ -48,7 +52,5 @@
 			Enter</span
 		></button
 	>
-
 	<RoomsSelector {isLoading} />
-	<!-- <PPButton {isLoading} on:click={() => dispatch('prompt')} /> -->
 </div>

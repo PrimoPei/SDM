@@ -15,7 +15,7 @@ export type Presence = {
 	frame: {
 		x: number;
 		y: number;
-	} | null;
+	};
 	status: Status;
 	currentPrompt: string
 }

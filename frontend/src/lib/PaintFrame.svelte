@@ -7,10 +7,11 @@
 	import { round } from '$lib/utils';
 
 	import type { ZoomTransform } from 'd3-zoom';
-	import { onMount , createEventDispatcher} from 'svelte';
+	import { onMount } from 'svelte';
 
 	import { useMyPresence } from '$lib/liveblocks';
 	import { canvasEl, maskEl, loadingState, isRenderingCanvas } from '$lib/store';
+	import { createEventDispatcher } from 'svelte';
 
 	import { Status } from './types';
 	const myPresence = useMyPresence({ addToHistory: true });
@@ -274,7 +275,7 @@
 					<div class="mx-4 flex flex-col gap-2">
 						<button
 							title="Click to prompt and paint"
-							on:click={() => dispatch('prompt')}
+							on:click={() => dispatch('showModal', { showModal: true })}
 							class="w-10 h-10 bg-blue-600 hover:saturate-150 shadow-2xl shadow-blue-500 rounded-lg flex items-center justify-center text-3xl"
 						>
 							🖍

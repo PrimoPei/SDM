@@ -5,7 +5,7 @@
 	import PaintCanvas from '$lib/PaintCanvas.svelte';
 	import Menu from '$lib/Menu.svelte';
 	import PromptModal from '$lib/PromptModal.svelte';
-	import { COLORS } from '$lib/constants';
+	import { COLORS, FRAME_SIZE } from '$lib/constants';
 	import { PUBLIC_WS_INPAINTING } from '$env/static/public';
 	import type { PromptImgKey } from '$lib/types';
 	import { Status } from '$lib/types';
@@ -21,39 +21,72 @@
 
 	const myPresence = useMyPresence({ addToHistory: true });
 	const others = useOthers();
-
+	let showModal = false;
 	function getKey(position: { x: number; y: number }): PromptImgKey {
 		return `${position.x}_${position.y}`;
 	}
 
 	const promptImgStorage = useObject('promptImgStorage');
 
-	let showModal = false;
-
 	$: isLoading = $myPresence?.status === Status.loading || $isRenderingCanvas || false;
-
-	function onPrompt() {
-		if (!isLoading && !showModal) {
-			showModal = true;
+	function onShowModal(e: CustomEvent) {
+		if (isLoading) return;
+		showModal = e.detail.showModal;
+		if (showModal) {
 			myPresence.update({
 				status: Status.prompting
 			});
+		} else {
+			myPresence.update({
+				status: Status.ready
+			});
 		}
-	}
-	function onClose() {
-		showModal = false;
 	}
 
 	function onPaint() {
-		generateImage();
 		showModal = false;
+		generateImage();
+	}
+	function canPaint(position: { x: number; y: number }): boolean {
+		if (!$others) return true;
+		console.log('P', position);
+		let canPaint = true;
+		for (const { presence } of $others) {
+			if (
+				position.x < presence.frame.x + FRAME_SIZE &&
+				position.x + FRAME_SIZE > presence.frame.x &&
+				position.y < presence.frame.y + FRAME_SIZE &&
+				position.y + FRAME_SIZE > presence.frame.y
+			) {
+				// can paint if presence is only  dragging
+				if (presence.status === Status.ready || presence.status === Status.dragging) {
+					canPaint = true;
+				}
+				canPaint = false;
+				break;
+			}
+		}
+		return canPaint;
 	}
 
+	function clearStateMsg(t = 5000) {
+		setTimeout(() => {
+			$loadingState = '';
+		}, t);
+	}
 	async function generateImage() {
 		if (isLoading) return;
-		$loadingState = 'Pending';
 		const prompt = $myPresence.currentPrompt;
 		const position = $myPresence.frame;
+		$loadingState = 'Pending';
+		if (!canPaint(position)) {
+			$loadingState = 'Someone is already painting here';
+			myPresence.update({
+				status: Status.ready
+			});
+			clearStateMsg();
+			return;
+		}
 		const imageKey = getKey(position);
 		const room = $selectedRoomID || 'default';
 		console.log('Generating...', prompt, position);
@@ -137,9 +170,7 @@
 							$promptImgStorage.set(imageKey, promptImgParams);
 							console.log(params.image.url);
 							$loadingState = data.success ? 'Complete' : 'Error';
-							setTimeout(() => {
-								$loadingState = '';
-							}, 2000);
+							clearStateMsg();
 							myPresence.update({
 								status: Status.ready,
 								currentPrompt: ''
@@ -150,9 +181,7 @@
 							myPresence.update({
 								status: Status.ready
 							});
-							setTimeout(() => {
-								$loadingState = '';
-							}, 10000);
+							clearStateMsg(10000);
 						}
 						websocket.close();
 						return;
@@ -173,14 +202,16 @@
 	{$loadingState}
 </div>
 {#if showModal}
-	<PromptModal on:paint={onPaint} on:close={onClose} initPrompt={$myPresence?.currentPrompt} />
+	<PromptModal
+		on:paint={onPaint}
+		initPrompt={$myPresence?.currentPrompt}
+		on:showModal={onShowModal}
+	/>
 {/if}
 <div class="fixed top-0 left-0 z-0 w-screen h-screen min-h-[600px]">
 	<PaintCanvas />
 
 	<main class="z-10 relative">
-		<PaintFrame on:prompt={onPrompt} transform={$currZoomTransform} />
-
 		<!-- When others connected, iterate through others and show their cursors -->
 		{#if $others}
 			{#each [...$others] as { connectionId, presence } (connectionId)}
@@ -201,10 +232,11 @@
 				{/if}
 			{/each}
 		{/if}
+		<PaintFrame transform={$currZoomTransform} on:showModal={onShowModal} />
 	</main>
 </div>
 <div class="fixed bottom-0 md:bottom-16 left-0 right-0 z-10 my-2">
-	<Menu on:prompt={onPrompt} {isLoading} />
+	<Menu {isLoading} on:showModal={onShowModal} />
 </div>
 
 <style lang="postcss" scoped>

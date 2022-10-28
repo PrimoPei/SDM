@@ -3,7 +3,7 @@ import { writable, type Writable } from "svelte/store";
 import type { RoomResponse } from '$lib/types';
 import { PUBLIC_API_BASE } from '$env/static/public';
 
-const INTERVAL = 3000
+const INTERVAL = 10000
 
 export function useRooms(): Writable<RoomResponse[]> {
   const roomsStorage = writable<RoomResponse[]>([]);
