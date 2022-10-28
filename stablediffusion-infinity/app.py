@@ -276,7 +276,7 @@ def get_room_count(room_id: str, jwtToken: str = ''):
 @ app.on_event("startup")
 @ repeat_every(seconds=120)
 async def sync_rooms():
-    print("Syncing rooms")
+    # print("Syncing rooms")
     try:
         jwtToken = generateAuthToken()
         for db in get_db():
@@ -333,7 +333,7 @@ async def upload_file(image: Image.Image, prompt: str, room_id: str, image_key: 
     room_id = room_id.strip() or "uploads"
     image_key = image_key.strip() or ""
     image = image.convert('RGB')
-    print("Uploading file from predict")
+    # print("Uploading file from predict")
     temp_file = io.BytesIO()
     image.save(temp_file, format="JPEG")
     temp_file.seek(0)
