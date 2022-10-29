@@ -7,9 +7,9 @@
 	import App from '$lib/App.svelte';
 	import About from '$lib/About.svelte';
 	import { PUBLIC_API_BASE } from '$env/static/public';
-	import { selectedRoomID, toggleAbout } from '$lib/store';
+	import { selectedRoomID, toggleAbout, canvasSize } from '$lib/store';
 	import type { RoomResponse } from '$lib/types';
-	import { MAX_CAPACITY, CANVAS_SIZE, FRAME_SIZE } from '$lib/constants';
+	import { MAX_CAPACITY, FRAME_SIZE } from '$lib/constants';
 	import { Status } from '$lib/types';
 
 	let loading = true;
@@ -19,6 +19,15 @@
 
 	onMount(() => {
 		// document.addEventListener('wheel', (e) => e.preventDefault(), { passive: false });
+		// detect browser is mobile
+		if (
+			/Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)
+		) {
+			$canvasSize = {
+				width: 512 * 8,
+				height: 512 * 8
+			};
+		}
 		client = createClient({
 			authEndpoint: PUBLIC_API_BASE + '/auth'
 		});
@@ -58,8 +67,8 @@
 	const initialPresence = {
 		cursor: null,
 		frame: {
-			x: CANVAS_SIZE.width / 2 - FRAME_SIZE / 2,
-			y: CANVAS_SIZE.height / 2 - FRAME_SIZE / 2
+			x: $canvasSize.width / 2 - FRAME_SIZE / 2,
+			y: $canvasSize.height / 2 - FRAME_SIZE / 2
 		},
 		status: Status.dragging,
 		currentPrompt: ''

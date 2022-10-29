@@ -4,17 +4,17 @@
 	import { select } from 'd3-selection';
 	import { onMount } from 'svelte';
 	import { PUBLIC_UPLOADS } from '$env/static/public';
-	import { currZoomTransform, canvasEl, isRenderingCanvas } from '$lib/store';
+	import { currZoomTransform, canvasEl, isRenderingCanvas, canvasSize} from '$lib/store';
 
 	import { useMyPresence, useObject } from '$lib/liveblocks';
 	import type { PromptImgObject } from '$lib/types';
-	import { CANVAS_SIZE, FRAME_SIZE, GRID_SIZE } from '$lib/constants';
+	import { FRAME_SIZE, GRID_SIZE } from '$lib/constants';
 
 	const myPresence = useMyPresence({ addToHistory: true });
 	const promptImgStorage = useObject('promptImgStorage');
 
-	const height = CANVAS_SIZE.height;
-	const width = CANVAS_SIZE.width;
+	const height = $canvasSize.height;
+	const width = $canvasSize.width;
 
 	let containerEl: HTMLDivElement;
 	let canvasCtx: CanvasRenderingContext2D;

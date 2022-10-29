@@ -1,6 +1,6 @@
 <script lang="ts">
 	import LoadingIcon from '$lib/Icons/LoadingIcon.svelte';
-	import { CANVAS_SIZE, FRAME_SIZE } from '$lib/constants';
+	import { FRAME_SIZE } from '$lib/constants';
 
 	import { drag } from 'd3-drag';
 	import { select } from 'd3-selection';
@@ -10,7 +10,7 @@
 	import { onMount } from 'svelte';
 
 	import { useMyPresence } from '$lib/liveblocks';
-	import { canvasEl, maskEl, loadingState, isRenderingCanvas } from '$lib/store';
+	import { canvasEl, maskEl, loadingState, isRenderingCanvas, canvasSize } from '$lib/store';
 	import { createEventDispatcher } from 'svelte';
 
 	import { Status } from './types';
@@ -23,8 +23,8 @@
 	let maskCtx: CanvasRenderingContext2D;
 
 	let position = {
-		x: CANVAS_SIZE.width / 2 - FRAME_SIZE / 2,
-		y: CANVAS_SIZE.height / 2 - FRAME_SIZE / 2
+		x: $canvasSize.width / 2 - FRAME_SIZE / 2,
+		y: $canvasSize.height / 2 - FRAME_SIZE / 2
 	};
 
 	let frameElement: HTMLDivElement;
@@ -159,8 +159,8 @@
 		function dragged(event: Event) {
 			if (isLoading) return;
 
-			const x = round(transform.invertX(event.x - offsetX));
-			const y = round(transform.invertY(event.y - offsetY));
+			const x = round(transform.invertX(event.x - offsetX), $canvasSize);
+			const y = round(transform.invertY(event.y - offsetY), $canvasSize);
 			position = {
 				x,
 				y
@@ -179,8 +179,8 @@
 
 			isDragging = false;
 
-			const x = round(transform.invertX(event.x - offsetX));
-			const y = round(transform.invertY(event.y - offsetY));
+			const x = round(transform.invertX(event.x - offsetX), $canvasSize);
+			const y = round(transform.invertY(event.y - offsetY), $canvasSize);
 			cropCanvas({ x, y });
 
 			myPresence.update({

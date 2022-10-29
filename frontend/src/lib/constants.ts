@@ -16,10 +16,6 @@ export const EMOJIS = ['🐝', '🐌', '🐞', '🐜', '🦋', '🐛', '🐝', '
 
 export const MAX_CAPACITY = 50;
 
-export const CANVAS_SIZE = {
-	width: 512 * 16,
-	height: 512 * 16,
-}
 export const GRID_SIZE = 32
 
 export const FRAME_SIZE = 512
