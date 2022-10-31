@@ -34,7 +34,7 @@ export async function uploadImage(imagBlob: Blob, params: {
 	// simple regex slugify string	for file name
 	const promptSlug = slugify(params.prompt);
 	const key = `${params.position.x}_${params.position.y}`;
-	const fileName = `sd-${params.id}-${promptSlug}-${key}.jpeg`;
+	const fileName = `sd-${params.room}-${params.id}-${promptSlug}-${key}.jpeg`;
 
 	const file = new File([imagBlob], fileName, { type: 'image/jpeg' });
 
