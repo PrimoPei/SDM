@@ -261,9 +261,10 @@ def generateAuthToken():
         raise Exception(response.status_code, response.text)
 
 
-def get_room_count(room_id: str, jwtToken: str = ''):
+def get_room_count(room_id: str):
     response = requests.get(
-        f"https://liveblocks.net/api/v1/room/{room_id}/users", headers={"Authorization": f"Bearer {jwtToken}", "Content-Type": "application/json"})
+        f"https://api.liveblocks.io/v2/rooms/{room_id}/active_users",
+        headers={"Authorization": f"Bearer {LIVEBLOCKS_SECRET}", "Content-Type": "application/json"})
     if response.status_code == 200:
         res = response.json()
         if "data" in res:
@@ -274,16 +275,15 @@ def get_room_count(room_id: str, jwtToken: str = ''):
 
 
 @ app.on_event("startup")
-@ repeat_every(seconds=120)
+@ repeat_every(seconds=100)
 async def sync_rooms():
-    # print("Syncing rooms")
     try:
         jwtToken = generateAuthToken()
         for db in get_db():
             rooms = db.execute("SELECT * FROM rooms").fetchall()
             for row in rooms:
                 room_id = row["room_id"]
-                users_count = get_room_count(room_id, jwtToken)
+                users_count = get_room_count(room_id)
                 cursor = db.cursor()
                 cursor.execute(
                     "UPDATE rooms SET users_count = ? WHERE room_id = ?", (users_count, room_id))
