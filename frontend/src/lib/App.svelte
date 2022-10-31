@@ -169,8 +169,8 @@
 							};
 							// const imgURL = await uploadImage(imgBlob, promptImgParams);
 
-							// $promptImgStorage.set(imageKey, new LiveObject(promptImgParams));
-							$promptImgStorage.set(imageKey, promptImgParams);
+							$promptImgStorage.set(imageKey, new LiveObject(promptImgParams));
+							// $promptImgStorage.set(imageKey, promptImgParams);
 
 							console.log(params.image.url);
 							$loadingState = data.success ? 'Complete' : 'Error';

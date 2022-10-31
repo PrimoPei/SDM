@@ -26,8 +26,6 @@
 	function getpromptImgList(
 		promptImgList: Record<string, LiveObject<PromptImgObject> | PromptImgObject>
 	): PromptImgObject[] {
-		console.log('promptImgList', promptImgList);
-
 		if (promptImgList) {
 			//sorted by last updated
 			const canvasPixels = new Map();
