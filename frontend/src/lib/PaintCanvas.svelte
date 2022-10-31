@@ -4,9 +4,11 @@
 	import { select } from 'd3-selection';
 	import { onMount } from 'svelte';
 	import { PUBLIC_UPLOADS } from '$env/static/public';
-	import { currZoomTransform, canvasEl, isRenderingCanvas, canvasSize} from '$lib/store';
+	import { currZoomTransform, canvasEl, isRenderingCanvas, canvasSize } from '$lib/store';
 
 	import { useMyPresence, useObject } from '$lib/liveblocks';
+	import { LiveObject } from '@liveblocks/client';
+
 	import type { PromptImgObject } from '$lib/types';
 	import { FRAME_SIZE, GRID_SIZE } from '$lib/constants';
 
@@ -21,7 +23,11 @@
 
 	const imagesOnCanvas = new Set();
 
-	function getpromptImgList(promptImgList: PromptImgObject[]): PromptImgObject[] {
+	function getpromptImgList(
+		promptImgList: Record<string, LiveObject<PromptImgObject> | PromptImgObject>
+	): PromptImgObject[] {
+		console.log('promptImgList', promptImgList);
+
 		if (promptImgList) {
 			//sorted by last updated
 			const canvasPixels = new Map();
@@ -30,7 +36,15 @@
 					canvasPixels.set(`${x * GRID_SIZE}_${y * GRID_SIZE}`, null);
 				}
 			}
-			const list: PromptImgObject[] = Object.values(promptImgList).sort((a, b) => b.date - a.date);
+			const list: PromptImgObject[] = Object.values(promptImgList)
+				.map((e) => {
+					if (e instanceof LiveObject) {
+						return e.toObject();
+					} else {
+						return e;
+					}
+				})
+				.sort((a, b) => b.date - a.date);
 			// init
 			for (const promptImg of list) {
 				const x = promptImg.position.x;

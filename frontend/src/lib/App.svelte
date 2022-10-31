@@ -9,6 +9,8 @@
 	import { PUBLIC_WS_INPAINTING } from '$env/static/public';
 	import type { PromptImgKey } from '$lib/types';
 	import { Status } from '$lib/types';
+	import { LiveObject } from '@liveblocks/client';
+
 	import {
 		loadingState,
 		currZoomTransform,
@@ -167,7 +169,9 @@
 							};
 							// const imgURL = await uploadImage(imgBlob, promptImgParams);
 
+							// $promptImgStorage.set(imageKey, new LiveObject(promptImgParams));
 							$promptImgStorage.set(imageKey, promptImgParams);
+
 							console.log(params.image.url);
 							$loadingState = data.success ? 'Complete' : 'Error';
 							clearStateMsg();
