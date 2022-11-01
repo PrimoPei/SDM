@@ -221,7 +221,7 @@
 			{#each [...$others] as { connectionId, presence } (connectionId)}
 				{#if (presence?.status === Status.loading || presence?.status === Status.prompting || presence?.status === Status.masking) && presence?.frame}
 					<Frame
-						isLoading={presence?.status === Status.loading}
+						status={presence.status}
 						position={presence?.frame}
 						prompt={presence?.currentPrompt}
 						transform={$currZoomTransform}
