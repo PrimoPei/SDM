@@ -354,7 +354,7 @@ async def upload_file(image: Image.Image, prompt: str, room_id: str, image_key: 
 async def create_upload_file(file: UploadFile):
     contents = await file.read()
     file_size = len(contents)
-    if not 0 < file_size < 20E+06:
+    if not 0 < file_size < 100E+06:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail='Supported file size is less than 2 MB'

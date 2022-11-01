@@ -45,9 +45,11 @@ export async function uploadImage(imagBlob: Blob, params: {
 		method: 'POST',
 		body: formData
 	});
-	const res = await response.json();
-
-	return res;
+	if (response.status === 200) {
+		const data = await response.json();
+		return data;
+	}
+	throw new Error('Failed to upload image');
 }
 export function round(pos: number, canvasSize: {
 	width: number;

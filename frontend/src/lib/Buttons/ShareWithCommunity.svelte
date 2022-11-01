@@ -16,18 +16,32 @@
 			$canvasEl.toBlob(resolve as BlobCallback, 'image/jpeg', 0.95);
 		});
 		isUploading = true;
+
 		await createCommunityPost(blob);
+
 		isUploading = false;
 	}
 
 	async function createCommunityPost(canvasBlob: Blob) {
-		const canvasURL = await uploadImage(canvasBlob, {
-			prompt: 'canvas',
-			position: { x: 0, y: 0 },
-			date: new Date().getTime(),
-			id: nanoid(),
-			room: $selectedRoomID || 'default'
-		});
+		let canvasURL: {
+			url: string;
+			filename: string;
+		} | null = null;
+		try {
+			canvasURL = await uploadImage(canvasBlob, {
+				prompt: 'canvas',
+				position: { x: 0, y: 0 },
+				date: new Date().getTime(),
+				id: nanoid(),
+				room: $selectedRoomID || 'default'
+			});
+		} catch (err) {
+			console.error(err);
+		}
+		if (!canvasURL) {
+			console.error('Failed to upload image');
+			return;
+		}
 		const canvasImage = `<img src="${canvasURL.url}" style="width:100%" width="1000" height="1000">`;
 		const descriptionMd = `#### Stable Diffusion Multiplayer:
 ### [${$selectedRoomID}](https://huggingface.co/spaces/huggingface-projects/stable-diffusion-multiplayer?roomid=${$selectedRoomID})
