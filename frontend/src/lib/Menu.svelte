@@ -19,6 +19,7 @@
 />
 <div class="flex flex-col md:flex-row items-center justify-between px-4 md:px-12 gap-3 md:gap-0">
 	<AboutButton
+		{isLoading}
 		on:click={() => {
 			$toggleAbout = !$toggleAbout;
 		}}

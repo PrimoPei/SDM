@@ -150,7 +150,9 @@
 		id: string;
 	};
 	async function renderImages(promptImgList: PromptImgObject[]) {
+		if (promptImgList.length === 0) return;
 		$isRenderingCanvas = true;
+
 		await Promise.allSettled(
 			promptImgList.map(
 				({ imgURL, position, id, room }) =>

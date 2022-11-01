@@ -1,7 +1,11 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
 	import ShareWithCommunity from './ShareWithCommunity.svelte';
+
+	export let isLoading = false;
+
 	let open = true;
+
 	onMount(() => {
 		autoOpen();
 		window.addEventListener('resize', autoOpen);
@@ -33,7 +37,7 @@
 				>
 				About
 			</button>
-			<ShareWithCommunity classList={''} />
+			<ShareWithCommunity {isLoading} />
 		</div>
 	</details>
 </div>
