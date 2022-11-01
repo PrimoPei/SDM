@@ -30,21 +30,20 @@
 	let frameElement: HTMLDivElement;
 	let dragEnabled = true;
 	let isDragging = false;
+	let firstLoading = true;
+
 	$: prompt = $myPresence?.currentPrompt;
 	$: isLoading =
 		$myPresence?.status === Status.loading || $myPresence?.status === Status.prompting || false;
 
-	$: {
-		if (!dragEnabled && $myPresence.status === Status.loading) {
-			dragEnabled = true;
-		}
-	}
 	$: coord = {
 		x: transform.applyX(position.x),
 		y: transform.applyY(position.y)
 	};
-	$: if (!$isRenderingCanvas) {
+
+	$: if (!$isRenderingCanvas && firstLoading) {
 		cleanMask();
+		firstLoading = false;
 	}
 
 	$: if ($loadingState === 'Complete' && !dragEnabled) {

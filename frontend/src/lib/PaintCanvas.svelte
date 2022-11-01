@@ -149,9 +149,9 @@
 		position: { x: number; y: number };
 		id: string;
 	};
-	function renderImages(promptImgList: PromptImgObject[]) {
+	async function renderImages(promptImgList: PromptImgObject[]) {
 		$isRenderingCanvas = true;
-		Promise.allSettled(
+		await Promise.allSettled(
 			promptImgList.map(
 				({ imgURL, position, id, room }) =>
 					new Promise<ImageRendered>((resolve, reject) => {
@@ -178,8 +178,8 @@
 				imagesOnCanvas.add(id);
 				canvasCtx.drawImage(img, position.x, position.y, img.width, img.height);
 			});
-			$isRenderingCanvas = false;
 		});
+		$isRenderingCanvas = false;
 	}
 	function zoomed(e: Event) {
 		const transform = ($currZoomTransform = e.transform);
