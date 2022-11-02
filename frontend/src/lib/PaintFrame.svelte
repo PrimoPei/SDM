@@ -1,6 +1,6 @@
 <script lang="ts">
 	import LoadingIcon from '$lib/Icons/LoadingIcon.svelte';
-	import { FRAME_SIZE } from '$lib/constants';
+	import { FRAME_SIZE, GRID_SIZE } from '$lib/constants';
 
 	import { drag } from 'd3-drag';
 	import { select } from 'd3-selection';
@@ -116,21 +116,25 @@
 		}
 		return selection.on('pointermove', handlePointerMove).on('pointerleave', handlePointerLeave);
 	}
+	function constraintCursor(pos: number) {
+		const x = Math.min(Math.max(pos, GRID_SIZE), FRAME_SIZE - GRID_SIZE);
+		return x;
+	}
 	function maskingHandler() {
 		let lastx: number;
 		let lasty: number;
 		function dragstarted(event: Event) {
 			if (isLoading) return;
-			const x = event.x / transform.k;
-			const y = event.y / transform.k;
+			const x = constraintCursor(event.x / transform.k);
+			const y = constraintCursor(event.y / transform.k);
 			lastx = x;
 			lasty = y;
 		}
 
 		function dragged(event: Event) {
 			if (isLoading) return;
-			const x = event.x / transform.k;
-			const y = event.y / transform.k;
+			const x = constraintCursor(event.x / transform.k);
+			const y = constraintCursor(event.y / transform.k);
 			drawLine({ x, y, lastx, lasty });
 			lastx = x;
 			lasty = y;
