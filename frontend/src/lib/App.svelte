@@ -29,7 +29,6 @@
 	}
 
 	const promptImgStorage = useObject('promptImgStorage');
-	$: console.log('isRendering', $isRenderingCanvas);
 
 	$: isLoading = $myPresence?.status === Status.loading || $isRenderingCanvas || false;
 	function onShowModal(e: CustomEvent) {

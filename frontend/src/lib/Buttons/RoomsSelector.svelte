@@ -42,7 +42,7 @@
 
 <!-- svelte-ignore a11y-click-events-have-key-events -->
 <div class="min-w-[20ch]">
-	{#if loadingRooms}
+	{#if loadingRooms && selectedRoom}
 		<div
 			class="text-sm rounded-2xl md:text-smtext-gray-700 py-1 font-medium tracking-tight relative ring-1 ring-blue-500 px-2"
 			title="Choose a different room"

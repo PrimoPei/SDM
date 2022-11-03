@@ -30,7 +30,7 @@
 	let frameElement: HTMLDivElement;
 	let dragEnabled = true;
 	let isDragging = false;
-	let firstLoading = true;
+	let firstLoading: boolean | null = null;
 
 	$: prompt = $myPresence?.currentPrompt;
 	$: isLoading =
@@ -41,7 +41,7 @@
 		y: transform.applyY(position.y)
 	};
 
-	$: if (!$isRenderingCanvas && firstLoading) {
+	$: if (firstLoading !== null && !$isRenderingCanvas && firstLoading) {
 		cleanMask();
 		firstLoading = false;
 	}
@@ -98,6 +98,8 @@
 			})
 			.call(maskingHandler() as any)
 			.call(cursorUpdate);
+
+		firstLoading = true;
 	});
 
 	function cursorUpdate(selection: any) {

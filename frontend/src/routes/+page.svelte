@@ -42,21 +42,25 @@
 		const rooms: RoomResponse[] = await res.json();
 		const emptyRoom = rooms.find((room) => room.users_count < MAX_CAPACITY) || null;
 
-		let roomAvailable = false;
+		let queriedRoom: string | null = null;
+		// init if roomid is set via param
 		if (roomidParam) {
-			const room = rooms.find((room) => room.room_id === roomidParam) || null;
-			roomAvailable = room ? room.users_count < MAX_CAPACITY : false;
-			if (room && roomAvailable) {
-				$selectedRoomID = room.room_id;
-				const state = { roomid: room.room_id };
-				const queryString = '?' + new URLSearchParams(state).toString();
-				window.history.replaceState(null, '', queryString);
-				window.parent.postMessage({ queryString: queryString }, '*');
+			// if room is unlisted, skip the check
+			if (roomidParam.startsWith('secret-')) {
+				queriedRoom = roomidParam;
+			} else {
+				// if room is listed, check if it's full
+				const room = rooms.find((room) => room.room_id === roomidParam) || null;
+				queriedRoom = room && room.users_count < MAX_CAPACITY ? room.room_id : null;
 			}
+		} else {
+			// if roomid is not set via param, select the first empty room
+			queriedRoom = emptyRoom ? emptyRoom.room_id : null;
 		}
-		if (emptyRoom && !roomAvailable) {
-			selectedRoomID.set(emptyRoom.room_id);
-			const state = { roomid: emptyRoom.room_id };
+		// if seleceted room is full, select the first empty room
+		if (queriedRoom) {
+			$selectedRoomID = queriedRoom;
+			const state = { roomid: queriedRoom };
 			const queryString = '?' + new URLSearchParams(state).toString();
 			window.history.replaceState(null, '', queryString);
 			window.parent.postMessage({ queryString: queryString }, '*');

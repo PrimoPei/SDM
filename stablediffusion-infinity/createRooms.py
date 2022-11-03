@@ -53,6 +53,16 @@ async def create_room(db: sqlite3.Connection = Depends(get_db)):
     return all
 
 
+@app.get("/create-one-room/{room_id}")
+async def create_one_room(room_id: str):
+    payload = {"id": room_id, "defaultAccesses": ["room:write"]}
+
+    response = requests.post(f"https://api.liveblocks.io/v2/rooms",
+                             headers={"Authorization": f"Bearer {LIVEBLOCKS_SECRET}"}, json=payload)
+    data = response.json()
+    return data
+
+
 def createRoom(room_id, db):
     payload = {"id": room_id, "defaultAccesses": ["room:write"]}
 
@@ -117,4 +127,5 @@ async def sync_rooms(db: sqlite3.Connection = Depends(get_db)):
 
 
 if __name__ == "__main__":
-    uvicorn.run("createRooms:app", host="0.0.0.0", log_level="debug", reload=True)
+    uvicorn.run("createRooms:app", host="0.0.0.0",
+                log_level="debug", reload=True)
