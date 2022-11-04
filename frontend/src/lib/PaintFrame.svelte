@@ -14,7 +14,7 @@
 	import { createEventDispatcher } from 'svelte';
 
 	import { Status } from './types';
-	const myPresence = useMyPresence({ addToHistory: true });
+	const myPresence = useMyPresence();
 
 	const dispatch = createEventDispatcher();
 

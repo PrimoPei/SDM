@@ -15,6 +15,6 @@ import { useMyPresence } from "./useMyPresence";
  */
 
 export function useUpdateMyPresence(): (val: any) => void {
-  const presence = useMyPresence({ addToHistory: true });
+  const presence = useMyPresence();
   return (updatedPresence) => presence.update(updatedPresence);
 }

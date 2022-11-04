@@ -12,7 +12,7 @@
 	import type { PromptImgObject } from '$lib/types';
 	import { FRAME_SIZE, GRID_SIZE } from '$lib/constants';
 
-	const myPresence = useMyPresence({ addToHistory: true });
+	const myPresence = useMyPresence();
 	const promptImgStorage = useObject('promptImgStorage');
 
 	const height = $canvasSize.height;

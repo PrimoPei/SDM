@@ -21,7 +21,7 @@
 	import { useMyPresence, useObject, useOthers } from '$lib/liveblocks';
 	import { nanoid } from 'nanoid';
 
-	const myPresence = useMyPresence({ addToHistory: true });
+	const myPresence = useMyPresence();
 	const others = useOthers();
 	let showModal = false;
 	function getKey(position: { x: number; y: number }): PromptImgKey {
