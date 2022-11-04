@@ -3,7 +3,7 @@ import os
 
 from pathlib import Path
 import uvicorn
-from fastapi import FastAPI, BackgroundTasks, HTTPException, UploadFile, Form, Depends, status, Request
+from fastapi import FastAPI, HTTPException, UploadFile, Depends, status, Request
 from fastapi.staticfiles import StaticFiles
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi_utils.tasks import repeat_every
@@ -11,7 +11,7 @@ from fastapi_utils.tasks import repeat_every
 import numpy as np
 import torch
 from torch import autocast
-from diffusers import StableDiffusionPipeline, StableDiffusionInpaintPipeline
+from diffusers import StableDiffusionInpaintPipeline
 from diffusers.models import AutoencoderKL
 
 from PIL import Image
@@ -79,7 +79,6 @@ STATIC_MASK = Image.open("mask.png")
 
 def get_model():
     if "inpaint" not in model:
-
         vae = AutoencoderKL.from_pretrained(f"stabilityai/sd-vae-ft-ema")
         inpaint = StableDiffusionInpaintPipeline.from_pretrained(
             "runwayml/stable-diffusion-inpainting",
@@ -87,7 +86,6 @@ def get_model():
             torch_dtype=torch.float16,
             vae=vae,
         ).to("cuda")
-
         # lms = LMSDiscreteScheduler(
         #     beta_start=0.00085, beta_end=0.012, beta_schedule="scaled_linear")
 
