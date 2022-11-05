@@ -297,7 +297,7 @@ def sync_room_datq():
 
 
 @ app.get('/api/room_data/{room_id}')
-async def get_rooms(room_id: str, start: str = None, end: str = None, db: sqlite3.Connection = Depends(get_room_data_db)):
+async def get_rooms_data(room_id: str, start: str = None, end: str = None, db: sqlite3.Connection = Depends(get_room_data_db)):
     print("Getting rooms data", room_id, start, end)
 
     if start is None and end is None:
