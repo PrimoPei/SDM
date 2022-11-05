@@ -19,7 +19,6 @@
 		isRenderingCanvas
 	} from '$lib/store';
 	import { useMyPresence, useObject, useOthers } from '$lib/liveblocks';
-	import { nanoid } from 'nanoid';
 
 	const myPresence = useMyPresence();
 	const others = useOthers();
@@ -160,15 +159,9 @@
 							}
 							// const imgBlob = await base64ToBlob(imgBase64);
 							const promptImgParams = {
-								prompt,
-								imgURL: params.image.filename,
-								position,
-								date: new Date().getTime(),
-								id: nanoid(),
-								room: room
+								imgURL: params.image.filename
 							};
 							// const imgURL = await uploadImage(imgBlob, promptImgParams);
-
 							$promptImgStorage.set(imageKey, new LiveObject(promptImgParams));
 							// $promptImgStorage.set(imageKey, promptImgParams);
 

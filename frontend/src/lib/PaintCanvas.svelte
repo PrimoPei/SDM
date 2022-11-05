@@ -4,7 +4,13 @@
 	import { select } from 'd3-selection';
 	import { onMount } from 'svelte';
 	import { PUBLIC_UPLOADS } from '$env/static/public';
-	import { currZoomTransform, canvasEl, isRenderingCanvas, canvasSize } from '$lib/store';
+	import {
+		currZoomTransform,
+		canvasEl,
+		isRenderingCanvas,
+		canvasSize,
+		selectedRoomID
+	} from '$lib/store';
 
 	import { useMyPresence, useObject } from '$lib/liveblocks';
 	import { LiveObject } from '@liveblocks/client';
@@ -28,6 +34,7 @@
 	): PromptImgObject[] {
 		if (promptImgList) {
 			//sorted by last updated
+			const roomid = $selectedRoomID || ''
 			const canvasPixels = new Map();
 			for (const x of Array.from(Array(width / GRID_SIZE).keys())) {
 				for (const y of Array.from(Array(height / GRID_SIZE).keys())) {
@@ -41,6 +48,24 @@
 					} else {
 						return e;
 					}
+				})
+				.map((e) => {
+					const split_str = e.imgURL.split(/-|.jpg/);
+					const date = parseInt(split_str[0]);
+					const id = split_str[1];
+					const [x, y] = split_str[2].split('_');
+					const prompt = split_str.slice(3).join(' ');
+					return {
+						id,
+						date,
+						position: {
+							x: parseInt(x),
+							y: parseInt(y)
+						},
+						imgURL: e.imgURL,
+						prompt,
+						room: roomid
+					};
 				})
 				.sort((a, b) => b.date - a.date);
 			// init
