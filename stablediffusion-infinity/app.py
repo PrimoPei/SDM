@@ -1,6 +1,7 @@
 import io
 import os
-from typing import Union
+
+from huggingface_hub import Repository
 
 from pathlib import Path
 import uvicorn
@@ -44,6 +45,13 @@ ROOMS_DATA_DB = S3_DATA_FOLDER / "rooms_data.db"
 ROOM_DB = Path("rooms.db")
 
 app = FastAPI()
+
+repo = Repository(
+    local_dir=S3_DATA_FOLDER,
+    repo_type="dataset",
+    clone_from="huggingface-projects/sd-multiplayer-data",
+    use_auth_token=True,
+)
 
 if not ROOM_DB.exists():
     print("Creating database")
