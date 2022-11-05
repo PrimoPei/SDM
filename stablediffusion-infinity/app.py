@@ -1,5 +1,6 @@
 import io
 import os
+from typing import Union
 
 from pathlib import Path
 import uvicorn
@@ -26,6 +27,7 @@ import requests
 import shortuuid
 import re
 import time
+import subprocess
 
 AWS_ACCESS_KEY_ID = os.getenv('AWS_ACCESS_KEY_ID')
 AWS_SECRET_KEY = os.getenv('AWS_SECRET_KEY')
@@ -37,22 +39,35 @@ FILE_TYPES = {
     'image/png': 'png',
     'image/jpeg': 'jpg',
 }
-DB_PATH = Path("rooms.db")
+S3_DATA_FOLDER = Path("sd-multiplayer-data")
+ROOMS_DATA_DB = S3_DATA_FOLDER / "rooms_data.db"
+ROOM_DB = Path("rooms.db")
 
 app = FastAPI()
 
-if not DB_PATH.exists():
+if not ROOM_DB.exists():
     print("Creating database")
-    print("DB_PATH", DB_PATH)
-    db = sqlite3.connect(DB_PATH)
+    print("ROOM_DB", ROOM_DB)
+    db = sqlite3.connect(ROOM_DB)
     with open(Path("schema.sql"), "r") as f:
         db.executescript(f.read())
     db.commit()
     db.close()
 
 
-def get_db():
-    db = sqlite3.connect(DB_PATH, check_same_thread=False)
+def get_room_db():
+    db = sqlite3.connect(ROOM_DB, check_same_thread=False)
+    db.row_factory = sqlite3.Row
+    try:
+        yield db
+    except Exception:
+        db.rollback()
+    finally:
+        db.close()
+
+
+def get_room_data_db():
+    db = sqlite3.connect(ROOMS_DATA_DB, check_same_thread=False)
     db.row_factory = sqlite3.Row
     try:
         yield db
@@ -77,6 +92,11 @@ model = {}
 STATIC_MASK = Image.open("mask.png")
 
 
+def sync_rooms_data_repo():
+    subprocess.Popen("git fetch && git reset --hard origin/main",
+                     cwd=S3_DATA_FOLDER, shell=True)
+
+
 def get_model():
     if "inpaint" not in model:
         vae = AutoencoderKL.from_pretrained(f"stabilityai/sd-vae-ft-ema")
@@ -86,31 +106,9 @@ def get_model():
             torch_dtype=torch.float16,
             vae=vae,
         ).to("cuda")
-        # lms = LMSDiscreteScheduler(
-        #     beta_start=0.00085, beta_end=0.012, beta_schedule="scaled_linear")
-
-        # img2img = StableDiffusionImg2ImgPipeline(
-        #     vae=text2img.vae,
-        #     text_encoder=text2img.text_encoder,
-        #     tokenizer=text2img.tokenizer,
-        #     unet=text2img.unet,
-        #     scheduler=lms,
-        #     safety_checker=text2img.safety_checker,
-        #     feature_extractor=text2img.feature_extractor,
-        # ).to("cuda")
-        # try:
-        #     total_memory = torch.cuda.get_device_properties(0).total_memory // (
-        #         1024 ** 3
-        #     )
-        #     if total_memory <= 5:
-        #         inpaint.enable_attention_slicing()
-        # except:
-        #     pass
         model["inpaint"] = inpaint
-        # model["img2img"] = img2img
 
     return model["inpaint"]
-    # model["img2img"]
 
 
 # init model on startup
@@ -274,10 +272,10 @@ def get_room_count(room_id: str):
 
 @ app.on_event("startup")
 @ repeat_every(seconds=100)
-async def sync_rooms():
+def sync_rooms():
+    print("Syncing rooms active users")
     try:
-        jwtToken = generateAuthToken()
-        for db in get_db():
+        for db in get_room_db():
             rooms = db.execute("SELECT * FROM rooms").fetchall()
             for row in rooms:
                 room_id = row["room_id"]
@@ -291,14 +289,41 @@ async def sync_rooms():
         print("Rooms update failed")
 
 
+@ app.on_event("startup")
+@ repeat_every(seconds=300)
+def sync_room_datq():
+    print("Sync rooms data")
+    sync_rooms_data_repo()
+
+
+@ app.get('/api/room_data/{room_id}')
+async def get_rooms(room_id: str, start: str = None, end: str = None, db: sqlite3.Connection = Depends(get_room_data_db)):
+    print("Getting rooms data", room_id, start, end)
+
+    if start is None and end is None:
+        rooms_rows = db.execute(
+            "SELECT key, prompt, time, x, y FROM rooms_data WHERE room_id = ? ORDER BY time", (room_id,)).fetchall()
+    elif end is None:
+        rooms_rows = db.execute("SELECT key, prompt, time, x, y FROM rooms_data WHERE room_id = ? AND time >= ? ORDER BY time",
+                                (room_id, start)).fetchall()
+    elif start is None:
+        rooms_rows = db.execute("SELECT key, prompt, time, x, y FROM rooms_data WHERE room_id = ? AND time <= ? ORDER BY time",
+                                (room_id, end)).fetchall()
+    else:
+        rooms_rows = db.execute("SELECT key, prompt, time, x, y FROM rooms_data WHERE room_id = ? AND time >= ? AND time <= ? ORDER BY time",
+                                (room_id, start, end)).fetchall()
+    return rooms_rows
+
+
 @ app.get('/api/rooms')
-async def get_rooms(db: sqlite3.Connection = Depends(get_db)):
+async def get_rooms(db: sqlite3.Connection = Depends(get_room_db)):
+    print("Getting rooms")
     rooms = db.execute("SELECT * FROM rooms").fetchall()
     return rooms
 
 
 @ app.post('/api/auth')
-async def autorize(request: Request, db: sqlite3.Connection = Depends(get_db)):
+async def autorize(request: Request):
     data = await request.json()
     room = data["room"]
     payload = {
