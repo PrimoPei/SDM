@@ -34,13 +34,32 @@
 	): PromptImgObject[] {
 		if (promptImgList) {
 			//sorted by last updated
-			const roomid = $selectedRoomID || ''
+			const roomid = $selectedRoomID || '';
 			const canvasPixels = new Map();
 			for (const x of Array.from(Array(width / GRID_SIZE).keys())) {
 				for (const y of Array.from(Array(height / GRID_SIZE).keys())) {
 					canvasPixels.set(`${x * GRID_SIZE}_${y * GRID_SIZE}`, null);
 				}
 			}
+
+			// Object.values(promptImgList).map((e) => {
+			// 	let obj;
+			// 	if (e instanceof LiveObject) {
+			// 		obj = e.toObject();
+			// 	} else {
+			// 		obj = e;
+			// 	}
+			// 	// const obj = promptImg.toObject();
+			// 	if (obj.position) {
+			// 		const key = `${obj.position.x}_${obj.position.y}`;
+			// 		console.log('key', key);
+			// 		const promptImgParams = {
+			// 			imgURL: obj.imgURL
+			// 		};
+			// 		$promptImgStorage.set(key, promptImgParams);
+			// 	}
+			// });
+
 			const list: PromptImgObject[] = Object.values(promptImgList)
 				.map((e) => {
 					if (e instanceof LiveObject) {
@@ -68,6 +87,7 @@
 					};
 				})
 				.sort((a, b) => b.date - a.date);
+
 			// init
 			for (const promptImg of list) {
 				const x = promptImg.position.x;
@@ -83,6 +103,14 @@
 			}
 			const ids = new Set([...canvasPixels.values()]);
 			const filteredImages = list.filter((promptImg) => ids.has(promptImg.id));
+
+			// remove images that are under other images
+			list
+				.filter((promptImg) => !ids.has(promptImg.id))
+				.map((promptImg) => {
+					const key = `${promptImg.position.x}_${promptImg.position.y}`;
+					$promptImgStorage.delete(key);
+				});
 			return filteredImages.reverse().filter((promptImg) => !imagesOnCanvas.has(promptImg.id));
 		}
 		return [];
