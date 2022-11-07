@@ -110,6 +110,7 @@
 				.map((promptImg) => {
 					const key = `${promptImg.position.x}_${promptImg.position.y}`;
 					$promptImgStorage.delete(key);
+					console.log('deleted', key)
 				});
 			return filteredImages.reverse().filter((promptImg) => !imagesOnCanvas.has(promptImg.id));
 		}
