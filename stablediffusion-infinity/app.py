@@ -39,6 +39,7 @@ HF_TOKEN = os.environ.get("API_TOKEN") or True
 FILE_TYPES = {
     'image/png': 'png',
     'image/jpeg': 'jpg',
+    'imager/webp': 'webp',
 }
 S3_DATA_FOLDER = Path("sd-multiplayer-data")
 ROOMS_DATA_DB = S3_DATA_FOLDER / "rooms_data.db"
@@ -366,14 +367,14 @@ async def upload_file(image: Image.Image, prompt: str, room_id: str, image_key: 
     image = image.convert('RGB')
     # print("Uploading file from predict")
     temp_file = io.BytesIO()
-    image.save(temp_file, format="JPEG")
+    image.save(temp_file, format="WEBP")
     temp_file.seek(0)
     id = shortuuid.uuid()
     date = int(time.time())
     prompt_slug = slugify(prompt)
-    filename = f"{date}-{id}-{image_key}-{prompt_slug}.jpg"
+    filename = f"{date}-{id}-{image_key}-{prompt_slug}.webp"
     s3.upload_fileobj(Fileobj=temp_file, Bucket=AWS_S3_BUCKET_NAME, Key=f"{room_id}/" +
-                      filename, ExtraArgs={"ContentType": "image/jpeg", "CacheControl": "max-age=31536000"})
+                      filename, ExtraArgs={"ContentType": "image/webp", "CacheControl": "max-age=31536000"})
     temp_file.close()
 
     out = {"url": f'https://d26smi9133w0oo.cloudfront.net/{room_id}/{filename}',

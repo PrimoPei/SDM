@@ -69,7 +69,7 @@
 					}
 				})
 				.map((e) => {
-					const split_str = e.imgURL.split(/-|.jpg/);
+					const split_str = e.imgURL.split(/-|.jpg|.webp/);
 					const date = parseInt(split_str[0]);
 					const id = split_str[1];
 					const [x, y] = split_str[2].split('_');

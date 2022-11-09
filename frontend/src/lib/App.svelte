@@ -95,7 +95,7 @@
 			status: Status.loading
 		});
 		const sessionHash = crypto.randomUUID();
-		const base64Crop = $maskEl.toDataURL('image/png');
+		const base64Crop = $maskEl.toDataURL('image/webp');
 
 		const hashpayload = {
 			fn_index: 0,
