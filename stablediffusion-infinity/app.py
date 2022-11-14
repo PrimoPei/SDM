@@ -373,8 +373,11 @@ async def upload_file(image: Image.Image, prompt: str, room_id: str, image_key: 
     date = int(time.time())
     prompt_slug = slugify(prompt)
     filename = f"{date}-{id}-{image_key}-{prompt_slug}.webp"
-    s3.upload_fileobj(Fileobj=temp_file, Bucket=AWS_S3_BUCKET_NAME, Key=f"{room_id}/" +
-                      filename, ExtraArgs={"ContentType": "image/webp", "CacheControl": "max-age=31536000"})
+    timelapse_name = f"{id}.webp"
+    key_name = f"{room_id}/{filename}"
+    s3.upload_fileobj(Fileobj=temp_file, Bucket=AWS_S3_BUCKET_NAME, Key=key_name, ExtraArgs={"ContentType": "image/webp", "CacheControl": "max-age=31536000"})
+    s3.copy_object(Bucket=AWS_S3_BUCKET_NAME, CopySource=f"{AWS_S3_BUCKET_NAME}/{key_name}", Key=f"timelapse/{room_id}/{timelapse_name}")
+
     temp_file.close()
 
     out = {"url": f'https://d26smi9133w0oo.cloudfront.net/{room_id}/{filename}',
