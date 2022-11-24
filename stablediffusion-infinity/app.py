@@ -110,8 +110,7 @@ def get_model():
     if "inpaint" not in model:
         vae = AutoencoderKL.from_pretrained(f"stabilityai/sd-vae-ft-ema")
         inpaint = StableDiffusionInpaintPipeline.from_pretrained(
-            "runwayml/stable-diffusion-inpainting",
-            revision="fp16",
+            "radames/stable-diffusion-v2-inpainting",
             torch_dtype=torch.float16,
             vae=vae,
         ).to("cuda")
