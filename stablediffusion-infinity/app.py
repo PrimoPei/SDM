@@ -13,7 +13,7 @@ from fastapi_utils.tasks import repeat_every
 import numpy as np
 import torch
 from torch import autocast
-from diffusers import StableDiffusionInpaintPipeline
+from diffusers import DiffusionPipeline, DPMSolverMultistepScheduler
 from diffusers.models import AutoencoderKL
 
 from PIL import Image
@@ -108,12 +108,11 @@ def sync_rooms_data_repo():
 
 def get_model():
     if "inpaint" not in model:
-        vae = AutoencoderKL.from_pretrained(f"stabilityai/sd-vae-ft-ema")
-        inpaint = StableDiffusionInpaintPipeline.from_pretrained(
-            "radames/stable-diffusion-v2-inpainting",
-            torch_dtype=torch.float16,
-            vae=vae,
-        ).to("cuda")
+        inpaint = DiffusionPipeline.from_pretrained(
+            "stabilityai/stable-diffusion-2-inpainting", torch_dtype=torch.float16, revision="fp16")
+        inpaint.scheduler = DPMSolverMultistepScheduler.from_config(
+            inpaint.scheduler.config)
+        inpaint = inpaint.to("cuda")
         model["inpaint"] = inpaint
 
     return model["inpaint"]
@@ -182,7 +181,9 @@ async def run_outpaint(
             guidance_scale=guidance,
         )
     image = output["images"][0]
-    is_nsfw = output["nsfw_content_detected"][0]
+    is_nsfw = False
+    if "nsfw_content_detected" in output:
+        is_nsfw = output["nsfw_content_detected"][0]
     image_url = {}
 
     if not is_nsfw:
@@ -374,8 +375,10 @@ async def upload_file(image: Image.Image, prompt: str, room_id: str, image_key: 
     filename = f"{date}-{id}-{image_key}-{prompt_slug}.webp"
     timelapse_name = f"{id}.webp"
     key_name = f"{room_id}/{filename}"
-    s3.upload_fileobj(Fileobj=temp_file, Bucket=AWS_S3_BUCKET_NAME, Key=key_name, ExtraArgs={"ContentType": "image/webp", "CacheControl": "max-age=31536000"})
-    s3.copy_object(Bucket=AWS_S3_BUCKET_NAME, CopySource=f"{AWS_S3_BUCKET_NAME}/{key_name}", Key=f"timelapse/{room_id}/{timelapse_name}")
+    s3.upload_fileobj(Fileobj=temp_file, Bucket=AWS_S3_BUCKET_NAME, Key=key_name, ExtraArgs={
+                      "ContentType": "image/webp", "CacheControl": "max-age=31536000"})
+    s3.copy_object(Bucket=AWS_S3_BUCKET_NAME,
+                   CopySource=f"{AWS_S3_BUCKET_NAME}/{key_name}", Key=f"timelapse/{room_id}/{timelapse_name}")
 
     temp_file.close()
 
