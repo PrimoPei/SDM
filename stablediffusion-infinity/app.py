@@ -13,7 +13,7 @@ from fastapi_utils.tasks import repeat_every
 import numpy as np
 import torch
 from torch import autocast
-from diffusers import DiffusionPipeline, DPMSolverMultistepScheduler
+from diffusers import DiffusionPipeline, EulerAncestralDiscreteScheduler
 from diffusers.models import AutoencoderKL
 
 from PIL import Image
@@ -108,10 +108,10 @@ def sync_rooms_data_repo():
 
 def get_model():
     if "inpaint" not in model:
+        scheduler = EulerAncestralDiscreteScheduler.from_pretrained("stabilityai/stable-diffusion-2-base", subfolder="scheduler")
         inpaint = DiffusionPipeline.from_pretrained(
             "stabilityai/stable-diffusion-2-inpainting", torch_dtype=torch.float16, revision="fp16")
-        inpaint.scheduler = DPMSolverMultistepScheduler.from_config(
-            inpaint.scheduler.config)
+        inpaint.scheduler = scheduler
         inpaint = inpaint.to("cuda")
         model["inpaint"] = inpaint
 
