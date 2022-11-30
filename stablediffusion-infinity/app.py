@@ -138,7 +138,11 @@ async def run_outpaint(
     mask = sel_buffer[:, :, -1]
     nmask = 255 - mask
     process_size = 512
-
+    negative_syntax = r'\<(.*?)\>'
+    prompt = re.sub(negative_syntax, ' ', prompt_text)
+    negative_prompt = ' '.join(re.findall(negative_syntax, prompt_text))
+    print("prompt", prompt)
+    print("negative_prompt", negative_prompt)
     if nmask.sum() < 1:
         print("inpaiting with fixed Mask")
         mask = np.array(STATIC_MASK)[:, :, 0]
@@ -171,7 +175,8 @@ async def run_outpaint(
         # mask_image=mask_image.filter(ImageFilter.GaussianBlur(radius = 8))
     with autocast("cuda"):
         output = inpaint(
-            prompt=prompt_text,
+            prompt=prompt,
+            negative_prompt=negative_prompt,
             image=init_image.resize(
                 (process_size, process_size), resample=SAMPLING_MODE
             ),
@@ -188,7 +193,7 @@ async def run_outpaint(
 
     if not is_nsfw:
         # print("not nsfw, uploading")
-        image_url = await upload_file(image, prompt_text, room_id, image_key)
+        image_url = await upload_file(image, prompt + "NNOTN" + negative_prompt, room_id, image_key)
 
     params = {
         "is_nsfw": is_nsfw,
