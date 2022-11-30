@@ -78,14 +78,15 @@
 			on:click|stopPropagation
 			on:input={onInput}
 			class="flex-1 outline-none ring-0 border-none text-xl 2xl:text-2xl py-3 px-3"
-			placeholder="Describe your prompt"
-			title="Input prompt to generate image and obtain palette"
+			placeholder="Prompt and <Negative Prompt> between < >"
+			title="Input prompt to generate image and  negative prompt inside brackets <NEGATIVE PROMPT>"
 			type="text"
 			name="prompt"
 		/>
 		<button
 			class="font-semibold bg-blue-700 text-white border-l-2 px-5 text-xl 2xl:text-2xl spacing tracking-wide hover:saturate-150"
 			type="submit"
+			title="Input prompt to generate image and  negative prompt inside brackets <NEGATIVE PROMPT>"
 			><span class="mr-2">🖍</span> Paint
 		</button>
 	</div>
