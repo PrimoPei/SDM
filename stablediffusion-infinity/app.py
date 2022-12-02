@@ -108,9 +108,10 @@ def sync_rooms_data_repo():
 
 def get_model():
     if "inpaint" not in model:
-        scheduler = EulerAncestralDiscreteScheduler.from_pretrained("stabilityai/stable-diffusion-2-base", subfolder="scheduler")
+        scheduler = EulerAncestralDiscreteScheduler.from_pretrained(
+            "stabilityai/stable-diffusion-2-base", subfolder="scheduler")
         inpaint = DiffusionPipeline.from_pretrained(
-            "stabilityai/stable-diffusion-2-inpainting", torch_dtype=torch.float16, revision="fp16")
+            "radames/stable-diffusion-v2-inpainting", torch_dtype=torch.float16)
         inpaint.scheduler = scheduler
         inpaint = inpaint.to("cuda")
         model["inpaint"] = inpaint
@@ -185,6 +186,7 @@ async def run_outpaint(
             num_inference_steps=step,
             guidance_scale=guidance,
         )
+    print(output)
     image = output["images"][0]
     is_nsfw = False
     if "nsfw_content_detected" in output:
