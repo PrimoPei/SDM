@@ -35,8 +35,8 @@
 		$selectedRoomID = room.room_id;
 		collapsed = true;
 		$page.url.searchParams.set('roomid', room.room_id);
-		window.location.search = `?${$page.url.searchParams.toString()}`;
-		window.parent.postMessage({ queryString: `?${$page.url.searchParams.toString()}` }, '*');
+		window.location.search = $page.url.searchParams.toString()
+		window.parent.postMessage({ queryString: $page.url.searchParams.toString() }, '*');
 	}
 </script>
 

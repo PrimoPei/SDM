@@ -25,7 +25,10 @@
 
 		<button
 			bind:this={okButton}
-			on:click={() => dispatch('contentModal')}
+			on:click={() => {
+				//set acceptedContentWarning cookie
+				dispatch('contentModal');
+			}}
 			class="font-semibold bg-blue-700 text-white rounded-lg px-5 text-xl 2xl:text-2xl spacing tracking-wide hover:saturate-150"
 			title="Input prompt to generate image and  negative prompt inside brackets <NEGATIVE PROMPT>"
 			>OK

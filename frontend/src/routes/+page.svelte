@@ -36,10 +36,11 @@
 		});
 
 		updateRooms();
-
+		const acceptedParam = new URLSearchParams(window.location.search).get('acceptedContentWarning') 
+		console.log(acceptedParam);
 		const accepted = Cookies.get('acceptedContentWarning');
 		hideContentModal = false;
-		if (accepted) {
+		if (accepted || acceptedParam === 'true') {
 			hideContentModal = true;
 		}
 	});
@@ -47,6 +48,10 @@
 	function contentModal() {
 		hideContentModal = true;
 		Cookies.set('acceptedContentWarning', 'true', { expires: 10 });
+		const params = new URLSearchParams(window.location.search);
+		params.set('acceptedContentWarning', 'true');
+		window.parent.postMessage({ queryString: params.toString() }, '*');
+		window.location.search = params.toString();
 	}
 
 	async function updateRooms() {
@@ -74,10 +79,11 @@
 		// if seleceted room is full, select the first empty room
 		if (queriedRoom) {
 			$selectedRoomID = queriedRoom;
-			const state = { roomid: queriedRoom };
-			const queryString = '?' + new URLSearchParams(state).toString();
-			window.history.replaceState(null, '', queryString);
-			window.parent.postMessage({ queryString: queryString }, '*');
+			const params = new URLSearchParams(window.location.search);
+			params.set('roomid', queriedRoom);
+
+			window.history.replaceState(null, '', `?${params.toString()}`);
+			window.parent.postMessage({ queryString: params.toString() }, '*');
 		}
 		loading = false;
 		return { rooms };
