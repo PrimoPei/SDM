@@ -4,6 +4,7 @@
 	import type { Client } from '@liveblocks/client';
 	import LiveblocksProvider from '$lib/liveblocks/LiveblocksProvider.svelte';
 	import RoomProvider from '$lib/liveblocks/RoomProvider.svelte';
+	import ContentWarningModal from '$lib/ContentWarningModal.svelte';
 	import App from '$lib/App.svelte';
 	import About from '$lib/About.svelte';
 	import { PUBLIC_API_BASE } from '$env/static/public';
@@ -11,9 +12,11 @@
 	import type { RoomResponse } from '$lib/types';
 	import { MAX_CAPACITY, FRAME_SIZE } from '$lib/constants';
 	import { Status } from '$lib/types';
+	import Cookies from 'js-cookie';
 
 	let loading = true;
 	let client: Client;
+	let hideContentModal = true;
 
 	$: roomId = $selectedRoomID;
 
@@ -33,7 +36,18 @@
 		});
 
 		updateRooms();
+
+		const accepted = Cookies.get('acceptedContentWarning');
+		hideContentModal = false;
+		if (accepted) {
+			hideContentModal = true;
+		}
 	});
+
+	function contentModal() {
+		hideContentModal = true;
+		Cookies.set('acceptedContentWarning', 'true', { expires: 10 });
+	}
 
 	async function updateRooms() {
 		loading = true;
@@ -79,6 +93,9 @@
 	};
 </script>
 
+{#if !hideContentModal}
+	<ContentWarningModal on:contentModal={() => contentModal()} />
+{/if}
 <About classList={$toggleAbout ? 'flex' : 'hidden'} on:click={() => ($toggleAbout = false)} />
 
 {#if loading}
