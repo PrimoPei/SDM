@@ -50,8 +50,8 @@
 		Cookies.set('acceptedContentWarning', 'true', { expires: 10 });
 		const params = new URLSearchParams(window.location.search);
 		params.set('acceptedContentWarning', 'true');
+		window.history.replaceState(null, '', `?${params.toString()}`);
 		window.parent.postMessage({ queryString: params.toString() }, '*');
-		window.location.search = params.toString();
 	}
 
 	async function updateRooms() {
