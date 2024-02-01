@@ -30,3 +30,5 @@ libdc1394-dev
 libopenexr-dev
 libgstreamer-plugins-base1.0-dev
 libgstreamer1.0-dev
+libmagic1
+libmagic-dev
