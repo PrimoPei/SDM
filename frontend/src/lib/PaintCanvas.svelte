@@ -17,6 +17,10 @@
 
 	import type { PromptImgObject } from '$lib/types';
 	import { FRAME_SIZE, GRID_SIZE } from '$lib/constants';
+	import { PUBLIC_WS_INPAINTING } from '$env/static/public';
+
+// --- 在这里加入下面这行用于调试 ---
+console.log("【前端调试】正在尝试连接的 WebSocket URL 是:", PUBLIC_WS_INPAINTING);
 
 	const myPresence = useMyPresence();
 	const promptImgStorage = useObject('promptImgStorage');
@@ -221,7 +225,7 @@
 						img.onerror = (err) => {
 							reject(err);
 						};
-						img.src = `${PUBLIC_UPLOADS}/${room}/${imgURL}`;
+						img.src = `${PUBLIC_UPLOADS}/storage/${room}/${imgURL}`;
 					})
 			)
 		).then((values) => {

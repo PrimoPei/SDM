@@ -1,4 +1,19 @@
 <script lang="ts">
+	import { PUBLIC_WS_INPAINTING } from '$env/static/public';
+    // --- 这是第一条测试日志 ---
+    // 如果能看到这条，说明 <script> 块本身被执行了。
+    console.log("【SVELTE 脚本已执行】");
+
+    // --- 这是第二条测试日志 ---
+    // 它会告诉我们环境变量的实际值。
+    console.log("【前端调试】正在尝试连接的 WebSocket URL 是:", PUBLIC_WS_INPAINTING);
+
+    // --- 这是第三条测试日志 ---
+    // onMount 是 Svelte 的一个生命周期函数，当组件成功挂载到页面上时执行。
+    onMount(() => {
+        console.log("【SVELTE 组件已挂载】");
+    });
+
 	import LoadingIcon from '$lib/Icons/LoadingIcon.svelte';
 	import { FRAME_SIZE, GRID_SIZE } from '$lib/constants';
 
