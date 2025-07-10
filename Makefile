@@ -8,5 +8,5 @@ build-dev:
 run-front-dev:
 	cd frontend && npm install && npm run dev
 run-prod:
-	python app.py
+	python3 stablediffusion-infinity/app.py
 build-all: run-prod

@@ -4,15 +4,17 @@ import type { UserConfig } from 'vite';
 const config: UserConfig = {
 	plugins: [sveltekit()],
 	server: {
-		host: "0.0.0.0",
+		host: "localhost",
 		proxy: {
-			'/server': {
-				target: 'http://0.0.0.0:7860',
-				changeOrigin: true,
-				cookieDomainRewrite: 'localhost',
-				rewrite: (path) => path.replace(/^\/server/, '')
-			}
-		}
+    '/gradio': {
+        target: 'http://localhost:7860',
+        ws: true
+    },
+    '/server': {
+        target: 'http://localhost:7860',
+        changeOrigin: true
+    }
+}
 	}
 };
 export default config;
