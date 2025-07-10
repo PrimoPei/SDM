@@ -144,7 +144,7 @@ def get_model():
                 torch_dtype=torch.float32,
             )
             inpaint.scheduler = scheduler
-            inpaint = inpaint.to("cuda")
+            # inpaint = inpaint.to("cuda")
             model["inpaint"] = inpaint
             duration = time.time() - start_time
             logger.info(f"模型加载成功！耗时: {duration:.2f} 秒。")
@@ -566,7 +566,7 @@ async def create_upload_file(file: UploadFile):
     # --- MONITORING END ---
 
 app.mount("/storage", StaticFiles(directory=LOCAL_STORAGE_PATH), name="storage")
-app.mount("/", StaticFiles(directory="../static", html=True), name="static")
+app.mount("/", StaticFiles(directory="../frontend/build", html=True), name="static")
 
 
 origins = ["*"]
