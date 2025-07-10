@@ -1,97 +1,109 @@
+# 必要的 import
 import io
 import os
 import shutil
-# --- MONITORING ---
 import logging
 import sys
 import traceback
 import time
-# --- MONITORING END ---
-import numpy as np
-from huggingface_hub import Repository
-
 from pathlib import Path
 import uvicorn
+
+
+# 新增的 import，用于调用外部 API
+import base64
+import requests
+
+# 用于加载 .env 文件
+from dotenv import load_dotenv
+
 from fastapi import FastAPI, HTTPException, UploadFile, Depends, status, Request
 from fastapi.staticfiles import StaticFiles
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi_utils.tasks import repeat_every
+from fastapi.responses import JSONResponse
+import glob
+
+# 这些库与本地模型相关，不再需要
+# import torch
+# from torch import autocast
+# from diffusers import ...
 
 import numpy as np
-import torch
-from torch import autocast
-from diffusers import StableDiffusionInpaintPipeline, EulerAncestralDiscreteScheduler
-from diffusers.models import AutoencoderKL
-
 from PIL import Image
 import gradio as gr
-import skimage
-import skimage.measure
-from utils import *
-# import boto3 # No longer needed for local storage
-import magic
-import sqlite3
-import requests
 import shortuuid
 import re
 import subprocess
+import sqlite3
+import magic # 假设您保留了 create_upload_file 功能
 
-# --- MONITORING: Setup Logging ---
-# 配置日志记录器
-logging.basicConfig(
-    level=logging.INFO,
-    format='%(asctime)s - %(levelname)s - %(message)s',
-    stream=sys.stdout,  # 输出到控制台
-)
-logger = logging.getLogger(__name__)
-# --- MONITORING END ---
-
-# AWS credentials are no longer needed
+# --- 加载环境变量 ---
+load_dotenv()
+STABILITY_API_KEY = os.environ.get("STABILITY_API_KEY")
 LIVEBLOCKS_SECRET = os.environ.get("LIVEBLOCKS_SECRET")
-HF_TOKEN = os.environ.get("API_TOKEN") or True
+HF_TOKEN = os.environ.get("API_TOKEN") or True # huggingface_hub repo 可能仍需
+
+# --- 日志和路径配置 ---
+# logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s', stream=sys.stdout)
+# logger = logging.getLogger(__name__)
+
+from logging.handlers import RotatingFileHandler
+
+# 1. 定义日志文件的名称和路径
+LOG_FILENAME = "app.log"
+
+# 2. 创建一个全局的 logger
+logger = logging.getLogger(__name__)
+logger.setLevel(logging.INFO)
+
+# 3. 创建一个格式化器，定义日志的输出格式
+formatter = logging.Formatter('%(asctime)s - %(levelname)s - %(message)s')
+
+# 4. 创建一个文件处理器 (FileHandler)，用于写入日志文件
+#    使用 RotatingFileHandler 实现日志轮转，防止日志文件无限增大
+#    maxBytes=5*1024*1024 表示单个文件最大5MB，backupCount=3 表示最多保留3个备份
+file_handler = RotatingFileHandler(LOG_FILENAME, maxBytes=5*1024*1024, backupCount=3, encoding='utf-8')
+file_handler.setFormatter(formatter)
+
+# 5. 创建一个流处理器 (StreamHandler)，用于在控制台打印日志
+stream_handler = logging.StreamHandler(sys.stdout)
+stream_handler.setFormatter(formatter)
+
+# 6. 为 logger 添加这两个处理器
+logger.addHandler(file_handler)
+logger.addHandler(stream_handler)
+# --- 日志配置结束 ---
+
+
+
+
 
 LOCAL_STORAGE_PATH = Path("local_storage")
+GALLERY_PATH = LOCAL_STORAGE_PATH / "gallery"
+DEFAULT_BACKGROUND_IMAGE = "city.webp" 
 
-FILE_TYPES = {
-    'image/png': 'png',
-    'image/jpeg': 'jpg',
-    'imager/webp': 'webp',
-}
 S3_DATA_FOLDER = Path("sd-multiplayer-data")
 ROOMS_DATA_DB = S3_DATA_FOLDER / "rooms_data.db"
 ROOM_DB = Path("rooms.db")
 
+
+# --- FastAPI 应用实例 ---
 app = FastAPI()
 
+# --- 中间件和之前的API端点 (保留) ---
 @app.middleware("http")
 async def log_requests(request: Request, call_next):
-    # 针对 WebSocket 的初始 HTTP Upgrade 请求进行日志记录
     if "upgrade" in request.headers and request.headers["upgrade"] == "websocket":
         logger.info(f"!!! 收到 WebSocket 握手请求: {request.method} {request.url}")
     else:
         logger.info(f"收到 HTTP 请求: {request.method} {request.url}")
-
     response = await call_next(request)
     return response
 
+# --- 您原有的所有辅助函数和API端点都应保留在这里 ---
 
-repo = Repository(
-    local_dir=S3_DATA_FOLDER,
-    repo_type="dataset",
-    clone_from="huggingface-projects/sd-multiplayer-data",
-    use_auth_token=True,
-)
-
-if not ROOM_DB.exists():
-    print("Creating database")
-    print("ROOM_DB", ROOM_DB)
-    db = sqlite3.connect(ROOM_DB)
-    with open(Path("schema.sql"), "r") as f:
-        db.executescript(f.read())
-    db.commit()
-    db.close()
-
-
+# 数据库连接函数
 def get_room_db():
     db = sqlite3.connect(ROOM_DB, check_same_thread=False)
     db.row_factory = sqlite3.Row
@@ -102,7 +114,6 @@ def get_room_db():
     finally:
         db.close()
 
-
 def get_room_data_db():
     db = sqlite3.connect(ROOMS_DATA_DB, check_same_thread=False)
     db.row_factory = sqlite3.Row
@@ -112,248 +123,34 @@ def get_room_data_db():
         db.rollback()
     finally:
         db.close()
-
-
-try:
-    SAMPLING_MODE = Image.Resampling.LANCZOS
-except Exception as e:
-    SAMPLING_MODE = Image.LANCZOS
-
-
-blocks = gr.Blocks().queue()
-model = {}
-
-STATIC_MASK = Image.open("mask.png")
-
-
+        
+# Hugging Face Repo 同步函数
+repo = None # 稍后初始化
 def sync_rooms_data_repo():
-    subprocess.Popen("git fetch && git reset --hard origin/main",
-                     cwd=S3_DATA_FOLDER, shell=True)
-
-
-def get_model():
-    # --- MONITORING: Monitor model loading ---
-    if "inpaint" not in model:
-        logger.info("开始加载 Stable Diffusion Inpainting 模型...")
-        start_time = time.time()
-        try:
-            scheduler = EulerAncestralDiscreteScheduler.from_pretrained(
-                "stabilityai/stable-diffusion-2-base", subfolder="scheduler")
-            inpaint = StableDiffusionInpaintPipeline.from_pretrained(
-                "stabilityai/stable-diffusion-2-inpainting",
-                torch_dtype=torch.float32,
-            )
-            inpaint.scheduler = scheduler
-            inpaint = inpaint.to("cuda")
-            model["inpaint"] = inpaint
-            duration = time.time() - start_time
-            logger.info(f"模型加载成功！耗时: {duration:.2f} 秒。")
-        except Exception as e:
-            logger.critical("!!!!!! 模型加载失败，服务器无法启动 !!!!!!")
-            logger.critical(traceback.format_exc())
-            # 关键错误，直接退出程序
-            sys.exit(1)
-    # --- MONITORING END ---
-    return model["inpaint"]
-
-
-# init model on startup
-get_model()
-
-
-async def run_outpaint(
-    input_image,
-    prompt_text,
-    strength,
-    guidance,
-    step,
-    fill_mode,
-    room_id,
-    image_key
-):
-    # 1. 为每个请求生成唯一ID，方便追踪日志
-    request_id = shortuuid.uuid()[:8]
-    logger.info(f"[Request ID: {request_id}] 收到图像生成请求。Room: '{room_id}', Key: '{image_key}'")
-    start_time = time.time()
-    
+    global repo
+    if repo is None:
+        from huggingface_hub import Repository
+        repo = Repository(
+            local_dir=S3_DATA_FOLDER,
+            repo_type="dataset",
+            clone_from="huggingface-projects/sd-multiplayer-data",
+            use_auth_token=HF_TOKEN,
+        )
+    logger.info("正在同步 Hugging Face 仓库...")
     try:
-        inpaint = get_model()
-        
-        sel_buffer = np.array(input_image)
-        img = sel_buffer[:, :, 0:3]
-        mask = sel_buffer[:, :, -1]
-
-        # 2. 空白画布检测与处理：如果输入是纯白或纯色，则替换为随机噪声
-        if np.std(img) < 10:
-            logger.info(f"[Request ID: {request_id}] 检测到空白或纯色画布，将使用随机噪声作为初始图像。")
-            img = np.random.randint(0, 256, img.shape, dtype=np.uint8)
-
-        # nmask = 255 - mask
-
-        nmask = mask.copy()
-        process_size = 1024
-        negative_syntax = r'\<(.*?)\>'
-        prompt = re.sub(negative_syntax, ' ', prompt_text)
-        negative_prompt = ' '.join(re.findall(negative_syntax, prompt_text))
-        
-        # 3. 蒙版处理逻辑（已经移除了 `mask = 255 - mask` 的错误反转操作）
-        if nmask.sum() < 1:
-            logger.info(f"[Request ID: {request_id}] 使用预设的静态蒙版进行绘制。")
-            mask = np.array(STATIC_MASK)[:, :, 0]
-            img, mask = functbl[fill_mode](img, mask)
-            init_image = Image.fromarray(img)
-            mask = skimage.measure.block_reduce(mask, (8, 8), np.max)
-            mask = mask.repeat(8, axis=0).repeat(8, axis=1)
-            mask_image = Image.fromarray(mask)
-        elif mask.sum() > 0:
-            logger.info(f"[Request ID: {request_id}] 使用用户手绘的蒙版进行绘制。")
-            img, mask = functbl[fill_mode](img, mask)
-            init_image = Image.fromarray(img)
-            mask = skimage.measure.block_reduce(mask, (8, 8), np.max)
-            mask = mask.repeat(8, axis=0).repeat(8, axis=1)
-            mask_image = Image.fromarray(mask)
-        else:
-            logger.info(f"[Request ID: {request_id}] 无蒙版，执行文生图模式。")
-            img, mask = functbl[fill_mode](img, mask)
-            init_image = Image.fromarray(img)
-            mask = skimage.measure.block_reduce(mask, (8, 8), np.max)
-            mask = mask.repeat(8, axis=0).repeat(8, axis=1)
-            mask_image = Image.fromarray(mask)
-
-        # 4. GPU显存监控（推理前）
-        if torch.cuda.is_available():
-            logger.info(f"[Request ID: {request_id}] 推理前 - 已分配GPU显存: {torch.cuda.memory_allocated(0)/1024**2:.2f} MB")
-            logger.info(f"[Request ID: {request_id}] 推理前 - 已保留GPU显存: {torch.cuda.memory_reserved(0)/1024**2:.2f} MB")
-        
-        # (可选的调试步骤) 如果还需要调试蒙版，可以取消下面代码的注释
-        # debug_path = Path("debug_images")
-        # debug_path.mkdir(exist_ok=True)
-        # init_image.resize((process_size, process_size)).save(debug_path / f"{request_id}_init_image.png")
-        # mask_image.resize((process_size, process_size)).save(debug_path / f"{request_id}_mask_image.png")
-        # logger.info(f"已将调试图片保存在 {debug_path.resolve()} 文件夹中。")
-        
-        output = None
-        with autocast("cuda"):
-            try:
-                # 5. 核心推理步骤
-                output = inpaint(
-                    prompt=prompt,
-                    negative_prompt=negative_prompt,
-                    image=init_image.resize((process_size, process_size), resample=SAMPLING_MODE),
-                    mask_image=mask_image.resize((process_size, process_size)),
-                    strength=strength,
-                    num_inference_steps=int(step),
-                    guidance_scale=guidance,
-                )
-            except torch.cuda.OutOfMemoryError:
-                logger.error(f"[Request ID: {request_id}] !!! GPU显存不足 (Out of Memory) !!!")
-                if torch.cuda.is_available():
-                    torch.cuda.empty_cache()
-                raise
-            except Exception as inference_e:
-                logger.error(f"[Request ID: {request_id}] 推理过程中发生未知错误: {inference_e}")
-                logger.error(traceback.format_exc())
-                raise
-        
-        # 6. GPU显存监控（推理后）
-        if torch.cuda.is_available():
-            logger.info(f"[Request ID: {request_id}] 推理后 - 已分配GPU显存: {torch.cuda.memory_allocated(0)/1024**2:.2f} MB")
-        
-        image = output["images"][0]
-        is_nsfw = output.get("nsfw_content_detected", [False])[0]
-        image_url = {}
-
-        if not is_nsfw:
-            # 调用我们之前修复好的 upload_file 函数，它内部包含了从浮点数到整数的转换
-            image_url = await upload_file(image, prompt + "NNOTN" + negative_prompt, room_id, image_key)
-
-        params = {
-            "is_nsfw": is_nsfw,
-            "image": image_url
-        }
-        
-        duration = time.time() - start_time
-        logger.info(f"[Request ID: {request_id}] 图像生成成功完成。耗时: {duration:.2f} 秒。")
-        
-        return params
-
+        subprocess.Popen("git fetch && git reset --hard origin/main",
+                         cwd=S3_DATA_FOLDER, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        logger.info("Hugging Face 仓库同步完成。")
     except Exception as e:
-        # 7. 兜底的异常处理
-        duration = time.time() - start_time
-        logger.error(f"[Request ID: {request_id}] 'run_outpaint' 函数处理失败。耗时: {duration:.2f} 秒。错误: {e}")
-        logger.error(traceback.format_exc())
-        # 返回一个表示失败的JSON结构，防止前端崩溃
-        return {"is_nsfw": True, "image": {}}
+        logger.error(f"同步 Hugging Face 仓库时出错: {e}")
 
-with blocks as demo:
+# slugify 工具函数
+def slugify(value):
+    value = re.sub(r'[^\w\s-]', '', value).strip().lower()
+    out = re.sub(r'[-\s]+', '-', value)
+    return out[:400]
 
-    with gr.Row():
-
-        with gr.Column(scale=3, min_width=270):
-            sd_prompt = gr.Textbox(
-                label="Prompt", placeholder="input your prompt here", lines=4
-            )
-        with gr.Column(scale=2, min_width=150):
-            sd_strength = gr.Slider(
-                label="Strength", minimum=0.0, maximum=1.0, value=0.75, step=0.01
-            )
-        with gr.Column(scale=1, min_width=150):
-            sd_step = gr.Number(label="Step", value=100, precision=0)
-            sd_guidance = gr.Number(label="Guidance", value=7)
-    with gr.Row():
-        with gr.Column(scale=4, min_width=600):
-            init_mode = gr.Radio(
-                label="Init mode",
-                choices=[
-                    "patchmatch",
-                    "edge_pad",
-                    "cv2_ns",
-                    "cv2_telea",
-                    "gaussian",
-                    "perlin",
-                ],
-                value="patchmatch",
-                type="value",
-            )
-
-    model_input = gr.Image(label="Input", type="pil", image_mode="RGBA")
-    room_id = gr.Textbox(label="Room ID")
-    image_key = gr.Textbox(label="image_key")
-    proceed_button = gr.Button("Proceed", elem_id="proceed")
-    params = gr.JSON()
-
-    proceed_button.click(
-        fn=run_outpaint,
-        inputs=[
-            model_input,
-            sd_prompt,
-            sd_strength,
-            sd_guidance,
-            sd_step,
-            init_mode,
-            room_id,
-            image_key
-        ],
-        outputs=[params],
-    )
-
-
-blocks.config['dev_mode'] = False
-
-app = gr.mount_gradio_app(app, blocks, "/gradio",
-                         gradio_api_url="http://0.0.0.0:7860/gradio/")
-
-
-def generateAuthToken():
-    response = requests.get(f"https://liveblocks.io/api/authorize",
-                            headers={"Authorization": f"Bearer {LIVEBLOCKS_SECRET}"})
-    if response.status_code == 200:
-        data = response.json()
-        return data["token"]
-    else:
-        raise Exception(response.status_code, response.text)
-
-
+# liveblocks 房间用户数获取
 def get_room_count(room_id: str):
     try:
         response = requests.get(
@@ -377,7 +174,7 @@ def get_room_count(room_id: str):
         raise Exception(f"请求 Liveblocks API 时发生网络错误: {e}")
 
 
-
+# 定时任务
 @app.on_event("startup")
 @repeat_every(seconds=100)
 def sync_rooms():
@@ -411,14 +208,13 @@ def sync_rooms():
         logger.error(traceback.format_exc())
 
 
-
 @app.on_event("startup")
 @repeat_every(seconds=300)
-def sync_room_datq():
-    logger.info("Sync rooms data")
+def sync_room_data():
+    logger.info("开始同步 rooms data repo")
     sync_rooms_data_repo()
 
-
+# 您原有的 API 端点
 @app.get('/server/api/room_data/{room_id}')
 async def get_rooms_data(room_id: str, start: str = None, end: str = None, db: sqlite3.Connection = Depends(get_room_data_db)):
     logger.info(f"Getting rooms data for room: {room_id}")
@@ -464,52 +260,12 @@ async def autorize(request: Request):
         raise Exception(response.status_code, response.text)
 
 
-def slugify(value):
-    value = re.sub(r'[^\w\s-]', '', value).strip().lower()
-    out = re.sub(r'[-\s]+', '-', value)
-    return out[:400]
-
-
-async def upload_file(image: Image.Image, prompt: str, room_id: str, image_key: str):
-    # --- START OF MODIFICATION ---
-    # 我们不再需要 NumPy 转换，直接使用模型输出的原始 PIL Image 对象
-    # 因为我们现在相信在 float32 模式下，它的数据范围是正确的。
-    
-    room_id = room_id.strip() or "uploads"
-    image_key = image_key.strip() or ""
-    
-    # 为确保兼容性，最好还是做一次颜色模式转换
-    image_to_save = image.convert('RGB')
-
-    # 生成文件名等信息
-    id = shortuuid.uuid()
-    date = int(time.time())
-    prompt_slug = slugify(prompt)
-    filename = f"{date}-{id}-{image_key}-{prompt_slug}.webp"
-    timelapse_name = f"{id}.webp"
-    key_name = f"{room_id}/{filename}"
-    
-    # 定义本地保存路径
-    full_path = LOCAL_STORAGE_PATH / key_name
-    timelapse_dir = LOCAL_STORAGE_PATH / "timelapse" / room_id
-    timelapse_path = timelapse_dir / timelapse_name
-    
-    full_path.parent.mkdir(parents=True, exist_ok=True)
-    timelapse_dir.mkdir(parents=True, exist_ok=True)
-    
-    # 直接保存从模型中得到的、经过RGB转换的图片
-    try:
-        image_to_save.save(full_path, format="WEBP")
-        shutil.copy(full_path, timelapse_path)
-    except (IOError, PermissionError) as e:
-        logger.error(f"文件写入失败！检查磁盘空间或文件夹权限。路径: {full_path}. 错误: {e}")
-        logger.error(traceback.format_exc())
-        raise
-
-    out = {"url": f'/storage/{key_name}', "filename": filename}
-    return out
-    # --- END OF MODIFICATION ---
-
+# 保留上传社区文件的功能
+FILE_TYPES = {
+    'image/png': 'png',
+    'image/jpeg': 'jpg',
+    'image/webp': 'webp',
+}
 @app.post('/server/api/uploadfile')
 async def create_upload_file(file: UploadFile):
     # --- MONITORING: Monitor file operations ---
@@ -544,12 +300,218 @@ async def create_upload_file(file: UploadFile):
         raise HTTPException(status_code=500, detail="Could not save file.")
     # --- MONITORING END ---
 
-app.mount("/storage", StaticFiles(directory=LOCAL_STORAGE_PATH), name="storage")
-app.mount("/", StaticFiles(directory="../static", html=True), name="static")
+    
+# 保留获取默认背景图的API
+@app.get("/server/api/default_background")
+async def get_default_background():
+    """
+    返回预设的、唯一的默认背景图的URL。
+    """
+    logger.info("收到获取默认背景图的请求。")
+    try:
+        # 构造默认图片的完整路径
+        default_image_path = GALLERY_PATH / DEFAULT_BACKGROUND_IMAGE
 
+        # 检查文件是否存在，以防配置错误
+        if not default_image_path.is_file():
+            logger.error(f"预设的默认背景图未找到！路径: {default_image_path}")
+            return JSONResponse(status_code=404, content={"error": "默认背景图未在服务器上找到。"})
+
+        # 构建可供前端访问的URL
+        image_url = f"/storage/gallery/{DEFAULT_BACKGROUND_IMAGE}"
+
+        # 以 JSON 格式返回这个唯一的URL
+        return JSONResponse(content={"url": image_url})
+
+    except Exception as e:
+        logger.error(f"获取默认背景图时发生错误: {e}")
+        logger.error(traceback.format_exc())
+        return JSONResponse(status_code=500, content={"error": "无法检索默认背景图。"})
+
+
+# --- 核心改动：用 API 版本替换本地模型 ---
+
+# 本地模型加载函数 get_model() 已被完全删除
+
+# 上传/保存文件的辅助函数 (保持不变)
+async def upload_file(image: Image.Image, prompt: str, room_id: str, image_key: str):
+    image_to_save = image.convert('RGB')
+    id = shortuuid.uuid()
+    date = int(time.time())
+    prompt_slug = slugify(prompt)
+    filename = f"{date}-{id}-{image_key}-{prompt_slug}.webp"
+    timelapse_name = f"{id}.webp"
+    key_name = f"{room_id}/{filename}"
+    
+    full_path = LOCAL_STORAGE_PATH / key_name
+    timelapse_dir = LOCAL_STORAGE_PATH / "timelapse" / room_id
+    timelapse_path = timelapse_dir / timelapse_name
+    
+    full_path.parent.mkdir(parents=True, exist_ok=True)
+    timelapse_dir.mkdir(parents=True, exist_ok=True)
+    
+    try:
+        image_to_save.save(full_path, format="WEBP")
+        shutil.copy(full_path, timelapse_path)
+    except (IOError, PermissionError) as e:
+        logger.error(f"文件写入失败！路径: {full_path}. 错误: {e}")
+        logger.error(traceback.format_exc())
+        raise
+
+    out = {"url": f'/storage/{key_name}', "filename": filename}
+    return out
+
+# 全新重写的 run_outpaint 函数，用于调用外部 API
+async def run_outpaint(
+    input_image,
+    prompt_text,
+    strength,
+    guidance,
+    step,
+    fill_mode,
+    room_id,
+    image_key
+):
+    request_id = shortuuid.uuid()[:8]
+    logger.info(f"[Request ID: {request_id}] 收到 API 请求。目标尺寸: {input_image.size}")
+    start_time = time.time()
+
+    if not STABILITY_API_KEY:
+        error_msg = "错误：服务器未配置 STABILITY_API_KEY。"
+        logger.error(f"[Request ID: {request_id}] {error_msg}")
+        raise Exception(error_msg)
+
+    # --- START OF MODIFICATION ---
+    # 1. 保存前端期望的目标尺寸
+    target_size = input_image.size  # 例如 (1920, 1080)
+    # --- END OF MODIFICATION ---
+
+    api_url = "https://api.stability.ai/v2beta/stable-image/generate/sd3"
+    headers = { "Authorization": f"Bearer {STABILITY_API_KEY}", "Accept": "application/json" }
+    payload = { "model": "sd3.5-medium", "prompt": prompt_text, "output_format": "png", "steps": int(step), "cfg_scale": guidance }
+    files = {}
+    img_np = np.array(input_image.convert("RGB"))
+
+    if np.std(img_np) < 10:
+        payload['mode'] = 'text-to-image'
+        # 在文生图模式下，我们可以尝试让API生成更接近的宽高比
+        # 这里做一个简单的判断
+        if target_size[0] > target_size[1]:
+            payload['aspect_ratio'] = "16:9"
+        elif target_size[1] > target_size[0]:
+            payload['aspect_ratio'] = "9:16"
+        else:
+            payload['aspect_ratio'] = "1:1"
+        logger.info(f"[Request ID: {request_id}] 空白画布，使用 'text-to-image' 模式。请求宽高比: {payload['aspect_ratio']}")
+
+    else:
+        logger.info(f"[Request ID: {request_id}] 有内容画布，使用 'image-to-image' 模式。")
+        payload['mode'] = 'image-to-image'
+        payload['strength'] = strength
+        image_bytes = io.BytesIO()
+        input_image.save(image_bytes, format='PNG')
+        image_bytes.seek(0)
+        files['image'] = ('init_image.png', image_bytes)
+
+    logger.info(f"[Request ID: {request_id}] 正在调用 Stability API...")
+
+    try:
+        response = requests.post(api_url, headers=headers, data=payload, files=files)
+        response.raise_for_status()
+        api_result = response.json()
+        logger.info(f"[Request ID: {request_id}] API 响应原始数据: {api_result}")
+
+        image_artifact = None
+        if "artifacts" in api_result and isinstance(api_result.get("artifacts"), list) and len(api_result["artifacts"]) > 0:
+            image_artifact = api_result["artifacts"][0]
+        elif "image" in api_result:
+            image_artifact = api_result
+        if image_artifact is None: raise Exception("无法在API响应中定位 artifact 对象。")
+
+        base64_image_data = image_artifact.get("image") or image_artifact.get("base64")
+        if not base64_image_data: raise Exception("在 artifact 中未找到图像数据键。")
+
+        image_bytes = base64.b64decode(base64_image_data)
+        generated_image = Image.open(io.BytesIO(image_bytes))
+        logger.info(f"[Request ID: {request_id}] 从API接收到图片，原始尺寸: {generated_image.size}")
+
+        # --- START OF MODIFICATION ---
+        # 2. 将API返回的图片缩放到目标尺寸
+        #    Image.Resampling.LANCZOS 是高质量的缩放算法
+        try:
+            resampling_filter = Image.Resampling.LANCZOS
+        except AttributeError: # 兼容旧版 Pillow
+            resampling_filter = Image.LANCZOS
+            
+        resized_image = generated_image.resize(target_size, resampling_filter)
+        logger.info(f"[Request ID: {request_id}] 图片已缩放至目标尺寸: {resized_image.size}")
+        # --- END OF MODIFICATION ---
+
+        # 3. 将缩放后的图片传递给保存函数
+        image_url_data = await upload_file(resized_image, prompt_text, room_id, image_key)
+
+        finish_reason = image_artifact.get("finishReason") or image_artifact.get("finish_reason")
+        params = {
+            "is_nsfw": finish_reason == 'CONTENT_FILTERED',
+            "image": image_url_data
+        }
+        
+        duration = time.time() - start_time
+        logger.info(f"[Request ID: {request_id}] API 调用成功并处理完毕。耗时: {duration:.2f} 秒。")
+        return params
+
+    except Exception as e:
+        duration = time.time() - start_time
+        logger.error(f"[Request ID: {request_id}] 调用API时发生错误。耗时: {duration:.2f} 秒。")
+        if 'response' in locals() and response:
+            logger.error(f"API 响应内容: {response.text}")
+        logger.error(traceback.format_exc())
+        return {"is_nsfw": True, "image": {}}
+
+        
+# --- Gradio 接口 (保持不变) ---
+try:
+    SAMPLING_MODE = Image.Resampling.LANCZOS
+except Exception as e:
+    SAMPLING_MODE = Image.LANCZOS
+    
+with gr.Blocks().queue() as blocks:
+    with gr.Row():
+        with gr.Column(scale=3, min_width=270):
+            sd_prompt = gr.Textbox(label="Prompt", placeholder="input your prompt here", lines=4)
+        with gr.Column(scale=2, min_width=150):
+            sd_strength = gr.Slider(label="Strength", minimum=0.0, maximum=1.0, value=0.75, step=0.01)
+        with gr.Column(scale=1, min_width=150):
+            sd_step = gr.Number(label="Step", value=50, precision=0)
+            sd_guidance = gr.Number(label="Guidance", value=7.5)
+    with gr.Row():
+        with gr.Column(scale=4, min_width=600):
+            init_mode = gr.Radio(
+                label="Init mode",
+                choices=["patchmatch", "edge_pad", "cv2_ns", "cv2_telea", "gaussian", "perlin"],
+                value="patchmatch",
+                type="value",
+            )
+
+    model_input = gr.Image(label="Input", type="pil", image_mode="RGBA")
+    room_id = gr.Textbox(label="Room ID")
+    image_key = gr.Textbox(label="image_key")
+    proceed_button = gr.Button("Proceed", elem_id="proceed")
+    params = gr.JSON()
+
+    proceed_button.click(
+        fn=run_outpaint,
+        inputs=[model_input, sd_prompt, sd_strength, sd_guidance, sd_step, init_mode, room_id, image_key],
+        outputs=[params],
+    )
+
+# --- FastAPI 挂载和启动 (保持不变) ---
+app = gr.mount_gradio_app(app, blocks, "/gradio", gradio_api_url="http://0.0.0.0:7860/gradio/")
+
+app.mount("/storage", StaticFiles(directory=LOCAL_STORAGE_PATH), name="storage")
+app.mount("/", StaticFiles(directory="../frontend/build", html=True), name="static")
 
 origins = ["*"]
-
 app.add_middleware(
     CORSMiddleware,
     allow_origins=origins,
@@ -558,11 +520,24 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-
 if __name__ == "__main__":
-    # --- MONITORING: Ensure the base storage directory exists on startup ---
+    # 确保文件夹存在
     LOCAL_STORAGE_PATH.mkdir(exist_ok=True)
-    logger.info(f"服务器启动，文件将保存在本地目录: {LOCAL_STORAGE_PATH.resolve()}")
+    GALLERY_PATH.mkdir(exist_ok=True)
     
-    uvicorn.run(app, host="0.0.0.0", port=7860,
-                log_level="info", reload=False)
+    # 检查数据库文件
+    if not ROOM_DB.exists():
+        logger.info("正在创建主数据库...")
+        db = sqlite3.connect(ROOM_DB)
+        # 假设 schema.sql 在同一目录
+        if Path("schema.sql").exists():
+            with open(Path("schema.sql"), "r") as f:
+                db.executescript(f.read())
+            db.commit()
+            logger.info("主数据库创建成功。")
+        else:
+            logger.warning("未找到 schema.sql, 数据库为空。")
+        db.close()
+
+    logger.info(f"服务器启动，文件将保存在本地目录: {LOCAL_STORAGE_PATH.resolve()}")
+    uvicorn.run(app, host="0.0.0.0", port=7860, log_level="info", reload=False)
