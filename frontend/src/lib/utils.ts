@@ -72,3 +72,22 @@ function slugify(text: string) {
 		.replace(/^-+/, '')
 		.replace(/-+$/, '');
 }
+
+/**
+ * 获取默认背景图片
+ * @returns Promise<string | null> 返回背景图片的URL，如果获取失败返回null
+ */
+export async function getDefaultBackground(): Promise<string | null> {
+	try {
+		const response = await fetch(PUBLIC_API_BASE + "/default_background");
+		if (response.status === 200) {
+			const data = await response.json();
+			return data.url;
+		}
+		console.error('Failed to fetch default background:', response.status);
+		return null;
+	} catch (error) {
+		console.error('Error fetching default background:', error);
+		return null;
+	}
+}
