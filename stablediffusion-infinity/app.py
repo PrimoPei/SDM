@@ -191,7 +191,7 @@ async def run_outpaint(
         # nmask = 255 - mask
 
         nmask = mask.copy()
-        process_size = 512
+        process_size = 1024
         negative_syntax = r'\<(.*?)\>'
         prompt = re.sub(negative_syntax, ' ', prompt_text)
         negative_prompt = ' '.join(re.findall(negative_syntax, prompt_text))

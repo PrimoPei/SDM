@@ -18,6 +18,7 @@
 	import type { PromptImgObject } from '$lib/types';
 	import { FRAME_SIZE, GRID_SIZE } from '$lib/constants';
 	import { PUBLIC_WS_INPAINTING } from '$env/static/public';
+	import { getDefaultBackground } from '$lib/utils';
 
 // --- 在这里加入下面这行用于调试 ---
 console.log("【前端调试】正在尝试连接的 WebSocket URL 是:", PUBLIC_WS_INPAINTING);
@@ -30,6 +31,11 @@ console.log("【前端调试】正在尝试连接的 WebSocket URL 是:", PUBLIC
 
 	let containerEl: HTMLDivElement;
 	let canvasCtx: CanvasRenderingContext2D;
+
+	// 背景图片相关状态
+	let backgroundImage: HTMLImageElement | null = null;
+	let backgroundImageUrl: string | null = null;
+	let isBackgroundLoaded = false;
 
 	const imagesOnCanvas = new Set();
 
@@ -143,7 +149,7 @@ console.log("【前端调试】正在尝试连接的 WebSocket URL 是:", PUBLIC
 		const y = H / 2 - center.y * k;
 		return zoomIdentity.translate(x, y).scale(k);
 	}
-	onMount(() => {
+	onMount(async () => {
 		const padding = 50;
 		const scale =
 			(width + padding * 2) /
@@ -177,6 +183,10 @@ console.log("【前端调试】正在尝试连接的 WebSocket URL 是:", PUBLIC
 			.on('pointerleave', handlePointerLeave);
 
 		canvasCtx = $canvasEl.getContext('2d') as CanvasRenderingContext2D;
+		
+		// 加载默认背景图片
+		await loadBackgroundImage();
+		
 		function zoomReset() {
 			const scale =
 				(width + padding * 2) /
@@ -202,14 +212,75 @@ console.log("【前端调试】正在尝试连接的 WebSocket URL 是:", PUBLIC
 		};
 	});
 
+	/**
+	 * 加载默认背景图片
+	 */
+	async function loadBackgroundImage() {
+		try {
+			backgroundImageUrl = await getDefaultBackground();
+			if (backgroundImageUrl) {
+				backgroundImage = new Image();
+				backgroundImage.crossOrigin = 'anonymous';
+				backgroundImage.onload = () => {
+					isBackgroundLoaded = true;
+					console.log('背景图片加载成功:', backgroundImageUrl);
+					// 重新渲染画布以显示背景图片
+					renderCanvas();
+				};
+				backgroundImage.onerror = (err) => {
+					console.error('背景图片加载失败:', err);
+					isBackgroundLoaded = false;
+				};
+				backgroundImage.src = `${PUBLIC_UPLOADS}${backgroundImageUrl}`;
+			}
+		} catch (error) {
+			console.error('获取背景图片URL失败:', error);
+		}
+	}
+
+	/**
+	 * 渲染画布背景图片
+	 */
+	function renderCanvas() {
+		if (!canvasCtx) return;
+		
+		// 清除画布
+		canvasCtx.clearRect(0, 0, width, height);
+		
+		// 绘制背景图片
+		if (isBackgroundLoaded && backgroundImage) {
+			canvasCtx.drawImage(backgroundImage, 0, 0, width, height);
+		}
+		
+		// 重新渲染所有生成的图片
+		const currentPromptImgList = getpromptImgList($promptImgStorage?.toObject());
+		if (currentPromptImgList.length > 0) {
+			// 清除已渲染图片的记录，以便重新绘制
+			imagesOnCanvas.clear();
+			renderImages(currentPromptImgList);
+		}
+	}
+
 	type ImageRendered = {
 		img: HTMLImageElement;
 		position: { x: number; y: number };
 		id: string;
 	};
 	async function renderImages(promptImgList: PromptImgObject[]) {
-		if (promptImgList.length === 0) return;
+		if (!canvasCtx) return;
+		
 		$isRenderingCanvas = true;
+		
+		// 首先清除画布并绘制背景图片
+		canvasCtx.clearRect(0, 0, width, height);
+		if (isBackgroundLoaded && backgroundImage) {
+			canvasCtx.drawImage(backgroundImage, 0, 0, width, height);
+		}
+
+		if (promptImgList.length === 0) {
+			$isRenderingCanvas = false;
+			return;
+		}
 
 		await Promise.allSettled(
 			promptImgList.map(
@@ -219,6 +290,7 @@ console.log("【前端调试】正在尝试连接的 WebSocket URL 是:", PUBLIC
 						img.crossOrigin = 'anonymous';
 						img.onload = () => {
 							const res: ImageRendered = { img, position, id };
+							// 在背景图片之上绘制生成的图片
 							canvasCtx.drawImage(img, position.x, position.y, img.width, img.height);
 							resolve(res);
 						};

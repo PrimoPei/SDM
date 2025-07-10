@@ -18,4 +18,4 @@ export const MAX_CAPACITY = 50;
 
 export const GRID_SIZE = 32
 
-export const FRAME_SIZE = 512
+export const FRAME_SIZE = 1024
