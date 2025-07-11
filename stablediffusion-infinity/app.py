@@ -24,10 +24,6 @@ from fastapi_utils.tasks import repeat_every
 from fastapi.responses import JSONResponse
 import glob
 
-# 这些库与本地模型相关，不再需要
-# import torch
-# from torch import autocast
-# from diffusers import ...
 
 import numpy as np
 from PIL import Image
@@ -42,37 +38,37 @@ import magic # 假设您保留了 create_upload_file 功能
 load_dotenv()
 STABILITY_API_KEY = os.environ.get("STABILITY_API_KEY")
 LIVEBLOCKS_SECRET = os.environ.get("LIVEBLOCKS_SECRET")
-HF_TOKEN = os.environ.get("API_TOKEN") or True # huggingface_hub repo 可能仍需
+# HF_TOKEN = os.environ.get("API_TOKEN") or True # huggingface_hub repo 可能仍需
 
 # --- 日志和路径配置 ---
-# logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s', stream=sys.stdout)
-# logger = logging.getLogger(__name__)
+logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s', stream=sys.stdout)
+logger = logging.getLogger(__name__)
 
 from logging.handlers import RotatingFileHandler
 
 # 1. 定义日志文件的名称和路径
-LOG_FILENAME = "app.log"
+# LOG_FILENAME = "app.log"
 
-# 2. 创建一个全局的 logger
-logger = logging.getLogger(__name__)
-logger.setLevel(logging.INFO)
+# # 2. 创建一个全局的 logger
+# logger = logging.getLogger(__name__)
+# logger.setLevel(logging.INFO)
 
-# 3. 创建一个格式化器，定义日志的输出格式
-formatter = logging.Formatter('%(asctime)s - %(levelname)s - %(message)s')
+# # 3. 创建一个格式化器，定义日志的输出格式
+# formatter = logging.Formatter('%(asctime)s - %(levelname)s - %(message)s')
 
-# 4. 创建一个文件处理器 (FileHandler)，用于写入日志文件
-#    使用 RotatingFileHandler 实现日志轮转，防止日志文件无限增大
-#    maxBytes=5*1024*1024 表示单个文件最大5MB，backupCount=3 表示最多保留3个备份
-file_handler = RotatingFileHandler(LOG_FILENAME, maxBytes=5*1024*1024, backupCount=3, encoding='utf-8')
-file_handler.setFormatter(formatter)
+# # 4. 创建一个文件处理器 (FileHandler)，用于写入日志文件
+# #    使用 RotatingFileHandler 实现日志轮转，防止日志文件无限增大
+# #    maxBytes=5*1024*1024 表示单个文件最大5MB，backupCount=3 表示最多保留3个备份
+# file_handler = RotatingFileHandler(LOG_FILENAME, maxBytes=5*1024*1024, backupCount=3, encoding='utf-8')
+# file_handler.setFormatter(formatter)
 
-# 5. 创建一个流处理器 (StreamHandler)，用于在控制台打印日志
-stream_handler = logging.StreamHandler(sys.stdout)
-stream_handler.setFormatter(formatter)
+# # 5. 创建一个流处理器 (StreamHandler)，用于在控制台打印日志
+# stream_handler = logging.StreamHandler(sys.stdout)
+# stream_handler.setFormatter(formatter)
 
-# 6. 为 logger 添加这两个处理器
-logger.addHandler(file_handler)
-logger.addHandler(stream_handler)
+# # 6. 为 logger 添加这两个处理器
+# logger.addHandler(file_handler)
+# logger.addHandler(stream_handler)
 # --- 日志配置结束 ---
 
 
@@ -83,8 +79,6 @@ LOCAL_STORAGE_PATH = Path("local_storage")
 GALLERY_PATH = LOCAL_STORAGE_PATH / "gallery"
 DEFAULT_BACKGROUND_IMAGE = "city.webp" 
 
-S3_DATA_FOLDER = Path("sd-multiplayer-data")
-ROOMS_DATA_DB = S3_DATA_FOLDER / "rooms_data.db"
 ROOM_DB = Path("rooms.db")
 
 
@@ -123,26 +117,6 @@ def get_room_data_db():
         db.rollback()
     finally:
         db.close()
-        
-# Hugging Face Repo 同步函数
-repo = None # 稍后初始化
-def sync_rooms_data_repo():
-    global repo
-    if repo is None:
-        from huggingface_hub import Repository
-        repo = Repository(
-            local_dir=S3_DATA_FOLDER,
-            repo_type="dataset",
-            clone_from="huggingface-projects/sd-multiplayer-data",
-            use_auth_token=HF_TOKEN,
-        )
-    logger.info("正在同步 Hugging Face 仓库...")
-    try:
-        subprocess.Popen("git fetch && git reset --hard origin/main",
-                         cwd=S3_DATA_FOLDER, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-        logger.info("Hugging Face 仓库同步完成。")
-    except Exception as e:
-        logger.error(f"同步 Hugging Face 仓库时出错: {e}")
 
 # slugify 工具函数
 def slugify(value):
@@ -196,7 +170,7 @@ def sync_rooms():
                 except Exception as e:
                     if "404" in str(e):
                         pass
-                        #logger.warning(f"警告：房间 '{room_id}' 在 Liveblocks 上未找到，将跳过此房间。")
+                        logger.warning(f"警告：房间 '{room_id}' 在 Liveblocks 上未找到，将跳过此房间。")
                     else:
                         logger.error(f"处理房间 '{room_id}' 时发生严重错误，请检查: {e}")
             
@@ -208,11 +182,6 @@ def sync_rooms():
         logger.error(traceback.format_exc())
 
 
-@app.on_event("startup")
-@repeat_every(seconds=300)
-def sync_room_data():
-    logger.info("开始同步 rooms data repo")
-    sync_rooms_data_repo()
 
 # 您原有的 API 端点
 @app.get('/server/api/room_data/{room_id}')
@@ -416,7 +385,7 @@ async def run_outpaint(
     logger.info(f"[Request ID: {request_id}] 正在调用 Stability API...")
 
     try:
-        response = requests.post(api_url, headers=headers, data=payload, files=files)
+        # response = requests.post(api_url, headers=headers, data=payload, files=files)
         response.raise_for_status()
         api_result = response.json()
         logger.info(f"[Request ID: {request_id}] API 响应原始数据: {api_result}")
