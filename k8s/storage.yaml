@@ -24,7 +24,7 @@ spec:
   persistentVolumeReclaimPolicy: Retain
   storageClassName: sd-multiplayer-storage
   hostPath:
-    path: /mnt/sd-multiplayer/database
+    path: /tmp/sd-multiplayer/database
     type: DirectoryOrCreate
 
 ---
@@ -61,7 +61,7 @@ spec:
   persistentVolumeReclaimPolicy: Retain
   storageClassName: sd-multiplayer-storage
   hostPath:
-    path: /mnt/sd-multiplayer/storage
+    path: /tmp/sd-multiplayer/storage
     type: DirectoryOrCreate
 
 ---

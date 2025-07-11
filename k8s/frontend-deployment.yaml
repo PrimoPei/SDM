@@ -25,8 +25,8 @@ spec:
     spec:
       containers:
       - name: frontend
-        image: your-registry/sd-multiplayer-frontend:latest
-        imagePullPolicy: Always
+        image: sd-multiplayer-frontend:latest
+        imagePullPolicy: Never
         ports:
         - containerPort: 80
           name: http
@@ -43,7 +43,7 @@ spec:
         # 健康检查
         livenessProbe:
           httpGet:
-            path: /health
+            path: /
             port: 80
           initialDelaySeconds: 30
           periodSeconds: 30
@@ -52,7 +52,7 @@ spec:
         
         readinessProbe:
           httpGet:
-            path: /health
+            path: /
             port: 80
           initialDelaySeconds: 5
           periodSeconds: 10

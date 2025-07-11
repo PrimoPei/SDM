@@ -23,8 +23,8 @@ spec:
       # 移除 GPU 节点选择器，普通节点即可
       containers:
       - name: backend
-        image: your-registry/sd-multiplayer-backend:latest
-        imagePullPolicy: Always
+        image: sd-multiplayer-backend:latest
+        imagePullPolicy: Never
         ports:
         - containerPort: 7860
           name: http
