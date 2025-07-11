@@ -80,6 +80,7 @@ GALLERY_PATH = LOCAL_STORAGE_PATH / "gallery"
 DEFAULT_BACKGROUND_IMAGE = "city.webp" 
 
 ROOM_DB = Path("rooms.db")
+ROOMS_DATA_DB = Path("rooms_data.db")  # 添加缺失的数据库定义
 
 
 # --- FastAPI 应用实例 ---
@@ -202,6 +203,11 @@ async def get_rooms_data(room_id: str, start: str = None, end: str = None, db: s
                                 (room_id, start, end)).fetchall()
     return rooms_rows
 
+
+@app.get('/server/api/health')
+async def health_check():
+    """简单的健康检查端点"""
+    return {"status": "healthy", "service": "sd-multiplayer-backend"}
 
 @app.get('/server/api/rooms')
 async def get_rooms(db: sqlite3.Connection = Depends(get_room_db)):
@@ -478,7 +484,8 @@ with gr.Blocks().queue() as blocks:
 app = gr.mount_gradio_app(app, blocks, "/gradio", gradio_api_url="http://0.0.0.0:7860/gradio/")
 
 app.mount("/storage", StaticFiles(directory=LOCAL_STORAGE_PATH), name="storage")
-app.mount("/", StaticFiles(directory="../frontend/build", html=True), name="static")
+# 注意：在容器化部署中，前端由独立的 Nginx 容器提供服务
+# app.mount("/", StaticFiles(directory="../frontend/build", html=True), name="static")
 
 origins = ["*"]
 app.add_middleware(

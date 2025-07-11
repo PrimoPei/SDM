@@ -4,27 +4,16 @@ FROM python:3.10-slim
 # 设置环境变量
 ENV PYTHONUNBUFFERED=1
 
-# 安装系统依赖（包含图像处理库）
+# 安装必要的系统依赖
 RUN apt-get update && apt-get install -y \
     build-essential \
-    cmake \
-    git \
-    pkg-config \
     python3-dev \
     libmagic1 \
     libmagic-dev \
-    libopencv-dev \
-    libopencv-core-dev \
-    libopencv-imgcodecs-dev \
     libjpeg-dev \
     libpng-dev \
     libtiff-dev \
-    libavcodec-dev \
-    libavformat-dev \
-    libswscale-dev \
-    libatlas-base-dev \
-    libblas-dev \
-    liblapack-dev \
+    zlib1g-dev \
     curl \
     && rm -rf /var/lib/apt/lists/*
 
@@ -49,9 +38,11 @@ COPY run.py .
 RUN mkdir -p /app/static \
     && mkdir -p /app/stablediffusion-infinity/local_storage/gallery \
     && mkdir -p /app/stablediffusion-infinity/local_storage/uploads \
-    && mkdir -p /app/stablediffusion-infinity/local_storage/timelapse
+    && mkdir -p /app/stablediffusion-infinity/local_storage/timelapse \
+    && mkdir -p /app/stablediffusion-infinity/local_storage/community
 
 # 设置数据库（先清理再创建）
+WORKDIR /app/stablediffusion-infinity
 RUN if [ -f "schema.sql" ]; then \
         rm -f rooms.db && \
         python -c "import sqlite3; db = sqlite3.connect('rooms.db'); db.executescript(open('schema.sql').read()); db.commit(); db.close(); print('数据库初始化完成')"; \
@@ -61,5 +52,5 @@ RUN if [ -f "schema.sql" ]; then \
 EXPOSE 7860
 
 # 设置启动命令
-WORKDIR /app
-CMD ["python", "stablediffusion-infinity/app.py"] 
+WORKDIR /app/stablediffusion-infinity
+CMD ["python", "app.py"] 

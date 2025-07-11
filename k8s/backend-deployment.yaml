@@ -82,31 +82,31 @@ spec:
         # 健康检查
         livenessProbe:
           httpGet:
-            path: /server/api/rooms
+            path: /server/api/health
             port: 7860
-          initialDelaySeconds: 120
+          initialDelaySeconds: 60
           periodSeconds: 30
           timeoutSeconds: 10
           failureThreshold: 3
         
         readinessProbe:
           httpGet:
-            path: /server/api/rooms
+            path: /server/api/health
             port: 7860
-          initialDelaySeconds: 60
+          initialDelaySeconds: 30
           periodSeconds: 10
           timeoutSeconds: 5
           failureThreshold: 3
         
-        # 启动探针（对于需要长时间启动的 AI 模型）
+        # 启动探针
         startupProbe:
           httpGet:
-            path: /server/api/rooms
+            path: /server/api/health
             port: 7860
-          initialDelaySeconds: 30
-          periodSeconds: 30
+          initialDelaySeconds: 15
+          periodSeconds: 15
           timeoutSeconds: 10
-          failureThreshold: 10  # 允许最多 5 分钟启动时间
+          failureThreshold: 8  # 允许最多 2 分钟启动时间
       
       # 存储卷定义
       volumes:
