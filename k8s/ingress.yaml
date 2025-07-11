@@ -1,0 +1,148 @@
+# Ingress 配置 - 提供外部访问入口
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: sd-multiplayer-ingress
+  namespace: stable-diffusion-multiplayer
+  labels:
+    app: sd-multiplayer
+  annotations:
+    # Nginx Ingress 配置
+    kubernetes.io/ingress.class: "nginx"
+    nginx.ingress.kubernetes.io/ssl-redirect: "true"
+    nginx.ingress.kubernetes.io/force-ssl-redirect: "true"
+    
+    # 文件上传大小限制
+    nginx.ingress.kubernetes.io/proxy-body-size: "100m"
+    
+    # 超时设置
+    nginx.ingress.kubernetes.io/proxy-connect-timeout: "60"
+    nginx.ingress.kubernetes.io/proxy-send-timeout: "60"
+    nginx.ingress.kubernetes.io/proxy-read-timeout: "60"
+    
+    # WebSocket 支持
+    nginx.ingress.kubernetes.io/proxy-http-version: "1.1"
+    nginx.ingress.kubernetes.io/configuration-snippet: |
+      proxy_set_header Upgrade $http_upgrade;
+      proxy_set_header Connection "upgrade";
+    
+    # 缓存设置
+    nginx.ingress.kubernetes.io/server-snippet: |
+      location ~* \.(js|css|png|jpg|jpeg|gif|ico|svg|woff|woff2|ttf|eot)$ {
+        expires 1y;
+        add_header Cache-Control "public, immutable";
+      }
+    
+    # SSL/TLS 配置（如果使用 cert-manager）
+    cert-manager.io/cluster-issuer: "letsencrypt-prod"
+    
+    # 速率限制
+    nginx.ingress.kubernetes.io/rate-limit: "100"
+    nginx.ingress.kubernetes.io/rate-limit-window: "1m"
+spec:
+  tls:
+  - hosts:
+    - sd-multiplayer.yourdomain.com
+    secretName: sd-multiplayer-tls
+  
+  rules:
+  - host: sd-multiplayer.yourdomain.com
+    http:
+      paths:
+      # 前端静态文件
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: frontend-service
+            port:
+              number: 80
+      
+      # 后端 API 路由
+      - path: /server
+        pathType: Prefix
+        backend:
+          service:
+            name: backend-service
+            port:
+              number: 7860
+      
+      # Gradio 接口路由
+      - path: /gradio
+        pathType: Prefix
+        backend:
+          service:
+            name: backend-service
+            port:
+              number: 7860
+      
+      # 存储文件路由
+      - path: /storage
+        pathType: Prefix
+        backend:
+          service:
+            name: backend-service
+            port:
+              number: 7860
+
+---
+# 用于开发/测试的 NodePort Service（可选）
+apiVersion: v1
+kind: Service
+metadata:
+  name: sd-multiplayer-nodeport
+  namespace: stable-diffusion-multiplayer
+  labels:
+    app: sd-multiplayer
+    service-type: external
+spec:
+  type: NodePort
+  ports:
+  - port: 80
+    targetPort: 80
+    nodePort: 30080
+    protocol: TCP
+    name: frontend
+  - port: 7860
+    targetPort: 7860
+    nodePort: 30860
+    protocol: TCP
+    name: backend
+  selector:
+    app: sd-multiplayer
+
+---
+# LoadBalancer Service（用于云环境）
+apiVersion: v1
+kind: Service
+metadata:
+  name: sd-multiplayer-loadbalancer
+  namespace: stable-diffusion-multiplayer
+  labels:
+    app: sd-multiplayer
+    service-type: loadbalancer
+  annotations:
+    # 云提供商特定的注解
+    # AWS
+    service.beta.kubernetes.io/aws-load-balancer-type: "nlb"
+    service.beta.kubernetes.io/aws-load-balancer-backend-protocol: "tcp"
+    
+    # GCP
+    cloud.google.com/load-balancer-type: "External"
+    
+    # Azure
+    service.beta.kubernetes.io/azure-load-balancer-internal: "false"
+spec:
+  type: LoadBalancer
+  ports:
+  - port: 80
+    targetPort: 80
+    protocol: TCP
+    name: http
+  - port: 443
+    targetPort: 80
+    protocol: TCP
+    name: https
+  selector:
+    app: sd-multiplayer
+    component: frontend 

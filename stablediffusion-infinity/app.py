@@ -385,7 +385,7 @@ async def run_outpaint(
     logger.info(f"[Request ID: {request_id}] 正在调用 Stability API...")
 
     try:
-        # response = requests.post(api_url, headers=headers, data=payload, files=files)
+        response = requests.post(api_url, headers=headers, data=payload, files=files)
         response.raise_for_status()
         api_result = response.json()
         logger.info(f"[Request ID: {request_id}] API 响应原始数据: {api_result}")

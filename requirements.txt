@@ -11,6 +11,6 @@ python-magic==0.4.27
 fastapi-utils==0.2.1
 shortuuid==1.0
 tqdm==4.64
-accelerate  
-dotenv
-base64
+accelerate
+python-dotenv
+requests
