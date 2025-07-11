@@ -42,11 +42,11 @@ metadata:
 spec:
   tls:
   - hosts:
-    - sd-multiplayer.yourdomain.com
+    - localhost
     secretName: sd-multiplayer-tls
   
   rules:
-  - host: sd-multiplayer.yourdomain.com
+  - host: localhost
     http:
       paths:
       # 前端静态文件

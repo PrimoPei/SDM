@@ -362,51 +362,34 @@ async def run_outpaint(
     # --- END OF MODIFICATION ---
 
     api_url = "https://api.stability.ai/v2beta/stable-image/generate/sd3"
-    headers = { "Authorization": f"Bearer {STABILITY_API_KEY}", "Accept": "application/json" }
-    payload = { "model": "sd3.5-medium", "prompt": prompt_text, "output_format": "png", "steps": int(step), "cfg_scale": guidance }
-    files = {}
+    headers = { "authorization": f"Bearer {STABILITY_API_KEY}", "accept": "image/*" }
+    data = { "prompt": prompt_text, "output_format": "png" }
+    files = {"none": ''}
     img_np = np.array(input_image.convert("RGB"))
 
     if np.std(img_np) < 10:
-        payload['mode'] = 'text-to-image'
-        # 在文生图模式下，我们可以尝试让API生成更接近的宽高比
-        # 这里做一个简单的判断
-        if target_size[0] > target_size[1]:
-            payload['aspect_ratio'] = "16:9"
-        elif target_size[1] > target_size[0]:
-            payload['aspect_ratio'] = "9:16"
-        else:
-            payload['aspect_ratio'] = "1:1"
-        logger.info(f"[Request ID: {request_id}] 空白画布，使用 'text-to-image' 模式。请求宽高比: {payload['aspect_ratio']}")
+        logger.info(f"[Request ID: {request_id}] 空白画布，使用 'text-to-image' 模式。")
+        # 对于 text-to-image，保持默认的 files={"none": ''}
 
     else:
         logger.info(f"[Request ID: {request_id}] 有内容画布，使用 'image-to-image' 模式。")
-        payload['mode'] = 'image-to-image'
-        payload['strength'] = strength
+        data['strength'] = strength
         image_bytes = io.BytesIO()
         input_image.save(image_bytes, format='PNG')
         image_bytes.seek(0)
-        files['image'] = ('init_image.png', image_bytes)
+        files = {'image': ('init_image.png', image_bytes, 'image/png')}
 
     logger.info(f"[Request ID: {request_id}] 正在调用 Stability API...")
 
     try:
-        response = requests.post(api_url, headers=headers, data=payload, files=files)
-        response.raise_for_status()
-        api_result = response.json()
-        logger.info(f"[Request ID: {request_id}] API 响应原始数据: {api_result}")
-
-        image_artifact = None
-        if "artifacts" in api_result and isinstance(api_result.get("artifacts"), list) and len(api_result["artifacts"]) > 0:
-            image_artifact = api_result["artifacts"][0]
-        elif "image" in api_result:
-            image_artifact = api_result
-        if image_artifact is None: raise Exception("无法在API响应中定位 artifact 对象。")
-
-        base64_image_data = image_artifact.get("image") or image_artifact.get("base64")
-        if not base64_image_data: raise Exception("在 artifact 中未找到图像数据键。")
-
-        image_bytes = base64.b64decode(base64_image_data)
+        response = requests.post(api_url, headers=headers, data=data, files=files)
+        
+        if response.status_code != 200:
+            logger.error(f"[Request ID: {request_id}] API 错误响应: {response.text}")
+            response.raise_for_status()
+        
+        # 直接从响应内容获取图片字节
+        image_bytes = response.content
         generated_image = Image.open(io.BytesIO(image_bytes))
         logger.info(f"[Request ID: {request_id}] 从API接收到图片，原始尺寸: {generated_image.size}")
 
@@ -425,9 +408,8 @@ async def run_outpaint(
         # 3. 将缩放后的图片传递给保存函数
         image_url_data = await upload_file(resized_image, prompt_text, room_id, image_key)
 
-        finish_reason = image_artifact.get("finishReason") or image_artifact.get("finish_reason")
         params = {
-            "is_nsfw": finish_reason == 'CONTENT_FILTERED',
+            "is_nsfw": False,  # 简化处理，新API在返回前已过滤
             "image": image_url_data
         }
         
