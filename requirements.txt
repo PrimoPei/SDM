@@ -1,16 +1,21 @@
-transformers
-scikit-image==0.25.2
-Pillow==11.3.0
-opencv-python-headless==4.12.0.88
+# 核心 Web 框架
 fastapi==0.85.1
 uvicorn==0.18.3
-httpx==0.23.0
-gradio==3.6
-boto3==1.24.93
-python-magic==0.4.27
 fastapi-utils==0.2.1
-shortuuid==1.0
-tqdm==4.64
-accelerate
-python-dotenv
+
+# HTTP 请求和 API 调用
 requests
+httpx==0.23.0
+httpcore==0.15.0
+python-dotenv
+
+# 图像处理
+Pillow==11.3.0
+numpy
+
+# 用户界面
+gradio==3.6
+
+# 工具库
+shortuuid==1.0
+python-magic==0.4.27

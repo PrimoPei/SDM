@@ -2,11 +2,11 @@ version: '3.8'
 
 services:
   # 后端服务
-  backend:
+  backend-service:
     build:
       context: .
       dockerfile: docker/backend.Dockerfile
-    container_name: sd-multiplayer-backend
+    container_name: backend-service
     environment:
       - STABILITY_API_KEY=${STABILITY_API_KEY}
       - LIVEBLOCKS_SECRET=${LIVEBLOCKS_SECRET}
@@ -18,7 +18,7 @@ services:
     # 移除 GPU 资源配置，API 代理服务无需 GPU
     restart: unless-stopped
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:7860/server/api/rooms"]
+      test: ["CMD", "curl", "-f", "http://localhost:7860/server/api/health"]
       interval: 30s
       timeout: 10s
       retries: 3
@@ -32,7 +32,7 @@ services:
     ports:
       - "80:80"
     depends_on:
-      - backend
+      - backend-service
     restart: unless-stopped
     healthcheck:
       test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost/health"]
