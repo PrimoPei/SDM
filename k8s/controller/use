@@ -1,0 +1,31 @@
+# 1. 部署 CRD
+kubectl apply -f crd/sdmultiplayer-crd.yaml
+
+# 2. 构建 Controller 镜像
+docker build -t sd-controller:latest controller/
+
+# 3. 部署 Controller
+kubectl apply -f controller/controller-deployment.yaml
+
+# 4. 创建 SD 应用实例
+kubectl apply -f examples/sd-example.yaml
+
+# 5. 查看状态
+kubectl get sdmultiplayers -n stable-diffusion-multiplayer
+kubectl describe sdmultiplayer my-sd-app -n stable-diffusion-multiplayer
+
+# 6. 查看 Controller 日志
+kubectl logs -f deployment/sd-controller -n stable-diffusion-multiplayer
+
+
+# 查看所有 SD 应用
+kubectl get sdm -n stable-diffusion-multiplayer
+
+# 查看详细状态
+kubectl describe sdm my-sd-app -n stable-diffusion-multiplayer
+
+# 更新配置
+kubectl patch sdm my-sd-app -n stable-diffusion-multiplayer --type='merge' -p='{"spec":{"backend":{"replicas":3}}}'
+
+# 查看 Controller 日志
+kubectl logs -f deployment/sd-controller -n stable-diffusion-multiplayer

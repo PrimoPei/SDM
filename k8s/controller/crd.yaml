@@ -1,0 +1,135 @@
+# crd/sdmultiplayer-crd.yaml
+apiVersion: apiextensions.k8s.io/v1
+kind: CustomResourceDefinition
+metadata:
+  name: sdmultiplayers.ai.example.com
+spec:
+  group: ai.example.com
+  versions:
+  - name: v1
+    served: true
+    storage: true
+    schema:
+      openAPIV3Schema:
+        type: object
+        properties:
+          spec:
+            type: object
+            properties:
+              frontend:
+                type: object
+                properties:
+                  replicas:
+                    type: integer
+                    minimum: 1
+                    maximum: 10
+                  image:
+                    type: string
+                  resources:
+                    type: object
+                    properties:
+                      requests:
+                        type: object
+                        properties:
+                          memory:
+                            type: string
+                          cpu:
+                            type: string
+                      limits:
+                        type: object
+                        properties:
+                          memory:
+                            type: string
+                          cpu:
+                            type: string
+              backend:
+                type: object
+                properties:
+                  replicas:
+                    type: integer
+                    minimum: 1
+                    maximum: 5
+                  image:
+                    type: string
+                  resources:
+                    type: object
+                    properties:
+                      requests:
+                        type: object
+                        properties:
+                          memory:
+                            type: string
+                          cpu:
+                            type: string
+                      limits:
+                        type: object
+                        properties:
+                          memory:
+                            type: string
+                          cpu:
+                            type: string
+                  gpuRequired:
+                    type: boolean
+                    default: false
+              storage:
+                type: object
+                properties:
+                  size:
+                    type: string
+                  storageClass:
+                    type: string
+              config:
+                type: object
+                properties:
+                  logLevel:
+                    type: string
+                    enum: ["debug", "info", "warn", "error"]
+                  maxConcurrentTasks:
+                    type: integer
+                    minimum: 1
+                    maximum: 100
+                  apiKeys:
+                    type: object
+                    properties:
+                      stabilityApiKey:
+                        type: string
+                      liveblocksSecret:
+                        type: string
+          status:
+            type: object
+            properties:
+              phase:
+                type: string
+                enum: ["Pending", "Running", "Failed", "Succeeded"]
+              conditions:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    type:
+                      type: string
+                    status:
+                      type: string
+                    lastTransitionTime:
+                      type: string
+                    reason:
+                      type: string
+                    message:
+                      type: string
+              frontendReplicas:
+                type: integer
+              backendReplicas:
+                type: integer
+              activeJobs:
+                type: integer
+              totalJobs:
+                type: integer
+    subresources:
+      status: {}
+  scope: Namespaced
+  names:
+    plural: sdmultiplayers
+    singular: sdmultiplayer
+    kind: SDMultiplayer
+    shortNames:
+    - sdm

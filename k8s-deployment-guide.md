@@ -68,8 +68,8 @@ docker push your-registry/sd-multiplayer-frontend:latest
 ```bash
 # 创建 API 密钥 Secret
 kubectl create secret generic sd-multiplayer-secrets \
-  --from-literal=stability-api-key="sk-your-stability-api-key" \
-  --from-literal=liveblocks-secret="sk_your_liveblocks_secret" \
+  --from-literal=stability-api-key="sk-vr9EdW6DQlefVH3YuRASI3Q2E5yWs5CCjS9pz5QA0mwO8uiS" \
+  --from-literal=liveblocks-secret="sk_dev_-Qop-GszFq8zIU0xNVXJvlj7zf28Q4ozqpIKenw08C7oDIdNjUVmLVlDovdlYBdI" \
   --namespace=stable-diffusion-multiplayer
 ```
 

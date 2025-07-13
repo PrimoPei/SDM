@@ -41,6 +41,9 @@ RUN mkdir -p /app/static \
     && mkdir -p /app/stablediffusion-infinity/local_storage/timelapse \
     && mkdir -p /app/stablediffusion-infinity/local_storage/community
 
+
+COPY stablediffusion-infinity/local_storage/gallery/ /app/stablediffusion-infinity/local_storage/gallery/
+
 # 设置数据库（先清理再创建）
 WORKDIR /app/stablediffusion-infinity
 RUN if [ -f "schema.sql" ]; then \

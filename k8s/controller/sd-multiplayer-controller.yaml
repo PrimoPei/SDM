@@ -1,0 +1,38 @@
+# my-sd-app.yaml
+apiVersion: ai.example.com/v1
+kind: SDMultiplayer
+metadata:
+  name: my-first-sd-app
+  namespace: stable-diffusion-multiplayer
+spec:
+  frontend:
+    replicas: 2 #
+    image: "primay73/sd-multiplayer-frontend:test" #
+    resources: #
+      requests: #
+        memory: "128Mi" #
+        cpu: "100m" #
+      limits: #
+        memory: "256Mi" #
+        cpu: "200m" #
+  backend:
+    replicas: 1 #
+    image: "primay73/sd-multiplayer-backend:test" #
+    gpuRequired: false #
+    resources: #
+      requests: #
+        memory: "2Gi" #
+        cpu: "500m" #
+      limits: #
+        memory: "4Gi" #
+        cpu: "1" #
+  storage:
+    size: "5Gi" #
+    storageClass: "standard" # 请根据您集群的配置修改
+  config:
+    logLevel: "info" #
+    maxConcurrentTasks: 10 #
+    apiKeys: #
+      # 请替换为真实的 Base64 编码的密钥
+      stabilityApiKey: "sk-vr9EdW6DQlefVH3YuRASI3Q2E5yWs5CCjS9pz5QA0mwO8uiS"
+      liveblocksSecret: "sk_dev_-Qop-GszFq8zIU0xNVXJvlj7zf28Q4ozqpIKenw08C7oDIdNjUVmLVlDovdlYBdI"
